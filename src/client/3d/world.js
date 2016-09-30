@@ -1,6 +1,6 @@
 import BABYLON from 'babylonjs';
 import utils from './utils.js';
-
+import uuid from 'uuid';
 function initScene(){
 
 	let canvas = document.getElementById( '3dview' );
@@ -8,7 +8,7 @@ function initScene(){
 	
 	let createScene = () => {
 		let scene = new BABYLON.Scene( engine );
-		scene.clearColor = new BABYLON.Color3(1, 1, 0);
+		scene.clearColor = new BABYLON.Color3(1, 0, 0);
 
 		let camera = new BABYLON.FreeCamera( 'camera', utils.vector3(0,5,-10), scene );
 		camera.setTarget( utils.vector3(0,0,0) );
@@ -19,8 +19,9 @@ function initScene(){
 
 
 		let ground = BABYLON.Mesh.CreateGround("ground", 6, 6, 2, scene);
-		let sphere = BABYLON.Mesh.CreateSphere("sphere1", 16, 2, scene);
-		sphere.position.y = 1;
+		ground.material = new BABYLON.StandardMaterial( 'texture1', scene );
+		ground.material.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5);
+		
 		return scene;	
 	}
 
@@ -37,6 +38,17 @@ function initScene(){
 	return scene;
 }
 
+function createGuy( scene, number ){
+	return [...Array(number).keys()].map( i => {
+		let id = Math.random() * 1000
+		let s = BABYLON.Mesh.CreateSphere(uuid.v1(), 16, 2, scene, false, ); 
+		s.position.z = Math.random()*20;
+		s.material = new BABYLON.StandardMaterial( 'texture'+Math.random(), scene );
+		s.material.diffuseColor = new BABYLON.Color3(1.0, 0.2, 0.7);
+		return s.id;
+	} );
+}
 export default {
-	initScene
+	initScene,
+	createGuy,
 };

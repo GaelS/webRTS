@@ -1,6 +1,7 @@
 import React from 'react';
 import actions from '../flux/actions.js';
 import { connect } from 'react-redux';
+import Menu from './Menu.jsx';
 
 class App extends React.Component {
     
@@ -25,6 +26,7 @@ class App extends React.Component {
 	    			id='3dview'
 	    		>
 	    		</canvas>
+                <Menu />
     		</div>
     	)
     }
@@ -36,8 +38,6 @@ const mapDispatchToProps = ( dispatch ) => {
         initScene : () => dispatch( actions.initScene() ),
     }
 };
-
-
 export default connect(
     null,
     mapDispatchToProps

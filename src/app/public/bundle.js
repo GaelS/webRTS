@@ -61,9 +61,9 @@
 	
 	var _reducer2 = _interopRequireDefault(_reducer);
 	
-	var _reactRedux = __webpack_require__(/*! react-redux */ 192);
+	var _reactRedux = __webpack_require__(/*! react-redux */ 194);
 	
-	var _App = __webpack_require__(/*! ./components/App.jsx */ 201);
+	var _App = __webpack_require__(/*! ./components/App.jsx */ 203);
 	
 	var _App2 = _interopRequireDefault(_App);
 	
@@ -22889,17 +22889,23 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+	
 	exports.default = function () {
 		var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : _defaultState2.default;
 		var action = arguments[1];
 	
 		var newState = _ramda2.default.clone(state);
+		//scene cannot be cloned
+		newState.scene = state.scene;
 	
 		switch (action.type) {
 			case 'INIT':
 				var scene = _world2.default.initScene();
-				state.scene = scene;
+				newState.scene = scene;
 				break;
+			case 'CREATE_GUY':
+				newState.guys = [].concat(_toConsumableArray(state.guys), _toConsumableArray(_world2.default.createGuy(newState.scene, action.value)));
 		}
 		return newState;
 	};
@@ -22917,7 +22923,8 @@
 		value: true
 	});
 	exports.default = {
-		scene: null
+		scene: null,
+		guys: []
 	};
 
 /***/ },
@@ -31781,7 +31788,13 @@
 	
 	var _utils2 = _interopRequireDefault(_utils);
 	
+	var _uuid = __webpack_require__(/*! uuid */ 192);
+	
+	var _uuid2 = _interopRequireDefault(_uuid);
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 	
 	function initScene() {
 	
@@ -31790,7 +31803,7 @@
 	
 		var createScene = function createScene() {
 			var scene = new _babylonjs2.default.Scene(engine);
-			scene.clearColor = new _babylonjs2.default.Color3(1, 1, 0);
+			scene.clearColor = new _babylonjs2.default.Color3(1, 0, 0);
 	
 			var camera = new _babylonjs2.default.FreeCamera('camera', _utils2.default.vector3(0, 5, -10), scene);
 			camera.setTarget(_utils2.default.vector3(0, 0, 0));
@@ -31800,8 +31813,9 @@
 			light.intensity = 5;
 	
 			var ground = _babylonjs2.default.Mesh.CreateGround("ground", 6, 6, 2, scene);
-			var sphere = _babylonjs2.default.Mesh.CreateSphere("sphere1", 16, 2, scene);
-			sphere.position.y = 1;
+			ground.material = new _babylonjs2.default.StandardMaterial('texture1', scene);
+			ground.material.diffuseColor = new _babylonjs2.default.Color3(0.5, 0.5, 0.5);
+	
 			return scene;
 		};
 	
@@ -31818,8 +31832,19 @@
 		return scene;
 	}
 	
+	function createGuy(scene, number) {
+		return [].concat(_toConsumableArray(Array(number).keys())).map(function (i) {
+			var id = Math.random() * 1000;
+			var s = _babylonjs2.default.Mesh.CreateSphere(_uuid2.default.v1(), 16, 2, scene, false);
+			s.position.z = Math.random() * 20;
+			s.material = new _babylonjs2.default.StandardMaterial('texture' + Math.random(), scene);
+			s.material.diffuseColor = new _babylonjs2.default.Color3(1.0, 0.2, 0.7);
+			return s.id;
+		});
+	}
 	exports.default = {
-		initScene: initScene
+		initScene: initScene,
+		createGuy: createGuy
 	};
 
 /***/ },
@@ -31900,6 +31925,240 @@
 
 /***/ },
 /* 192 */
+/*!************************!*\
+  !*** ./~/uuid/uuid.js ***!
+  \************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	//     uuid.js
+	//
+	//     Copyright (c) 2010-2012 Robert Kieffer
+	//     MIT License - http://opensource.org/licenses/mit-license.php
+	
+	// Unique ID creation requires a high quality random # generator.  We feature
+	// detect to determine the best RNG source, normalizing to a function that
+	// returns 128-bits of randomness, since that's what's usually required
+	var _rng = __webpack_require__(/*! ./rng */ 193);
+	
+	// Maps for number <-> hex string conversion
+	var _byteToHex = [];
+	var _hexToByte = {};
+	for (var i = 0; i < 256; i++) {
+	  _byteToHex[i] = (i + 0x100).toString(16).substr(1);
+	  _hexToByte[_byteToHex[i]] = i;
+	}
+	
+	// **`parse()` - Parse a UUID into it's component bytes**
+	function parse(s, buf, offset) {
+	  var i = (buf && offset) || 0, ii = 0;
+	
+	  buf = buf || [];
+	  s.toLowerCase().replace(/[0-9a-f]{2}/g, function(oct) {
+	    if (ii < 16) { // Don't overflow!
+	      buf[i + ii++] = _hexToByte[oct];
+	    }
+	  });
+	
+	  // Zero out remaining bytes if string was short
+	  while (ii < 16) {
+	    buf[i + ii++] = 0;
+	  }
+	
+	  return buf;
+	}
+	
+	// **`unparse()` - Convert UUID byte array (ala parse()) into a string**
+	function unparse(buf, offset) {
+	  var i = offset || 0, bth = _byteToHex;
+	  return  bth[buf[i++]] + bth[buf[i++]] +
+	          bth[buf[i++]] + bth[buf[i++]] + '-' +
+	          bth[buf[i++]] + bth[buf[i++]] + '-' +
+	          bth[buf[i++]] + bth[buf[i++]] + '-' +
+	          bth[buf[i++]] + bth[buf[i++]] + '-' +
+	          bth[buf[i++]] + bth[buf[i++]] +
+	          bth[buf[i++]] + bth[buf[i++]] +
+	          bth[buf[i++]] + bth[buf[i++]];
+	}
+	
+	// **`v1()` - Generate time-based UUID**
+	//
+	// Inspired by https://github.com/LiosK/UUID.js
+	// and http://docs.python.org/library/uuid.html
+	
+	// random #'s we need to init node and clockseq
+	var _seedBytes = _rng();
+	
+	// Per 4.5, create and 48-bit node id, (47 random bits + multicast bit = 1)
+	var _nodeId = [
+	  _seedBytes[0] | 0x01,
+	  _seedBytes[1], _seedBytes[2], _seedBytes[3], _seedBytes[4], _seedBytes[5]
+	];
+	
+	// Per 4.2.2, randomize (14 bit) clockseq
+	var _clockseq = (_seedBytes[6] << 8 | _seedBytes[7]) & 0x3fff;
+	
+	// Previous uuid creation time
+	var _lastMSecs = 0, _lastNSecs = 0;
+	
+	// See https://github.com/broofa/node-uuid for API details
+	function v1(options, buf, offset) {
+	  var i = buf && offset || 0;
+	  var b = buf || [];
+	
+	  options = options || {};
+	
+	  var clockseq = options.clockseq !== undefined ? options.clockseq : _clockseq;
+	
+	  // UUID timestamps are 100 nano-second units since the Gregorian epoch,
+	  // (1582-10-15 00:00).  JSNumbers aren't precise enough for this, so
+	  // time is handled internally as 'msecs' (integer milliseconds) and 'nsecs'
+	  // (100-nanoseconds offset from msecs) since unix epoch, 1970-01-01 00:00.
+	  var msecs = options.msecs !== undefined ? options.msecs : new Date().getTime();
+	
+	  // Per 4.2.1.2, use count of uuid's generated during the current clock
+	  // cycle to simulate higher resolution clock
+	  var nsecs = options.nsecs !== undefined ? options.nsecs : _lastNSecs + 1;
+	
+	  // Time since last uuid creation (in msecs)
+	  var dt = (msecs - _lastMSecs) + (nsecs - _lastNSecs)/10000;
+	
+	  // Per 4.2.1.2, Bump clockseq on clock regression
+	  if (dt < 0 && options.clockseq === undefined) {
+	    clockseq = clockseq + 1 & 0x3fff;
+	  }
+	
+	  // Reset nsecs if clock regresses (new clockseq) or we've moved onto a new
+	  // time interval
+	  if ((dt < 0 || msecs > _lastMSecs) && options.nsecs === undefined) {
+	    nsecs = 0;
+	  }
+	
+	  // Per 4.2.1.2 Throw error if too many uuids are requested
+	  if (nsecs >= 10000) {
+	    throw new Error('uuid.v1(): Can\'t create more than 10M uuids/sec');
+	  }
+	
+	  _lastMSecs = msecs;
+	  _lastNSecs = nsecs;
+	  _clockseq = clockseq;
+	
+	  // Per 4.1.4 - Convert from unix epoch to Gregorian epoch
+	  msecs += 12219292800000;
+	
+	  // `time_low`
+	  var tl = ((msecs & 0xfffffff) * 10000 + nsecs) % 0x100000000;
+	  b[i++] = tl >>> 24 & 0xff;
+	  b[i++] = tl >>> 16 & 0xff;
+	  b[i++] = tl >>> 8 & 0xff;
+	  b[i++] = tl & 0xff;
+	
+	  // `time_mid`
+	  var tmh = (msecs / 0x100000000 * 10000) & 0xfffffff;
+	  b[i++] = tmh >>> 8 & 0xff;
+	  b[i++] = tmh & 0xff;
+	
+	  // `time_high_and_version`
+	  b[i++] = tmh >>> 24 & 0xf | 0x10; // include version
+	  b[i++] = tmh >>> 16 & 0xff;
+	
+	  // `clock_seq_hi_and_reserved` (Per 4.2.2 - include variant)
+	  b[i++] = clockseq >>> 8 | 0x80;
+	
+	  // `clock_seq_low`
+	  b[i++] = clockseq & 0xff;
+	
+	  // `node`
+	  var node = options.node || _nodeId;
+	  for (var n = 0; n < 6; n++) {
+	    b[i + n] = node[n];
+	  }
+	
+	  return buf ? buf : unparse(b);
+	}
+	
+	// **`v4()` - Generate random UUID**
+	
+	// See https://github.com/broofa/node-uuid for API details
+	function v4(options, buf, offset) {
+	  // Deprecated - 'format' argument, as supported in v1.2
+	  var i = buf && offset || 0;
+	
+	  if (typeof(options) == 'string') {
+	    buf = options == 'binary' ? new Array(16) : null;
+	    options = null;
+	  }
+	  options = options || {};
+	
+	  var rnds = options.random || (options.rng || _rng)();
+	
+	  // Per 4.4, set bits for version and `clock_seq_hi_and_reserved`
+	  rnds[6] = (rnds[6] & 0x0f) | 0x40;
+	  rnds[8] = (rnds[8] & 0x3f) | 0x80;
+	
+	  // Copy bytes to buffer, if provided
+	  if (buf) {
+	    for (var ii = 0; ii < 16; ii++) {
+	      buf[i + ii] = rnds[ii];
+	    }
+	  }
+	
+	  return buf || unparse(rnds);
+	}
+	
+	// Export public API
+	var uuid = v4;
+	uuid.v1 = v1;
+	uuid.v4 = v4;
+	uuid.parse = parse;
+	uuid.unparse = unparse;
+	
+	module.exports = uuid;
+
+
+/***/ },
+/* 193 */
+/*!*******************************!*\
+  !*** ./~/uuid/rng-browser.js ***!
+  \*******************************/
+/***/ function(module, exports) {
+
+	/* WEBPACK VAR INJECTION */(function(global) {
+	var rng;
+	
+	var crypto = global.crypto || global.msCrypto; // for IE 11
+	if (crypto && crypto.getRandomValues) {
+	  // WHATWG crypto-based RNG - http://wiki.whatwg.org/wiki/Crypto
+	  // Moderately fast, high quality
+	  var _rnds8 = new Uint8Array(16);
+	  rng = function whatwgRNG() {
+	    crypto.getRandomValues(_rnds8);
+	    return _rnds8;
+	  };
+	}
+	
+	if (!rng) {
+	  // Math.random()-based (RNG)
+	  //
+	  // If all else fails, use Math.random().  It's fast, but is of unspecified
+	  // quality.
+	  var  _rnds = new Array(16);
+	  rng = function() {
+	    for (var i = 0, r; i < 16; i++) {
+	      if ((i & 0x03) === 0) r = Math.random() * 0x100000000;
+	      _rnds[i] = r >>> ((i & 0x03) << 3) & 0xff;
+	    }
+	
+	    return _rnds;
+	  };
+	}
+	
+	module.exports = rng;
+	
+	
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
+
+/***/ },
+/* 194 */
 /*!************************************!*\
   !*** ./~/react-redux/lib/index.js ***!
   \************************************/
@@ -31910,11 +32169,11 @@
 	exports.__esModule = true;
 	exports.connect = exports.Provider = undefined;
 	
-	var _Provider = __webpack_require__(/*! ./components/Provider */ 193);
+	var _Provider = __webpack_require__(/*! ./components/Provider */ 195);
 	
 	var _Provider2 = _interopRequireDefault(_Provider);
 	
-	var _connect = __webpack_require__(/*! ./components/connect */ 196);
+	var _connect = __webpack_require__(/*! ./components/connect */ 198);
 	
 	var _connect2 = _interopRequireDefault(_connect);
 	
@@ -31924,7 +32183,7 @@
 	exports.connect = _connect2["default"];
 
 /***/ },
-/* 193 */
+/* 195 */
 /*!**************************************************!*\
   !*** ./~/react-redux/lib/components/Provider.js ***!
   \**************************************************/
@@ -31937,11 +32196,11 @@
 	
 	var _react = __webpack_require__(/*! react */ 1);
 	
-	var _storeShape = __webpack_require__(/*! ../utils/storeShape */ 194);
+	var _storeShape = __webpack_require__(/*! ../utils/storeShape */ 196);
 	
 	var _storeShape2 = _interopRequireDefault(_storeShape);
 	
-	var _warning = __webpack_require__(/*! ../utils/warning */ 195);
+	var _warning = __webpack_require__(/*! ../utils/warning */ 197);
 	
 	var _warning2 = _interopRequireDefault(_warning);
 	
@@ -32011,7 +32270,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! ./~/process/browser.js */ 3)))
 
 /***/ },
-/* 194 */
+/* 196 */
 /*!***********************************************!*\
   !*** ./~/react-redux/lib/utils/storeShape.js ***!
   \***********************************************/
@@ -32030,7 +32289,7 @@
 	});
 
 /***/ },
-/* 195 */
+/* 197 */
 /*!********************************************!*\
   !*** ./~/react-redux/lib/utils/warning.js ***!
   \********************************************/
@@ -32062,7 +32321,7 @@
 	}
 
 /***/ },
-/* 196 */
+/* 198 */
 /*!*************************************************!*\
   !*** ./~/react-redux/lib/components/connect.js ***!
   \*************************************************/
@@ -32077,19 +32336,19 @@
 	
 	var _react = __webpack_require__(/*! react */ 1);
 	
-	var _storeShape = __webpack_require__(/*! ../utils/storeShape */ 194);
+	var _storeShape = __webpack_require__(/*! ../utils/storeShape */ 196);
 	
 	var _storeShape2 = _interopRequireDefault(_storeShape);
 	
-	var _shallowEqual = __webpack_require__(/*! ../utils/shallowEqual */ 197);
+	var _shallowEqual = __webpack_require__(/*! ../utils/shallowEqual */ 199);
 	
 	var _shallowEqual2 = _interopRequireDefault(_shallowEqual);
 	
-	var _wrapActionCreators = __webpack_require__(/*! ../utils/wrapActionCreators */ 198);
+	var _wrapActionCreators = __webpack_require__(/*! ../utils/wrapActionCreators */ 200);
 	
 	var _wrapActionCreators2 = _interopRequireDefault(_wrapActionCreators);
 	
-	var _warning = __webpack_require__(/*! ../utils/warning */ 195);
+	var _warning = __webpack_require__(/*! ../utils/warning */ 197);
 	
 	var _warning2 = _interopRequireDefault(_warning);
 	
@@ -32097,11 +32356,11 @@
 	
 	var _isPlainObject2 = _interopRequireDefault(_isPlainObject);
 	
-	var _hoistNonReactStatics = __webpack_require__(/*! hoist-non-react-statics */ 199);
+	var _hoistNonReactStatics = __webpack_require__(/*! hoist-non-react-statics */ 201);
 	
 	var _hoistNonReactStatics2 = _interopRequireDefault(_hoistNonReactStatics);
 	
-	var _invariant = __webpack_require__(/*! invariant */ 200);
+	var _invariant = __webpack_require__(/*! invariant */ 202);
 	
 	var _invariant2 = _interopRequireDefault(_invariant);
 	
@@ -32464,7 +32723,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! ./~/process/browser.js */ 3)))
 
 /***/ },
-/* 197 */
+/* 199 */
 /*!*************************************************!*\
   !*** ./~/react-redux/lib/utils/shallowEqual.js ***!
   \*************************************************/
@@ -32498,7 +32757,7 @@
 	}
 
 /***/ },
-/* 198 */
+/* 200 */
 /*!*******************************************************!*\
   !*** ./~/react-redux/lib/utils/wrapActionCreators.js ***!
   \*******************************************************/
@@ -32518,7 +32777,7 @@
 	}
 
 /***/ },
-/* 199 */
+/* 201 */
 /*!********************************************!*\
   !*** ./~/hoist-non-react-statics/index.js ***!
   \********************************************/
@@ -32577,7 +32836,7 @@
 
 
 /***/ },
-/* 200 */
+/* 202 */
 /*!********************************!*\
   !*** ./~/invariant/browser.js ***!
   \********************************/
@@ -32638,7 +32897,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! ./~/process/browser.js */ 3)))
 
 /***/ },
-/* 201 */
+/* 203 */
 /*!***************************************!*\
   !*** ./src/client/components/App.jsx ***!
   \***************************************/
@@ -32656,11 +32915,15 @@
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _actions = __webpack_require__(/*! ../flux/actions.js */ 202);
+	var _actions = __webpack_require__(/*! ../flux/actions.js */ 204);
 	
 	var _actions2 = _interopRequireDefault(_actions);
 	
-	var _reactRedux = __webpack_require__(/*! react-redux */ 192);
+	var _reactRedux = __webpack_require__(/*! react-redux */ 194);
+	
+	var _Menu = __webpack_require__(/*! ./Menu.jsx */ 205);
+	
+	var _Menu2 = _interopRequireDefault(_Menu);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -32698,7 +32961,8 @@
 	                _react2.default.createElement('canvas', {
 	                    style: S,
 	                    id: '3dview'
-	                })
+	                }),
+	                _react2.default.createElement(_Menu2.default, null)
 	            );
 	        }
 	    }]);
@@ -32715,11 +32979,10 @@
 	        }
 	    };
 	};
-	
 	exports.default = (0, _reactRedux.connect)(null, mapDispatchToProps)(App);
 
 /***/ },
-/* 202 */
+/* 204 */
 /*!************************************!*\
   !*** ./src/client/flux/actions.js ***!
   \************************************/
@@ -32737,9 +33000,73 @@
 		};
 	};
 	
-	exports.default = {
-		initScene: initScene
+	function createGuy(value) {
+		return {
+			type: 'CREATE_GUY',
+			value: value
+		};
 	};
+	
+	exports.default = {
+		initScene: initScene,
+		createGuy: createGuy
+	};
+
+/***/ },
+/* 205 */
+/*!****************************************!*\
+  !*** ./src/client/components/Menu.jsx ***!
+  \****************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	
+	var _react = __webpack_require__(/*! react */ 1);
+	
+	var _react2 = _interopRequireDefault(_react);
+	
+	var _actions = __webpack_require__(/*! ../flux/actions.js */ 204);
+	
+	var _actions2 = _interopRequireDefault(_actions);
+	
+	var _reactRedux = __webpack_require__(/*! react-redux */ 194);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var Menu = function Menu(_ref) {
+		var guys = _ref.guys;
+		var createOneGuy = _ref.createOneGuy;
+	
+		return _react2.default.createElement(
+			'div',
+			null,
+			_react2.default.createElement('input', {
+				type: 'button',
+				value: 'create peon',
+				onClick: createOneGuy
+			})
+		);
+	};
+	
+	var mapDispatchToProps = function mapDispatchToProps(dispatch) {
+		return {
+			createOneGuy: function createOneGuy() {
+				return dispatch(_actions2.default.createGuy(1));
+			}
+		};
+	};
+	
+	var mapStateToProps = function mapStateToProps(state) {
+		return {
+			guys: state.guys.length
+		};
+	};
+	
+	exports.default = (0, _reactRedux.connect)(mapStateToProps, mapDispatchToProps)(Menu);
 
 /***/ }
 /******/ ]);
