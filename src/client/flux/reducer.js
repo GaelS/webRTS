@@ -1,6 +1,6 @@
 import defaultState from './defaultState.js';
 import R from 'ramda';
-import world from '../3d/world.js';
+import creation from '../3d/creation.js';
 
 export default ( ( state = defaultState, action ) => {
 	let newState = R.clone(state);
@@ -9,12 +9,12 @@ export default ( ( state = defaultState, action ) => {
 
 	switch(action.type){
 		case 'INIT' :
-			let scene = world.initScene();
+			let scene = creation.initScene();
 			newState.scene = scene;
 			break;
 		case 'CREATE_GUY' :
 			newState.guys = [...state.guys,
-			 ...world.createGuy( newState.scene, action.value ) ];
+			 ...creation.createGuy( newState.scene, action.value ) ];
 	}
 	return newState;
 } );

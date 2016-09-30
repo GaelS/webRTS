@@ -70,7 +70,7 @@
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	var store = (0, _redux.createStore)(_reducer2.default);
-	window.Store = store;
+	
 	(0, _reactDom.render)(_react2.default.createElement(
 		_reactRedux.Provider,
 		{ store: store },
@@ -22883,9 +22883,9 @@
 	
 	var _ramda2 = _interopRequireDefault(_ramda);
 	
-	var _world = __webpack_require__(/*! ../3d/world.js */ 189);
+	var _creation = __webpack_require__(/*! ../3d/creation.js */ 189);
 	
-	var _world2 = _interopRequireDefault(_world);
+	var _creation2 = _interopRequireDefault(_creation);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -22901,11 +22901,11 @@
 	
 		switch (action.type) {
 			case 'INIT':
-				var scene = _world2.default.initScene();
+				var scene = _creation2.default.initScene();
 				newState.scene = scene;
 				break;
 			case 'CREATE_GUY':
-				newState.guys = [].concat(_toConsumableArray(state.guys), _toConsumableArray(_world2.default.createGuy(newState.scene, action.value)));
+				newState.guys = [].concat(_toConsumableArray(state.guys), _toConsumableArray(_creation2.default.createGuy(newState.scene, action.value)));
 		}
 		return newState;
 	};
@@ -31769,9 +31769,9 @@
 
 /***/ },
 /* 189 */
-/*!********************************!*\
-  !*** ./src/client/3d/world.js ***!
-  \********************************/
+/*!***********************************!*\
+  !*** ./src/client/3d/creation.js ***!
+  \***********************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -31792,6 +31792,10 @@
 	
 	var _uuid2 = _interopRequireDefault(_uuid);
 	
+	var _interaction = __webpack_require__(/*! ./interaction.js */ 206);
+	
+	var _interaction2 = _interopRequireDefault(_interaction);
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
@@ -31803,7 +31807,7 @@
 	
 		var createScene = function createScene() {
 			var scene = new _babylonjs2.default.Scene(engine);
-			scene.clearColor = new _babylonjs2.default.Color3(1, 0, 0);
+			scene.clearColor = new _babylonjs2.default.Color3(0, 0, 1);
 	
 			var camera = new _babylonjs2.default.FreeCamera('camera', _utils2.default.vector3(0, 5, -10), scene);
 			camera.setTarget(_utils2.default.vector3(0, 0, 0));
@@ -31812,9 +31816,19 @@
 			var light = new _babylonjs2.default.HemisphericLight('light', _utils2.default.vector3(0, 0, 0), scene);
 			light.intensity = 5;
 	
-			var ground = _babylonjs2.default.Mesh.CreateGround("ground", 6, 6, 2, scene);
+			var ground = _babylonjs2.default.Mesh.CreateGround("ground", 600, 600, 2, scene);
 			ground.material = new _babylonjs2.default.StandardMaterial('texture1', scene);
-			ground.material.diffuseColor = new _babylonjs2.default.Color3(0.5, 0.5, 0.5);
+			ground.material.diffuseColor = new _babylonjs2.default.Color3(0, 1, 0);
+	
+			scene.onPointerDown = function (evt) {
+				_interaction2.default.selectElement(evt);
+			};
+			scene.onPointerUp = function (evt) {
+				console.log('up');
+			};
+			scene.onPointerMove = function (evt) {
+				//console.log(evt)
+			};
 	
 			return scene;
 		};
@@ -31835,10 +31849,13 @@
 	function createGuy(scene, number) {
 		return [].concat(_toConsumableArray(Array(number).keys())).map(function (i) {
 			var id = Math.random() * 1000;
-			var s = _babylonjs2.default.Mesh.CreateSphere(_uuid2.default.v1(), 16, 2, scene, false);
+			var s = _babylonjs2.default.Mesh.CreateBox(_uuid2.default.v1(), 2, scene);
 			s.position.z = Math.random() * 20;
 			s.material = new _babylonjs2.default.StandardMaterial('texture' + Math.random(), scene);
 			s.material.diffuseColor = new _babylonjs2.default.Color3(1.0, 0.2, 0.7);
+			s.select = function (evt) {
+				console.log(s);
+			};
 			return s.id;
 		});
 	}
@@ -33067,6 +33084,36 @@
 	};
 	
 	exports.default = (0, _reactRedux.connect)(mapStateToProps, mapDispatchToProps)(Menu);
+
+/***/ },
+/* 206 */
+/*!**************************************!*\
+  !*** ./src/client/3d/interaction.js ***!
+  \**************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	
+	var _babylonjs = __webpack_require__(/*! babylonjs */ 190);
+	
+	var _babylonjs2 = _interopRequireDefault(_babylonjs);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	/*function selectElementsListener(scene){
+		scene.
+	}
+	*/
+	function selectElement(e) {}
+	
+	exports.default = {
+		//selectElementsListener,
+		selectElement: selectElement
+	};
 
 /***/ }
 /******/ ]);

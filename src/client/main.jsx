@@ -10,7 +10,7 @@ import App from './components/App.jsx';
 let store = createStore(
 	reducer
 );
-window.Store = store;
+
 render(
 	<Provider store={ store } >
 		<App/>
