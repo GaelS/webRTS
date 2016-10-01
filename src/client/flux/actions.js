@@ -1,7 +1,10 @@
-function initScene(){
+function initScene(startSelection, endSelection){
 	return {
 		type : 'INIT',
-		value : null,
+		value : {
+			startSelection,
+			endSelection
+		},
 	}
 };
 
@@ -12,7 +15,16 @@ function createGuy( value ){
 	}
 };
 
+function startSelection(value){
+	console.log('ici')
+	return {
+		type : 'START_SELECTION',
+		value,
+	}
+};
+
 export default {
 	initScene,
 	createGuy,
+	startSelection,
 };

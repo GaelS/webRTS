@@ -61,9 +61,9 @@
 	
 	var _reducer2 = _interopRequireDefault(_reducer);
 	
-	var _reactRedux = __webpack_require__(/*! react-redux */ 194);
+	var _reactRedux = __webpack_require__(/*! react-redux */ 195);
 	
-	var _App = __webpack_require__(/*! ./components/App.jsx */ 203);
+	var _App = __webpack_require__(/*! ./components/App.jsx */ 204);
 	
 	var _App2 = _interopRequireDefault(_App);
 	
@@ -22898,14 +22898,15 @@
 		var newState = _ramda2.default.clone(state);
 		//scene cannot be cloned
 		newState.scene = state.scene;
-	
 		switch (action.type) {
 			case 'INIT':
-				var scene = _creation2.default.initScene();
+				var scene = _creation2.default.initScene(action.value.startSelection, action.value.endSelection);
 				newState.scene = scene;
 				break;
 			case 'CREATE_GUY':
 				newState.guys = [].concat(_toConsumableArray(state.guys), _toConsumableArray(_creation2.default.createGuy(newState.scene, action.value)));
+			case 'START_SELECTION':
+				console.log(action.value);
 		}
 		return newState;
 	};
@@ -31792,7 +31793,7 @@
 	
 	var _uuid2 = _interopRequireDefault(_uuid);
 	
-	var _interaction = __webpack_require__(/*! ./interaction.js */ 206);
+	var _interaction = __webpack_require__(/*! ./interaction.js */ 194);
 	
 	var _interaction2 = _interopRequireDefault(_interaction);
 	
@@ -31800,12 +31801,12 @@
 	
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 	
-	function initScene() {
+	function initScene(startSelection, endSelection) {
 	
 		var canvas = document.getElementById('3dview');
 		var engine = new _babylonjs2.default.Engine(canvas, true);
 	
-		var createScene = function createScene() {
+		var createScene = function createScene(startSelection, endSelection) {
 			var scene = new _babylonjs2.default.Scene(engine);
 			scene.clearColor = new _babylonjs2.default.Color3(0, 0, 1);
 	
@@ -31820,20 +31821,14 @@
 			ground.material = new _babylonjs2.default.StandardMaterial('texture1', scene);
 			ground.material.diffuseColor = new _babylonjs2.default.Color3(0, 1, 0);
 	
-			scene.onPointerDown = function (evt) {
-				_interaction2.default.selectElement(evt);
-			};
-			scene.onPointerUp = function (evt) {
-				console.log('up');
-			};
-			scene.onPointerMove = function (evt) {
-				//console.log(evt)
-			};
+			var canvas = document.getElementsByTagName('canvas')[0];
+			_interaction2.default.instantiateEvents(canvas, scene, startSelection, endSelection);
 	
 			return scene;
 		};
 	
-		var scene = createScene();
+		var scene = createScene(startSelection, endSelection);
+	
 		engine.runRenderLoop(function () {
 			scene.render();
 		});
@@ -31848,14 +31843,18 @@
 	
 	function createGuy(scene, number) {
 		return [].concat(_toConsumableArray(Array(number).keys())).map(function (i) {
-			var id = Math.random() * 1000;
+	
 			var s = _babylonjs2.default.Mesh.CreateBox(_uuid2.default.v1(), 2, scene);
 			s.position.z = Math.random() * 20;
 			s.material = new _babylonjs2.default.StandardMaterial('texture' + Math.random(), scene);
 			s.material.diffuseColor = new _babylonjs2.default.Color3(1.0, 0.2, 0.7);
-			s.select = function (evt) {
-				console.log(s);
+			s.onSelect = function (evt) {
+				console.log('s', s.id);
 			};
+			s.onDeselect = function (evt) {
+				console.log('des', s.id);
+			};
+	
 			return s.id;
 		});
 	}
@@ -32176,6 +32175,76 @@
 
 /***/ },
 /* 194 */
+/*!**************************************!*\
+  !*** ./src/client/3d/interaction.js ***!
+  \**************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	
+	var _babylonjs = __webpack_require__(/*! babylonjs */ 190);
+	
+	var _babylonjs2 = _interopRequireDefault(_babylonjs);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function onPointerDownEvent(canvas, scene, startSelection) {
+		canvas.addEventListener('mousedown', function (evt) {
+	
+			var pickPoint = scene.pick(scene.pointerX, scene.pointerY);
+	
+			if (!pickPoint.hit) return;
+			var pickedMesh = pickPoint.pickedMesh;
+			if (!!pickedMesh.onSelect) {
+				console.log(pickPoint);
+				startSelection(pickPoint);
+				pickedMesh.onSelect();
+			}
+		});
+	}
+	
+	function onPointerUpEvent(canvas, scene) {
+		canvas.addEventListener('mouseup', function (evt) {
+			var pickPoint = scene.pick(scene.pointerX, scene.pointerY);
+	
+			if (!pickPoint.hit) return;
+			var pickedMesh = pickPoint.pickedMesh;
+			if (!!pickedMesh.onDeselect) {
+				pickedMesh.onDeselect();
+			}
+		});
+	}
+	
+	function onPointerMoveEvent(canvas, scene) {
+		canvas.addEventListener('mousemove', function (evt) {
+			if (evt.buttons !== 1) return;
+			console.log('move');
+			var pickPoint = scene.pick(scene.pointerX, scene.pointerY);
+	
+			if (!pickPoint.hit) return;
+			var pickedMesh = pickPoint.pickedMesh;
+			if (!!pickedMesh.onDeselect) {
+				pickedMesh.onDeselect();
+			}
+		});
+	}
+	
+	function instantiateEvents(canvas, scene, startSelection, endSelection) {
+		onPointerDownEvent(canvas, scene, startSelection);
+		onPointerUpEvent(canvas, scene);
+		onPointerMoveEvent(canvas, scene);
+	}
+	
+	exports.default = {
+		instantiateEvents: instantiateEvents
+	};
+
+/***/ },
+/* 195 */
 /*!************************************!*\
   !*** ./~/react-redux/lib/index.js ***!
   \************************************/
@@ -32186,11 +32255,11 @@
 	exports.__esModule = true;
 	exports.connect = exports.Provider = undefined;
 	
-	var _Provider = __webpack_require__(/*! ./components/Provider */ 195);
+	var _Provider = __webpack_require__(/*! ./components/Provider */ 196);
 	
 	var _Provider2 = _interopRequireDefault(_Provider);
 	
-	var _connect = __webpack_require__(/*! ./components/connect */ 198);
+	var _connect = __webpack_require__(/*! ./components/connect */ 199);
 	
 	var _connect2 = _interopRequireDefault(_connect);
 	
@@ -32200,7 +32269,7 @@
 	exports.connect = _connect2["default"];
 
 /***/ },
-/* 195 */
+/* 196 */
 /*!**************************************************!*\
   !*** ./~/react-redux/lib/components/Provider.js ***!
   \**************************************************/
@@ -32213,11 +32282,11 @@
 	
 	var _react = __webpack_require__(/*! react */ 1);
 	
-	var _storeShape = __webpack_require__(/*! ../utils/storeShape */ 196);
+	var _storeShape = __webpack_require__(/*! ../utils/storeShape */ 197);
 	
 	var _storeShape2 = _interopRequireDefault(_storeShape);
 	
-	var _warning = __webpack_require__(/*! ../utils/warning */ 197);
+	var _warning = __webpack_require__(/*! ../utils/warning */ 198);
 	
 	var _warning2 = _interopRequireDefault(_warning);
 	
@@ -32287,7 +32356,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! ./~/process/browser.js */ 3)))
 
 /***/ },
-/* 196 */
+/* 197 */
 /*!***********************************************!*\
   !*** ./~/react-redux/lib/utils/storeShape.js ***!
   \***********************************************/
@@ -32306,7 +32375,7 @@
 	});
 
 /***/ },
-/* 197 */
+/* 198 */
 /*!********************************************!*\
   !*** ./~/react-redux/lib/utils/warning.js ***!
   \********************************************/
@@ -32338,7 +32407,7 @@
 	}
 
 /***/ },
-/* 198 */
+/* 199 */
 /*!*************************************************!*\
   !*** ./~/react-redux/lib/components/connect.js ***!
   \*************************************************/
@@ -32353,19 +32422,19 @@
 	
 	var _react = __webpack_require__(/*! react */ 1);
 	
-	var _storeShape = __webpack_require__(/*! ../utils/storeShape */ 196);
+	var _storeShape = __webpack_require__(/*! ../utils/storeShape */ 197);
 	
 	var _storeShape2 = _interopRequireDefault(_storeShape);
 	
-	var _shallowEqual = __webpack_require__(/*! ../utils/shallowEqual */ 199);
+	var _shallowEqual = __webpack_require__(/*! ../utils/shallowEqual */ 200);
 	
 	var _shallowEqual2 = _interopRequireDefault(_shallowEqual);
 	
-	var _wrapActionCreators = __webpack_require__(/*! ../utils/wrapActionCreators */ 200);
+	var _wrapActionCreators = __webpack_require__(/*! ../utils/wrapActionCreators */ 201);
 	
 	var _wrapActionCreators2 = _interopRequireDefault(_wrapActionCreators);
 	
-	var _warning = __webpack_require__(/*! ../utils/warning */ 197);
+	var _warning = __webpack_require__(/*! ../utils/warning */ 198);
 	
 	var _warning2 = _interopRequireDefault(_warning);
 	
@@ -32373,11 +32442,11 @@
 	
 	var _isPlainObject2 = _interopRequireDefault(_isPlainObject);
 	
-	var _hoistNonReactStatics = __webpack_require__(/*! hoist-non-react-statics */ 201);
+	var _hoistNonReactStatics = __webpack_require__(/*! hoist-non-react-statics */ 202);
 	
 	var _hoistNonReactStatics2 = _interopRequireDefault(_hoistNonReactStatics);
 	
-	var _invariant = __webpack_require__(/*! invariant */ 202);
+	var _invariant = __webpack_require__(/*! invariant */ 203);
 	
 	var _invariant2 = _interopRequireDefault(_invariant);
 	
@@ -32740,7 +32809,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! ./~/process/browser.js */ 3)))
 
 /***/ },
-/* 199 */
+/* 200 */
 /*!*************************************************!*\
   !*** ./~/react-redux/lib/utils/shallowEqual.js ***!
   \*************************************************/
@@ -32774,7 +32843,7 @@
 	}
 
 /***/ },
-/* 200 */
+/* 201 */
 /*!*******************************************************!*\
   !*** ./~/react-redux/lib/utils/wrapActionCreators.js ***!
   \*******************************************************/
@@ -32794,7 +32863,7 @@
 	}
 
 /***/ },
-/* 201 */
+/* 202 */
 /*!********************************************!*\
   !*** ./~/hoist-non-react-statics/index.js ***!
   \********************************************/
@@ -32853,7 +32922,7 @@
 
 
 /***/ },
-/* 202 */
+/* 203 */
 /*!********************************!*\
   !*** ./~/invariant/browser.js ***!
   \********************************/
@@ -32914,7 +32983,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! ./~/process/browser.js */ 3)))
 
 /***/ },
-/* 203 */
+/* 204 */
 /*!***************************************!*\
   !*** ./src/client/components/App.jsx ***!
   \***************************************/
@@ -32932,13 +33001,13 @@
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _actions = __webpack_require__(/*! ../flux/actions.js */ 204);
+	var _actions = __webpack_require__(/*! ../flux/actions.js */ 205);
 	
 	var _actions2 = _interopRequireDefault(_actions);
 	
-	var _reactRedux = __webpack_require__(/*! react-redux */ 194);
+	var _reactRedux = __webpack_require__(/*! react-redux */ 195);
 	
-	var _Menu = __webpack_require__(/*! ./Menu.jsx */ 205);
+	var _Menu = __webpack_require__(/*! ./Menu.jsx */ 206);
 	
 	var _Menu2 = _interopRequireDefault(_Menu);
 	
@@ -32962,7 +33031,7 @@
 	    _createClass(App, [{
 	        key: 'componentDidMount',
 	        value: function componentDidMount() {
-	            this.props.initScene();
+	            this.props.initScene(this.props.startSelection, this.props.endSelection);
 	        }
 	    }, {
 	        key: 'render',
@@ -32991,15 +33060,21 @@
 	
 	var mapDispatchToProps = function mapDispatchToProps(dispatch) {
 	    return {
-	        initScene: function initScene() {
-	            return dispatch(_actions2.default.initScene());
+	        initScene: function initScene(startSelection, endSelection) {
+	            return dispatch(_actions2.default.initScene(startSelection, endSelection));
+	        },
+	        startSelection: function startSelection(x, y) {
+	            return dispatch(_actions2.default.startSelection(x, y));
+	        },
+	        endSelection: function endSelection(x, y) {
+	            return dispatch(_actions2.default.endSelection(x, y));
 	        }
 	    };
 	};
 	exports.default = (0, _reactRedux.connect)(null, mapDispatchToProps)(App);
 
 /***/ },
-/* 204 */
+/* 205 */
 /*!************************************!*\
   !*** ./src/client/flux/actions.js ***!
   \************************************/
@@ -33010,10 +33085,13 @@
 	Object.defineProperty(exports, "__esModule", {
 		value: true
 	});
-	function initScene() {
+	function initScene(startSelection, endSelection) {
 		return {
 			type: 'INIT',
-			value: null
+			value: {
+				startSelection: startSelection,
+				endSelection: endSelection
+			}
 		};
 	};
 	
@@ -33024,13 +33102,22 @@
 		};
 	};
 	
+	function startSelection(value) {
+		console.log('ici');
+		return {
+			type: 'START_SELECTION',
+			value: value
+		};
+	};
+	
 	exports.default = {
 		initScene: initScene,
-		createGuy: createGuy
+		createGuy: createGuy,
+		startSelection: startSelection
 	};
 
 /***/ },
-/* 205 */
+/* 206 */
 /*!****************************************!*\
   !*** ./src/client/components/Menu.jsx ***!
   \****************************************/
@@ -33046,11 +33133,11 @@
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _actions = __webpack_require__(/*! ../flux/actions.js */ 204);
+	var _actions = __webpack_require__(/*! ../flux/actions.js */ 205);
 	
 	var _actions2 = _interopRequireDefault(_actions);
 	
-	var _reactRedux = __webpack_require__(/*! react-redux */ 194);
+	var _reactRedux = __webpack_require__(/*! react-redux */ 195);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -33084,36 +33171,6 @@
 	};
 	
 	exports.default = (0, _reactRedux.connect)(mapStateToProps, mapDispatchToProps)(Menu);
-
-/***/ },
-/* 206 */
-/*!**************************************!*\
-  !*** ./src/client/3d/interaction.js ***!
-  \**************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-		value: true
-	});
-	
-	var _babylonjs = __webpack_require__(/*! babylonjs */ 190);
-	
-	var _babylonjs2 = _interopRequireDefault(_babylonjs);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	/*function selectElementsListener(scene){
-		scene.
-	}
-	*/
-	function selectElement(e) {}
-	
-	exports.default = {
-		//selectElementsListener,
-		selectElement: selectElement
-	};
 
 /***/ }
 /******/ ]);
