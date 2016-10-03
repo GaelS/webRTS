@@ -2,7 +2,7 @@ import BABYLON from 'babylonjs';
 import monet, { Maybe } from 'monet';
 import utils from './utils.js';
 
-function onPointerDownEvent(scene,event, startSelection){
+function onPointerLeftDownEvent(scene,event,startSelection){
 	let mesh = event.pickInfo.pickedMesh;
 	//store event
 	startSelection(mesh.id);
@@ -13,6 +13,10 @@ function onPointerDownEvent(scene,event, startSelection){
 		.orSome(utils.emptyFunc)();
 }
 
+function onPointerRightDownEvent(scene,event,selectedMeshes){
+	//Get position on mesh clicked
+	//Move the selected cube(s)
+}
 
 /*function onPointerUpEvent(canvas,scene){
 	canvas.addEventListener('mouseup', (evt) => {
@@ -40,13 +44,13 @@ function onPointerMoveEvent(canvas,scene){
 }
 
 
-function instantiateEvents(canvas, scene, startSelection, endSelection){
+function instantiateEvents(canvas, scene, startSelection, selectedMeshes){
 	
 	scene.onPointerObservable.add((e) => {
-
 		switch(e.event.type){
 			case 'mousedown' :
-				onPointerDownEvent(scene, e, startSelection);
+				let isLeft = e.event.buttons === 1 || e.event.button === 1; 
+				 isLeft ? onPointerLeftDownEvent(scene, e, startSelection) : onPointerRightDownEvent(scene, e,selectedMeshes);
 				break;
 		}
 		return;

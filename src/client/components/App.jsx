@@ -10,7 +10,7 @@ class App extends React.Component {
     }
 
     componentDidMount(){
-        this.props.initScene(this.props.startSelection, this.props.endSelection);
+        this.props.initScene(this.props.startSelection, this.props.endSelection, this.props.selectedMeshes);
     }
 
     render(){
@@ -40,7 +40,14 @@ const mapDispatchToProps = ( dispatch ) => {
         endSelection : (x,y) => dispatch( actions.endSelection(x,y) ),
     }
 };
+
+const mapStateToProps = ( state ) => {
+    return {
+        selectedPolygons : state.selectedMeshes,
+    }
+};
+
 export default connect(
-    null,
+    mapStateToProps,
     mapDispatchToProps
 )(App);

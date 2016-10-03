@@ -6,7 +6,7 @@ import materialsLib from './materials.js';
 import cameraLib from './camera.js';
 
 
-function initScene(startSelection, endSelection){
+function initScene(startSelection, endSelection, selectedMeshes){
 
 	let canvas = document.getElementById( '3dview' );
 	let engine = new BABYLON.Engine( canvas, true );
@@ -27,7 +27,7 @@ function initScene(startSelection, endSelection){
 		let canvas = document.getElementById( '3dview' );
 		let camera = cameraLib.createCamera( canvas, scene );
 		
-		interaction.instantiateEvents(canvas, scene, startSelection, endSelection);
+		interaction.instantiateEvents(canvas, scene, startSelection, selectedMeshes);
 		
 		return scene;	
 	}

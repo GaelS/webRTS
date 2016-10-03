@@ -22909,7 +22909,7 @@
 			case 'CREATE_GUY':
 				newState.guys = [].concat(_toConsumableArray(state.guys), _toConsumableArray(_creation2.default.createGuy(newState.scene, action.value)));
 			case 'START_SELECTION':
-				newState.selectedMesh = action.value;
+				newState.selectedMeshes = [].concat(_toConsumableArray(newState.selectedMeshes), _toConsumableArray(action.value));
 		}
 		return newState;
 	};
@@ -22928,7 +22928,8 @@
 	});
 	exports.default = {
 		scene: null,
-		guys: []
+		guys: [],
+		selectedMeshes: []
 	};
 
 /***/ },
@@ -31812,7 +31813,7 @@
 	
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 	
-	function initScene(startSelection, endSelection) {
+	function initScene(startSelection, endSelection, selectedMeshes) {
 	
 		var canvas = document.getElementById('3dview');
 		var engine = new _babylonjs2.default.Engine(canvas, true);
@@ -31832,7 +31833,7 @@
 			var canvas = document.getElementById('3dview');
 			var camera = _camera2.default.createCamera(canvas, scene);
 	
-			_interaction2.default.instantiateEvents(canvas, scene, startSelection, endSelection);
+			_interaction2.default.instantiateEvents(canvas, scene, startSelection, selectedMeshes);
 	
 			return scene;
 		};
@@ -32183,7 +32184,7 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	function onPointerDownEvent(scene, event, startSelection) {
+	function onPointerLeftDownEvent(scene, event, startSelection) {
 		var mesh = event.pickInfo.pickedMesh;
 		//store event
 		startSelection(mesh.id);
@@ -32194,6 +32195,11 @@
 		//Execute action
 		.orSome(_utils2.default.emptyFunc)();
 	}
+	
+	function onPointerRightDownEvent(scene, event, selectedMeshes) {}
+	//Get position on mesh clicked
+	//Move the selected cube(s)
+	
 	
 	/*function onPointerUpEvent(canvas,scene){
 		canvas.addEventListener('mouseup', (evt) => {
@@ -32220,13 +32226,13 @@
 		});
 	}
 	
-	function instantiateEvents(canvas, scene, startSelection, endSelection) {
+	function instantiateEvents(canvas, scene, startSelection, selectedMeshes) {
 	
 		scene.onPointerObservable.add(function (e) {
-	
 			switch (e.event.type) {
 				case 'mousedown':
-					onPointerDownEvent(scene, e, startSelection);
+					var isLeft = e.event.buttons === 1 || e.event.button === 1;
+					isLeft ? onPointerLeftDownEvent(scene, e, startSelection) : onPointerRightDownEvent(scene, e, selectedMeshes);
 					break;
 			}
 			return;
@@ -33151,7 +33157,7 @@
 	    _createClass(App, [{
 	        key: 'componentDidMount',
 	        value: function componentDidMount() {
-	            this.props.initScene(this.props.startSelection, this.props.endSelection);
+	            this.props.initScene(this.props.startSelection, this.props.endSelection, this.props.selectedMeshes);
 	        }
 	    }, {
 	        key: 'render',
@@ -33191,7 +33197,14 @@
 	        }
 	    };
 	};
-	exports.default = (0, _reactRedux.connect)(null, mapDispatchToProps)(App);
+	
+	var mapStateToProps = function mapStateToProps(state) {
+	    return {
+	        selectedPolygons: state.selectedMeshes
+	    };
+	};
+	
+	exports.default = (0, _reactRedux.connect)(mapStateToProps, mapDispatchToProps)(App);
 
 /***/ },
 /* 207 */
