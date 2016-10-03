@@ -11,6 +11,9 @@ let store = createStore(
 	reducer
 );
 
+//Dev ONLY 
+window.store = store;
+
 render(
 	<Provider store={ store } >
 		<App/>
