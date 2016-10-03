@@ -32183,9 +32183,9 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	function onPointerDownEvent(scene) {
+	function onPointerDownEvent(scene, event) {
 		//Get select function from selected Mesh
-		var action = _monet.Maybe.Some(scene.pick(scene.pointerX, scene.pointerY).pickedMesh).bind(function (mesh) {
+		return _monet.Maybe.Some(event.pickInfo.pickedMesh).bind(function (mesh) {
 			return !!mesh.onSelect ? _monet.Maybe.Some(mesh.onSelect) : _monet.Maybe.None();
 		})
 		//Execute action
@@ -32207,7 +32207,6 @@
 	function onPointerMoveEvent(canvas, scene) {
 		canvas.addEventListener('mousemove', function (evt) {
 			if (evt.buttons !== 1) return;
-			console.log('move');
 			var pickPoint = scene.pick(scene.pointerX, scene.pointerY);
 	
 			if (!pickPoint.hit) return;
@@ -32221,9 +32220,10 @@
 	function instantiateEvents(canvas, scene, startSelection, endSelection) {
 	
 		scene.onPointerObservable.add(function (e) {
+	
 			switch (e.event.type) {
 				case 'mousedown':
-					onPointerDownEvent(scene);
+					onPointerDownEvent(scene, e);
 					break;
 			}
 			return;
