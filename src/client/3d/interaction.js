@@ -2,11 +2,12 @@ import BABYLON from 'babylonjs';
 import monet, { Maybe } from 'monet';
 import utils from './utils.js';
 
-function onPointerDownEvent(scene,event){
-	//Get select function from selected Mesh
-	return Maybe.Some(
-		event.pickInfo.pickedMesh
-		)
+function onPointerDownEvent(scene,event, startSelection){
+	let mesh = event.pickInfo.pickedMesh;
+	//store event
+	startSelection(mesh.id);
+	//display update
+	return Maybe.Some( mesh )
 		.bind(mesh => !!mesh.onSelect ? Maybe.Some(mesh.onSelect) : Maybe.None())
 		//Execute action
 		.orSome(utils.emptyFunc)();
@@ -45,7 +46,7 @@ function instantiateEvents(canvas, scene, startSelection, endSelection){
 
 		switch(e.event.type){
 			case 'mousedown' :
-				onPointerDownEvent(scene, e);
+				onPointerDownEvent(scene, e, startSelection);
 				break;
 		}
 		return;

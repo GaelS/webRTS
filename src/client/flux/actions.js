@@ -15,11 +15,10 @@ function createGuy( value ){
 	}
 };
 
-function startSelection(value){
-	console.log('ici')
+function startSelection(idMesh){
 	return {
 		type : 'START_SELECTION',
-		value,
+		value : idMesh,
 	}
 };
 

@@ -15,7 +15,7 @@ export default ( ( state = defaultState, action ) => {
 			newState.guys = [...state.guys,
 			 ...creation.createGuy( newState.scene, action.value ) ];
 		case 'START_SELECTION' :
-			console.log(action.value);
+			newState.selectedMesh = action.value;
 	}
 	return newState;
 } );

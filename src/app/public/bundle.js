@@ -22909,7 +22909,7 @@
 			case 'CREATE_GUY':
 				newState.guys = [].concat(_toConsumableArray(state.guys), _toConsumableArray(_creation2.default.createGuy(newState.scene, action.value)));
 			case 'START_SELECTION':
-				console.log(action.value);
+				newState.selectedMesh = action.value;
 		}
 		return newState;
 	};
@@ -32183,9 +32183,12 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	function onPointerDownEvent(scene, event) {
-		//Get select function from selected Mesh
-		return _monet.Maybe.Some(event.pickInfo.pickedMesh).bind(function (mesh) {
+	function onPointerDownEvent(scene, event, startSelection) {
+		var mesh = event.pickInfo.pickedMesh;
+		//store event
+		startSelection(mesh.id);
+		//display update
+		return _monet.Maybe.Some(mesh).bind(function (mesh) {
 			return !!mesh.onSelect ? _monet.Maybe.Some(mesh.onSelect) : _monet.Maybe.None();
 		})
 		//Execute action
@@ -32223,7 +32226,7 @@
 	
 			switch (e.event.type) {
 				case 'mousedown':
-					onPointerDownEvent(scene, e);
+					onPointerDownEvent(scene, e, startSelection);
 					break;
 			}
 			return;
@@ -33219,11 +33222,10 @@
 		};
 	};
 	
-	function startSelection(value) {
-		console.log('ici');
+	function startSelection(idMesh) {
 		return {
 			type: 'START_SELECTION',
-			value: value
+			value: idMesh
 		};
 	};
 	
