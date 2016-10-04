@@ -11,8 +11,9 @@ class App extends React.Component {
 
     componentDidMount(){
         this.props.initScene(
-            this.props.startSelection,
-            this.props.endSelection,
+            this.props.dispatchEvents,
+            // this.props.startSelection,
+            // this.props.endSelection,
         );
     }
 
@@ -38,9 +39,8 @@ class App extends React.Component {
 
 const mapDispatchToProps = ( dispatch ) => {
     return {
-        initScene : (startSelection, endSelection) => dispatch( actions.initScene(startSelection, endSelection) ),
-        startSelection : (x,y) => dispatch( actions.startSelection(x,y) ),
-        endSelection : (x,y) => dispatch( actions.endSelection(x,y) ),
+        initScene : (dispatchEvents) => dispatch( actions.initScene(dispatchEvents) ),
+        dispatchEvents : (action) => dispatch(action),
     }
 };
 

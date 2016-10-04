@@ -61,9 +61,9 @@
 	
 	var _reducer2 = _interopRequireDefault(_reducer);
 	
-	var _reactRedux = __webpack_require__(/*! react-redux */ 198);
+	var _reactRedux = __webpack_require__(/*! react-redux */ 199);
 	
-	var _App = __webpack_require__(/*! ./components/App.jsx */ 207);
+	var _App = __webpack_require__(/*! ./components/App.jsx */ 208);
 	
 	var _App2 = _interopRequireDefault(_App);
 	
@@ -22890,6 +22890,10 @@
 	
 	var _creation2 = _interopRequireDefault(_creation);
 	
+	var _babylonjs = __webpack_require__(/*! babylonjs */ 190);
+	
+	var _babylonjs2 = _interopRequireDefault(_babylonjs);
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
@@ -22902,18 +22906,46 @@
 		var value = action.value;
 		//scene cannot be cloned
 		newState.scene = state.scene;
-		switch (action.type) {
-			case 'INIT':
-				var scene = _creation2.default.initScene(value.startSelection, value.endSelection);
-				newState.scene = scene;
-				break;
-			case 'CREATE_GUY':
-				newState.guys = [].concat(_toConsumableArray(state.guys), _toConsumableArray(_creation2.default.createGuy(newState.scene, value)));
-				break;
-			case 'START_SELECTION':
-				newState.selectedMeshes = [].concat(_toConsumableArray(newState.selectedMeshes), [value]);
-				break;
-		}
+	
+		(function () {
+			switch (action.type) {
+				case 'INIT':
+					var scene = _creation2.default.initScene(value.dispatchEvents);
+					newState.scene = scene;
+					break;
+				case 'CREATE_GUY':
+					newState.guys = [].concat(_toConsumableArray(state.guys), _toConsumableArray(_creation2.default.createGuy(newState.scene, value)));
+					break;
+				case 'START_SELECTION':
+					newState.selectedMeshes = [].concat(_toConsumableArray(newState.selectedMeshes), [value]);
+					break;
+				case 'MOVE_SELECTION':
+					var _action$value = action.value;
+					var x = _action$value.x;
+					var z = _action$value.z;
+	
+					newState.scene.meshes.filter(function (elt) {
+						return newState.selectedMeshes.indexOf(elt.name) !== -1;
+					}).forEach(function (e) {
+						return e.targetPosition = new _babylonjs2.default.Vector3(x, 0, z);
+					});
+	
+					newState.scene.registerBeforeRender(function () {
+						state.scene.meshes.filter(function (e) {
+							return !!e.targetPosition;
+						}).forEach(function (e) {
+							var dir = e.targetPosition.subtractInPlace(e.position).normalize();
+							console.log(dir);
+							e.position.x += dir.x * 0.5;
+							e.position.z += dir.z * 0.5;
+							if (Math.abs(e.position.x - e.targetPosition.x) < 1 && Math.abs(e.position.z - e.targetPosition.z) < 1) {
+								e.targetPosition = undefined;
+							}
+						});
+					});
+			}
+		})();
+	
 		return newState;
 	};
 
@@ -31804,11 +31836,11 @@
 	
 	var _utils2 = _interopRequireDefault(_utils);
 	
-	var _materials = __webpack_require__(/*! ./materials.js */ 196);
+	var _materials = __webpack_require__(/*! ./materials.js */ 197);
 	
 	var _materials2 = _interopRequireDefault(_materials);
 	
-	var _camera = __webpack_require__(/*! ./camera.js */ 197);
+	var _camera = __webpack_require__(/*! ./camera.js */ 198);
 	
 	var _camera2 = _interopRequireDefault(_camera);
 	
@@ -31816,11 +31848,11 @@
 	
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 	
-	function initScene(startSelection, endSelection, selectedMeshes) {
+	function initScene(dispatchEvents) {
 		var canvas = document.getElementById('3dview');
 		var engine = new _babylonjs2.default.Engine(canvas, true);
 	
-		var createScene = function createScene(startSelection, selectedMeshes) {
+		var createScene = function createScene(dispatchEvents) {
 			var scene = new _babylonjs2.default.Scene(engine);
 			_materials2.default.initMaterials(scene);
 			scene.clearColor = new _babylonjs2.default.Color3(0, 0, 1);
@@ -31834,14 +31866,11 @@
 	
 			var canvas = document.getElementById('3dview');
 			var camera = _camera2.default.createCamera(canvas, scene);
-	
-			_interaction2.default.instantiateEvents(canvas, scene, startSelection, selectedMeshes);
+			_interaction2.default.instantiateEvents(canvas, scene, dispatchEvents);
 	
 			return scene;
 		};
-	
-		var scene = createScene(startSelection, selectedMeshes);
-	
+		var scene = createScene(dispatchEvents);
 		engine.runRenderLoop(function () {
 			scene.render();
 		});
@@ -32184,58 +32213,40 @@
 	
 	var _utils2 = _interopRequireDefault(_utils);
 	
+	var _actions = __webpack_require__(/*! ../flux/actions.js */ 196);
+	
+	var _actions2 = _interopRequireDefault(_actions);
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	function onPointerLeftDownEvent(scene, event, startSelection) {
+	function onPointerLeftUpEvent(event, dispatchEvents) {
 		var mesh = event.pickInfo.pickedMesh;
 		//store event
-		startSelection(mesh.id);
+		!!mesh ? dispatchEvents(_actions2.default.select(mesh.id)) : null;
+	
 		//display update
-		return _monet.Maybe.Some(mesh).bind(function (mesh) {
-			return !!mesh.onSelect ? _monet.Maybe.Some(mesh.onSelect) : _monet.Maybe.None();
+		return _monet.Maybe.fromNull(mesh).bind(function (mesh) {
+			return _monet.Maybe.fromNull(mesh.onSelect);
 		})
 		//Execute action
 		.orSome(_utils2.default.emptyFunc)();
 	}
 	
-	function onPointerRightDownEvent(scene, event) {
+	function onPointerRightDownEvent(event, dispatchEvents) {
 		//Get position on mesh clicked
+		var mesh = event.pickInfo.pickedMesh;
 		//Move the selected cube(s)
-		console.log('ok');
+		return _monet.Maybe.fromNull(mesh).isSome() ? dispatchEvents(_actions2.default.moveSelection(event.pickInfo.pickedPoint.x, event.pickInfo.pickedPoint.z)) : _utils2.default.emptyFunc();
 	}
 	
-	/*function onPointerUpEvent(canvas,scene){
-		canvas.addEventListener('mouseup', (evt) => {
-			let pickPoint = scene.pick(scene.pointerX, scene.pointerY);
-			
-			if(!pickPoint.hit) return;
-			let pickedMesh = pickPoint.pickedMesh;
-			if(!!pickedMesh.onDeselect){
-				pickedMesh.onDeselect();
-			}	
-		} );
-	}*/
-	
-	function onPointerMoveEvent(canvas, scene) {
-		canvas.addEventListener('mousemove', function (evt) {
-			if (evt.buttons !== 1) return;
-			var pickPoint = scene.pick(scene.pointerX, scene.pointerY);
-	
-			if (!pickPoint.hit) return;
-			var pickedMesh = pickPoint.pickedMesh;
-			if (!!pickedMesh.onDeselect) {
-				pickedMesh.onDeselect();
-			}
-		});
-	}
-	
-	function instantiateEvents(canvas, scene, startSelection) {
+	function instantiateEvents(canvas, scene, dispatchEvents) {
 	
 		scene.onPointerObservable.add(function (e) {
 			switch (e.event.type) {
 				case 'mousedown':
 					var isLeft = e.event.buttons === 1 || e.event.button === 1;
-					isLeft ? onPointerLeftDownEvent(scene, e, startSelection) : onPointerRightDownEvent(scene, e, selectedMeshes);
+					var fn = isLeft ? onPointerLeftUpEvent : onPointerRightDownEvent;
+					fn(e, dispatchEvents);
 					break;
 			}
 			return;
@@ -33285,6 +33296,7 @@
 		return new _babylonjs2.default.Vector3(a, b, c);
 	}
 	function emptyFunc() {
+		console.log('empty func');
 		return function () {
 			return;
 		};
@@ -33296,6 +33308,58 @@
 
 /***/ },
 /* 196 */
+/*!************************************!*\
+  !*** ./src/client/flux/actions.js ***!
+  \************************************/
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	function initScene(dispatchEvents) {
+		return {
+			type: 'INIT',
+			value: {
+				dispatchEvents: dispatchEvents
+			}
+		};
+	};
+	
+	function createGuy(value) {
+		return {
+			type: 'CREATE_GUY',
+			value: value
+		};
+	};
+	
+	function select(idMesh) {
+		return {
+			type: 'START_SELECTION',
+			value: idMesh
+		};
+	};
+	
+	function moveSelection(x, z) {
+		return {
+			type: 'MOVE_SELECTION',
+			value: {
+				x: x,
+				z: z
+			}
+		};
+	}
+	
+	exports.default = {
+		initScene: initScene,
+		createGuy: createGuy,
+		select: select,
+		moveSelection: moveSelection
+	};
+
+/***/ },
+/* 197 */
 /*!************************************!*\
   !*** ./src/client/3d/materials.js ***!
   \************************************/
@@ -33353,7 +33417,7 @@
 	};
 
 /***/ },
-/* 197 */
+/* 198 */
 /*!*********************************!*\
   !*** ./src/client/3d/camera.js ***!
   \*********************************/
@@ -33389,7 +33453,7 @@
 	};
 
 /***/ },
-/* 198 */
+/* 199 */
 /*!************************************!*\
   !*** ./~/react-redux/lib/index.js ***!
   \************************************/
@@ -33400,11 +33464,11 @@
 	exports.__esModule = true;
 	exports.connect = exports.Provider = undefined;
 	
-	var _Provider = __webpack_require__(/*! ./components/Provider */ 199);
+	var _Provider = __webpack_require__(/*! ./components/Provider */ 200);
 	
 	var _Provider2 = _interopRequireDefault(_Provider);
 	
-	var _connect = __webpack_require__(/*! ./components/connect */ 202);
+	var _connect = __webpack_require__(/*! ./components/connect */ 203);
 	
 	var _connect2 = _interopRequireDefault(_connect);
 	
@@ -33414,7 +33478,7 @@
 	exports.connect = _connect2["default"];
 
 /***/ },
-/* 199 */
+/* 200 */
 /*!**************************************************!*\
   !*** ./~/react-redux/lib/components/Provider.js ***!
   \**************************************************/
@@ -33427,11 +33491,11 @@
 	
 	var _react = __webpack_require__(/*! react */ 1);
 	
-	var _storeShape = __webpack_require__(/*! ../utils/storeShape */ 200);
+	var _storeShape = __webpack_require__(/*! ../utils/storeShape */ 201);
 	
 	var _storeShape2 = _interopRequireDefault(_storeShape);
 	
-	var _warning = __webpack_require__(/*! ../utils/warning */ 201);
+	var _warning = __webpack_require__(/*! ../utils/warning */ 202);
 	
 	var _warning2 = _interopRequireDefault(_warning);
 	
@@ -33501,7 +33565,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! ./~/process/browser.js */ 3)))
 
 /***/ },
-/* 200 */
+/* 201 */
 /*!***********************************************!*\
   !*** ./~/react-redux/lib/utils/storeShape.js ***!
   \***********************************************/
@@ -33520,7 +33584,7 @@
 	});
 
 /***/ },
-/* 201 */
+/* 202 */
 /*!********************************************!*\
   !*** ./~/react-redux/lib/utils/warning.js ***!
   \********************************************/
@@ -33552,7 +33616,7 @@
 	}
 
 /***/ },
-/* 202 */
+/* 203 */
 /*!*************************************************!*\
   !*** ./~/react-redux/lib/components/connect.js ***!
   \*************************************************/
@@ -33567,19 +33631,19 @@
 	
 	var _react = __webpack_require__(/*! react */ 1);
 	
-	var _storeShape = __webpack_require__(/*! ../utils/storeShape */ 200);
+	var _storeShape = __webpack_require__(/*! ../utils/storeShape */ 201);
 	
 	var _storeShape2 = _interopRequireDefault(_storeShape);
 	
-	var _shallowEqual = __webpack_require__(/*! ../utils/shallowEqual */ 203);
+	var _shallowEqual = __webpack_require__(/*! ../utils/shallowEqual */ 204);
 	
 	var _shallowEqual2 = _interopRequireDefault(_shallowEqual);
 	
-	var _wrapActionCreators = __webpack_require__(/*! ../utils/wrapActionCreators */ 204);
+	var _wrapActionCreators = __webpack_require__(/*! ../utils/wrapActionCreators */ 205);
 	
 	var _wrapActionCreators2 = _interopRequireDefault(_wrapActionCreators);
 	
-	var _warning = __webpack_require__(/*! ../utils/warning */ 201);
+	var _warning = __webpack_require__(/*! ../utils/warning */ 202);
 	
 	var _warning2 = _interopRequireDefault(_warning);
 	
@@ -33587,11 +33651,11 @@
 	
 	var _isPlainObject2 = _interopRequireDefault(_isPlainObject);
 	
-	var _hoistNonReactStatics = __webpack_require__(/*! hoist-non-react-statics */ 205);
+	var _hoistNonReactStatics = __webpack_require__(/*! hoist-non-react-statics */ 206);
 	
 	var _hoistNonReactStatics2 = _interopRequireDefault(_hoistNonReactStatics);
 	
-	var _invariant = __webpack_require__(/*! invariant */ 206);
+	var _invariant = __webpack_require__(/*! invariant */ 207);
 	
 	var _invariant2 = _interopRequireDefault(_invariant);
 	
@@ -33954,7 +34018,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! ./~/process/browser.js */ 3)))
 
 /***/ },
-/* 203 */
+/* 204 */
 /*!*************************************************!*\
   !*** ./~/react-redux/lib/utils/shallowEqual.js ***!
   \*************************************************/
@@ -33988,7 +34052,7 @@
 	}
 
 /***/ },
-/* 204 */
+/* 205 */
 /*!*******************************************************!*\
   !*** ./~/react-redux/lib/utils/wrapActionCreators.js ***!
   \*******************************************************/
@@ -34008,7 +34072,7 @@
 	}
 
 /***/ },
-/* 205 */
+/* 206 */
 /*!********************************************!*\
   !*** ./~/hoist-non-react-statics/index.js ***!
   \********************************************/
@@ -34067,7 +34131,7 @@
 
 
 /***/ },
-/* 206 */
+/* 207 */
 /*!********************************!*\
   !*** ./~/invariant/browser.js ***!
   \********************************/
@@ -34128,7 +34192,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! ./~/process/browser.js */ 3)))
 
 /***/ },
-/* 207 */
+/* 208 */
 /*!***************************************!*\
   !*** ./src/client/components/App.jsx ***!
   \***************************************/
@@ -34146,11 +34210,11 @@
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _actions = __webpack_require__(/*! ../flux/actions.js */ 208);
+	var _actions = __webpack_require__(/*! ../flux/actions.js */ 196);
 	
 	var _actions2 = _interopRequireDefault(_actions);
 	
-	var _reactRedux = __webpack_require__(/*! react-redux */ 198);
+	var _reactRedux = __webpack_require__(/*! react-redux */ 199);
 	
 	var _Menu = __webpack_require__(/*! ./Menu.jsx */ 209);
 	
@@ -34176,7 +34240,7 @@
 	    _createClass(App, [{
 	        key: 'componentDidMount',
 	        value: function componentDidMount() {
-	            this.props.initScene(this.props.startSelection, this.props.endSelection);
+	            this.props.initScene(this.props.dispatchEvents);
 	        }
 	    }, {
 	        key: 'render',
@@ -34205,14 +34269,11 @@
 	
 	var mapDispatchToProps = function mapDispatchToProps(dispatch) {
 	    return {
-	        initScene: function initScene(startSelection, endSelection) {
-	            return dispatch(_actions2.default.initScene(startSelection, endSelection));
+	        initScene: function initScene(dispatchEvents) {
+	            return dispatch(_actions2.default.initScene(dispatchEvents));
 	        },
-	        startSelection: function startSelection(x, y) {
-	            return dispatch(_actions2.default.startSelection(x, y));
-	        },
-	        endSelection: function endSelection(x, y) {
-	            return dispatch(_actions2.default.endSelection(x, y));
+	        dispatchEvents: function dispatchEvents(action) {
+	            return dispatch(action);
 	        }
 	    };
 	};
@@ -34222,48 +34283,6 @@
 	};
 	
 	exports.default = (0, _reactRedux.connect)(mapStateToProps, mapDispatchToProps)(App);
-
-/***/ },
-/* 208 */
-/*!************************************!*\
-  !*** ./src/client/flux/actions.js ***!
-  \************************************/
-/***/ function(module, exports) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-		value: true
-	});
-	function initScene(startSelection, endSelection) {
-		return {
-			type: 'INIT',
-			value: {
-				startSelection: startSelection,
-				endSelection: endSelection
-			}
-		};
-	};
-	
-	function createGuy(value) {
-		return {
-			type: 'CREATE_GUY',
-			value: value
-		};
-	};
-	
-	function startSelection(idMesh) {
-		return {
-			type: 'START_SELECTION',
-			value: idMesh
-		};
-	};
-	
-	exports.default = {
-		initScene: initScene,
-		createGuy: createGuy,
-		startSelection: startSelection
-	};
 
 /***/ },
 /* 209 */
@@ -34282,11 +34301,11 @@
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _actions = __webpack_require__(/*! ../flux/actions.js */ 208);
+	var _actions = __webpack_require__(/*! ../flux/actions.js */ 196);
 	
 	var _actions2 = _interopRequireDefault(_actions);
 	
-	var _reactRedux = __webpack_require__(/*! react-redux */ 198);
+	var _reactRedux = __webpack_require__(/*! react-redux */ 199);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
