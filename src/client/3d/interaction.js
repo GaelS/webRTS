@@ -5,7 +5,7 @@ import utils from './utils.js';
 function onPointerLeftDownEvent(scene,event,startSelection){
 	let mesh = event.pickInfo.pickedMesh;
 	//store event
-	startSelection(mesh.id);
+	startSelection(mesh.id)	;
 	//display update
 	return Maybe.Some( mesh )
 		.bind(mesh => !!mesh.onSelect ? Maybe.Some(mesh.onSelect) : Maybe.None())
@@ -13,9 +13,10 @@ function onPointerLeftDownEvent(scene,event,startSelection){
 		.orSome(utils.emptyFunc)();
 }
 
-function onPointerRightDownEvent(scene,event,selectedMeshes){
+function onPointerRightDownEvent(scene,event){
 	//Get position on mesh clicked
 	//Move the selected cube(s)
+	console.log('ok');
 }
 
 /*function onPointerUpEvent(canvas,scene){
@@ -44,13 +45,13 @@ function onPointerMoveEvent(canvas,scene){
 }
 
 
-function instantiateEvents(canvas, scene, startSelection, selectedMeshes){
+function instantiateEvents(canvas, scene, startSelection){
 	
 	scene.onPointerObservable.add((e) => {
 		switch(e.event.type){
 			case 'mousedown' :
 				let isLeft = e.event.buttons === 1 || e.event.button === 1; 
-				 isLeft ? onPointerLeftDownEvent(scene, e, startSelection) : onPointerRightDownEvent(scene, e,selectedMeshes);
+				 isLeft ? onPointerLeftDownEvent(scene, e, startSelection) : onPointerRightDownEvent(scene, e, selectedMeshes);
 				break;
 		}
 		return;

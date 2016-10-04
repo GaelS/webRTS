@@ -7,11 +7,10 @@ import cameraLib from './camera.js';
 
 
 function initScene(startSelection, endSelection, selectedMeshes){
-
 	let canvas = document.getElementById( '3dview' );
 	let engine = new BABYLON.Engine( canvas, true );
 
-	let createScene = (startSelection, endSelection) => {
+	let createScene = (startSelection, selectedMeshes) => {
 		let scene = new BABYLON.Scene( engine );
 		materialsLib.initMaterials(scene);
 		scene.clearColor = new BABYLON.Color3(0, 0, 1);
@@ -32,7 +31,7 @@ function initScene(startSelection, endSelection, selectedMeshes){
 		return scene;	
 	}
 
-	let scene = createScene(startSelection, endSelection);
+	let scene = createScene(startSelection, selectedMeshes);
 
 	engine.runRenderLoop( () => {
 		scene.render();

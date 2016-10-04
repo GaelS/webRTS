@@ -3,7 +3,7 @@ function initScene(startSelection, endSelection){
 		type : 'INIT',
 		value : {
 			startSelection,
-			endSelection
+			endSelection,
 		},
 	}
 };
