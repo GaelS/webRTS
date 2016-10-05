@@ -1,9 +1,8 @@
-function initScene(startSelection, endSelection){
+function initScene(dispatchEvents){
 	return {
 		type : 'INIT',
 		value : {
-			startSelection,
-			endSelection
+			dispatchEvents,
 		},
 	}
 };
@@ -15,15 +14,26 @@ function createGuy( value ){
 	}
 };
 
-function startSelection(idMesh){
+function select(idMesh){
 	return {
 		type : 'START_SELECTION',
 		value : idMesh,
 	}
 };
 
+function moveSelection(x,z){
+	return {
+		type : 'MOVE_SELECTION',
+		value : {
+			x,
+			z,
+		},
+	}
+}
+
 export default {
 	initScene,
 	createGuy,
-	startSelection,
+	select,
+	moveSelection,
 };

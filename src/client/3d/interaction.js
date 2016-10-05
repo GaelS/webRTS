@@ -1,56 +1,37 @@
 import BABYLON from 'babylonjs';
 import monet, { Maybe } from 'monet';
 import utils from './utils.js';
+import actions from '../flux/actions.js';
 
-function onPointerLeftDownEvent(scene,event,startSelection){
+function onPointerLeftUpEvent( event, dispatchEvents ){
 	let mesh = event.pickInfo.pickedMesh;
 	//store event
-	startSelection(mesh.id);
+	!!mesh && mesh.name !== 'ground' ? dispatchEvents( actions.select( mesh.id ) ) : null;
+	
 	//display update
-	return Maybe.Some( mesh )
-		.bind(mesh => !!mesh.onSelect ? Maybe.Some(mesh.onSelect) : Maybe.None())
+	return Maybe.fromNull( mesh )
+		.bind(mesh => Maybe.fromNull( mesh.onSelect ) )
 		//Execute action
 		.orSome(utils.emptyFunc)();
 }
 
-function onPointerRightDownEvent(scene,event,selectedMeshes){
+function onPointerRightDownEvent( event, dispatchEvents ){
 	//Get position on mesh clicked
+	let mesh = event.pickInfo.pickedMesh;
 	//Move the selected cube(s)
+	return Maybe.fromNull( mesh ).isSome()? 
+		dispatchEvents( actions.moveSelection( event.pickInfo.pickedPoint.x,  event.pickInfo.pickedPoint.z ) ):
+		utils.emptyFunc();
 }
 
-/*function onPointerUpEvent(canvas,scene){
-	canvas.addEventListener('mouseup', (evt) => {
-		let pickPoint = scene.pick(scene.pointerX, scene.pointerY);
-		
-		if(!pickPoint.hit) return;
-		let pickedMesh = pickPoint.pickedMesh;
-		if(!!pickedMesh.onDeselect){
-			pickedMesh.onDeselect();
-		}	
-	} );
-}*/
-
-function onPointerMoveEvent(canvas,scene){
-	canvas.addEventListener('mousemove', (evt) => {
-		if(evt.buttons !== 1) return;
-		let pickPoint = scene.pick(scene.pointerX, scene.pointerY);
-		
-		if(!pickPoint.hit) return;
-		let pickedMesh = pickPoint.pickedMesh;
-		if(!!pickedMesh.onDeselect){
-			pickedMesh.onDeselect();
-		}	
-	} );
-}
-
-
-function instantiateEvents(canvas, scene, startSelection, selectedMeshes){
+function instantiateEvents(canvas, scene, dispatchEvents){
 	
 	scene.onPointerObservable.add((e) => {
 		switch(e.event.type){
-			case 'mousedown' :
+			case 'mousedown':
 				let isLeft = e.event.buttons === 1 || e.event.button === 1; 
-				 isLeft ? onPointerLeftDownEvent(scene, e, startSelection) : onPointerRightDownEvent(scene, e,selectedMeshes);
+				let fn = isLeft ? onPointerLeftUpEvent : onPointerRightDownEvent;
+				fn(e,dispatchEvents);
 				break;
 		}
 		return;
@@ -59,4 +40,4 @@ function instantiateEvents(canvas, scene, startSelection, selectedMeshes){
 
 export default {
 	instantiateEvents,
-}
+};

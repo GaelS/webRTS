@@ -1,17 +1,17 @@
 import BABYLON from 'babylonjs';
 import uuid from 'uuid';
 import interaction from './interaction.js';
+import movement from './movement.js';
 import utils from './utils.js';
 import materialsLib from './materials.js';
 import cameraLib from './camera.js';
 
 
-function initScene(startSelection, endSelection, selectedMeshes){
-
+function initScene( dispatchEvents ){
 	let canvas = document.getElementById( '3dview' );
 	let engine = new BABYLON.Engine( canvas, true );
 
-	let createScene = (startSelection, endSelection) => {
+	let createScene = ( dispatchEvents ) => {
 		let scene = new BABYLON.Scene( engine );
 		materialsLib.initMaterials(scene);
 		scene.clearColor = new BABYLON.Color3(0, 0, 1);
@@ -26,14 +26,16 @@ function initScene(startSelection, endSelection, selectedMeshes){
 		
 		let canvas = document.getElementById( '3dview' );
 		let camera = cameraLib.createCamera( canvas, scene );
-		
-		interaction.instantiateEvents(canvas, scene, startSelection, selectedMeshes);
+		interaction.instantiateEvents(canvas, scene, dispatchEvents);
 		
 		return scene;	
 	}
-
-	let scene = createScene(startSelection, endSelection);
-
+	let scene = createScene(dispatchEvents);
+	//
+	scene.registerBeforeRender(() => {
+				movement.updatePositions(scene);
+	} );
+	//
 	engine.runRenderLoop( () => {
 		scene.render();
 	} );
