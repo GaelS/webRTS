@@ -7,13 +7,7 @@ function onPointerLeftUpEvent( event, dispatchEvents ){
 	let mesh = event.pickInfo.pickedMesh;
 	//store event
 	!!mesh && mesh.name !== 'ground' ? dispatchEvents( actions.select( mesh.id ) ) : null;
-	
-	//display update
-	return Maybe.fromNull( mesh )
-		.bind(mesh => Maybe.fromNull( mesh.onSelect ) )
-		//Execute action
-		.orSome(utils.emptyFunc)();
-}
+};
 
 function onPointerRightDownEvent( event, dispatchEvents ){
 	//Get position on mesh clicked
@@ -22,7 +16,7 @@ function onPointerRightDownEvent( event, dispatchEvents ){
 	return Maybe.fromNull( mesh ).isSome()? 
 		dispatchEvents( actions.moveSelection( event.pickInfo.pickedPoint.x,  event.pickInfo.pickedPoint.z ) ):
 		utils.emptyFunc();
-}
+};
 
 function instantiateEvents(canvas, scene, dispatchEvents){
 	
@@ -36,7 +30,7 @@ function instantiateEvents(canvas, scene, dispatchEvents){
 		}
 		return;
 	} );	
-}
+};
 
 export default {
 	instantiateEvents,

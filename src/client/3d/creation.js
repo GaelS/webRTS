@@ -31,11 +31,10 @@ function initScene( dispatchEvents ){
 		return scene;	
 	}
 	let scene = createScene(dispatchEvents);
-	//
+
 	scene.registerBeforeRender(() => {
 				movement.updatePositions(scene);
 	} );
-	//
 	engine.runRenderLoop( () => {
 		scene.render();
 	} );
@@ -53,10 +52,9 @@ function createGuy( scene, number ){
 		
 		let s = BABYLON.Mesh.CreateBox(uuid.v1(), 2, scene, ); 
 		s.position.z = Math.random()*20;
-		s.material = new BABYLON.StandardMaterial( 'texture'+Math.random(), scene );
-		s.material.diffuseColor = new BABYLON.Color3(1.0, 0.2, 0.7);
-		s.onSelect = (evt) => { console.log('s',s.id); s.material = scene.getMaterialByName('blackerMaterial') };
-		s.onDeselect = (evt) => { console.log('des',s.id)};
+		s.material = scene.getMaterialByName('redMaterial')
+		s.onSelect = (evt) => { s.material = scene.getMaterialByName('blackerMaterial') };
+		s.onDeselect = (evt) => { s.material = scene.getMaterialByName('redMaterial') };
 		
 		return s.id;
 	} );

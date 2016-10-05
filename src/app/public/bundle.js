@@ -22882,19 +22882,27 @@
 	
 	var _defaultState2 = _interopRequireDefault(_defaultState);
 	
-	var _ramda = __webpack_require__(/*! ramda */ 200);
-	
-	var _ramda2 = _interopRequireDefault(_ramda);
-	
 	var _creation = __webpack_require__(/*! ../3d/creation.js */ 201);
 	
 	var _creation2 = _interopRequireDefault(_creation);
 	
-	var _movement = __webpack_require__(/*! ../3d/movement.js */ 202);
+	var _interaction = __webpack_require__(/*! ../3d/interaction.js */ 205);
+	
+	var _interaction2 = _interopRequireDefault(_interaction);
+	
+	var _movement = __webpack_require__(/*! ../3d/movement.js */ 208);
 	
 	var _movement2 = _interopRequireDefault(_movement);
 	
-	var _babylonjs = __webpack_require__(/*! babylonjs */ 203);
+	var _materials = __webpack_require__(/*! ../3d/materials.js */ 209);
+	
+	var _materials2 = _interopRequireDefault(_materials);
+	
+	var _ramda = __webpack_require__(/*! ramda */ 200);
+	
+	var _ramda2 = _interopRequireDefault(_ramda);
+	
+	var _babylonjs = __webpack_require__(/*! babylonjs */ 202);
 	
 	var _babylonjs2 = _interopRequireDefault(_babylonjs);
 	
@@ -22919,7 +22927,10 @@
 				newState.guys = [].concat(_toConsumableArray(state.guys), _toConsumableArray(_creation2.default.createGuy(newState.scene, value)));
 				break;
 			case 'START_SELECTION':
-				newState.selectedMeshes = [].concat(_toConsumableArray(newState.selectedMeshes), [value]);
+				var index = newState.selectedMeshes.indexOf(value);
+				var fn = index === -1 ? _materials2.default.selectMeshes : _materials2.default.deselectMeshes;
+				newState.selectedMeshes = index === -1 ? [].concat(_toConsumableArray(newState.selectedMeshes), [value]) : _ramda2.default.remove(index, index + 1, newState.selectedMeshes);
+				fn(newState.scene, value);
 				break;
 			case 'MOVE_SELECTION':
 				var _action$value = action.value;
@@ -32746,23 +32757,23 @@
 		value: true
 	});
 	
-	var _babylonjs = __webpack_require__(/*! babylonjs */ 203);
+	var _babylonjs = __webpack_require__(/*! babylonjs */ 202);
 	
 	var _babylonjs2 = _interopRequireDefault(_babylonjs);
 	
-	var _uuid = __webpack_require__(/*! uuid */ 204);
+	var _uuid = __webpack_require__(/*! uuid */ 203);
 	
 	var _uuid2 = _interopRequireDefault(_uuid);
 	
-	var _interaction = __webpack_require__(/*! ./interaction.js */ 206);
+	var _interaction = __webpack_require__(/*! ./interaction.js */ 205);
 	
 	var _interaction2 = _interopRequireDefault(_interaction);
 	
-	var _movement = __webpack_require__(/*! ./movement.js */ 202);
+	var _movement = __webpack_require__(/*! ./movement.js */ 208);
 	
 	var _movement2 = _interopRequireDefault(_movement);
 	
-	var _utils = __webpack_require__(/*! ./utils.js */ 208);
+	var _utils = __webpack_require__(/*! ./utils.js */ 207);
 	
 	var _utils2 = _interopRequireDefault(_utils);
 	
@@ -32801,11 +32812,10 @@
 			return scene;
 		};
 		var scene = createScene(dispatchEvents);
-		//
+	
 		scene.registerBeforeRender(function () {
 			_movement2.default.updatePositions(scene);
 		});
-		//
 		engine.runRenderLoop(function () {
 			scene.render();
 		});
@@ -32823,13 +32833,12 @@
 	
 			var s = _babylonjs2.default.Mesh.CreateBox(_uuid2.default.v1(), 2, scene);
 			s.position.z = Math.random() * 20;
-			s.material = new _babylonjs2.default.StandardMaterial('texture' + Math.random(), scene);
-			s.material.diffuseColor = new _babylonjs2.default.Color3(1.0, 0.2, 0.7);
+			s.material = scene.getMaterialByName('redMaterial');
 			s.onSelect = function (evt) {
-				console.log('s', s.id);s.material = scene.getMaterialByName('blackerMaterial');
+				s.material = scene.getMaterialByName('blackerMaterial');
 			};
 			s.onDeselect = function (evt) {
-				console.log('des', s.id);
+				s.material = scene.getMaterialByName('redMaterial');
 			};
 	
 			return s.id;
@@ -32842,40 +32851,6 @@
 
 /***/ },
 /* 202 */
-/*!***********************************!*\
-  !*** ./src/client/3d/movement.js ***!
-  \***********************************/
-/***/ function(module, exports) {
-
-	"use strict";
-	
-	Object.defineProperty(exports, "__esModule", {
-		value: true
-	});
-	function setTargetPosition(meshes, targetPos) {
-		return meshes.forEach(function (e) {
-			return e.targetPosition = targetPos;
-		});
-	};
-	
-	function updatePositions(scene) {
-		return scene.meshes.filter(function (e) {
-			return !!e.targetPosition;
-		}).forEach(function (e) {
-			var dir = e.targetPosition.subtract(e.position);
-			e.targetPosition = dir.length() < 1 ? undefined : e.targetPosition;
-			dir.normalize();
-			e.position.x += dir.x * 0.5;
-			e.position.z += dir.z * 0.5;
-		});
-	}
-	exports.default = {
-		setTargetPosition: setTargetPosition,
-		updatePositions: updatePositions
-	};
-
-/***/ },
-/* 203 */
 /*!********************************!*\
   !*** ./~/babylonjs/babylon.js ***!
   \********************************/
@@ -32924,7 +32899,7 @@
 	("undefined"!=typeof window&&window.module||"undefined"!=typeof module)&&"undefined"!=typeof module.exports&&(module.exports=BABYLON);
 
 /***/ },
-/* 204 */
+/* 203 */
 /*!************************!*\
   !*** ./~/uuid/uuid.js ***!
   \************************/
@@ -32938,7 +32913,7 @@
 	// Unique ID creation requires a high quality random # generator.  We feature
 	// detect to determine the best RNG source, normalizing to a function that
 	// returns 128-bits of randomness, since that's what's usually required
-	var _rng = __webpack_require__(/*! ./rng */ 205);
+	var _rng = __webpack_require__(/*! ./rng */ 204);
 	
 	// Maps for number <-> hex string conversion
 	var _byteToHex = [];
@@ -33116,7 +33091,7 @@
 
 
 /***/ },
-/* 205 */
+/* 204 */
 /*!*******************************!*\
   !*** ./~/uuid/rng-browser.js ***!
   \*******************************/
@@ -33158,7 +33133,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 206 */
+/* 205 */
 /*!**************************************!*\
   !*** ./src/client/3d/interaction.js ***!
   \**************************************/
@@ -33170,15 +33145,15 @@
 		value: true
 	});
 	
-	var _babylonjs = __webpack_require__(/*! babylonjs */ 203);
+	var _babylonjs = __webpack_require__(/*! babylonjs */ 202);
 	
 	var _babylonjs2 = _interopRequireDefault(_babylonjs);
 	
-	var _monet = __webpack_require__(/*! monet */ 207);
+	var _monet = __webpack_require__(/*! monet */ 206);
 	
 	var _monet2 = _interopRequireDefault(_monet);
 	
-	var _utils = __webpack_require__(/*! ./utils.js */ 208);
+	var _utils = __webpack_require__(/*! ./utils.js */ 207);
 	
 	var _utils2 = _interopRequireDefault(_utils);
 	
@@ -33192,21 +33167,14 @@
 		var mesh = event.pickInfo.pickedMesh;
 		//store event
 		!!mesh && mesh.name !== 'ground' ? dispatchEvents(_actions2.default.select(mesh.id)) : null;
-	
-		//display update
-		return _monet.Maybe.fromNull(mesh).bind(function (mesh) {
-			return _monet.Maybe.fromNull(mesh.onSelect);
-		})
-		//Execute action
-		.orSome(_utils2.default.emptyFunc)();
-	}
+	};
 	
 	function onPointerRightDownEvent(event, dispatchEvents) {
 		//Get position on mesh clicked
 		var mesh = event.pickInfo.pickedMesh;
 		//Move the selected cube(s)
 		return _monet.Maybe.fromNull(mesh).isSome() ? dispatchEvents(_actions2.default.moveSelection(event.pickInfo.pickedPoint.x, event.pickInfo.pickedPoint.z)) : _utils2.default.emptyFunc();
-	}
+	};
 	
 	function instantiateEvents(canvas, scene, dispatchEvents) {
 	
@@ -33220,14 +33188,14 @@
 			}
 			return;
 		});
-	}
+	};
 	
 	exports.default = {
 		instantiateEvents: instantiateEvents
 	};
 
 /***/ },
-/* 207 */
+/* 206 */
 /*!**********************************************!*\
   !*** ./~/monet/src/main/javascript/monet.js ***!
   \**********************************************/
@@ -34243,7 +34211,7 @@
 
 
 /***/ },
-/* 208 */
+/* 207 */
 /*!********************************!*\
   !*** ./src/client/3d/utils.js ***!
   \********************************/
@@ -34255,7 +34223,7 @@
 		value: true
 	});
 	
-	var _babylonjs = __webpack_require__(/*! babylonjs */ 203);
+	var _babylonjs = __webpack_require__(/*! babylonjs */ 202);
 	
 	var _babylonjs2 = _interopRequireDefault(_babylonjs);
 	
@@ -34276,6 +34244,40 @@
 	};
 
 /***/ },
+/* 208 */
+/*!***********************************!*\
+  !*** ./src/client/3d/movement.js ***!
+  \***********************************/
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	function setTargetPosition(meshes, targetPos) {
+		return meshes.forEach(function (e) {
+			return e.targetPosition = targetPos;
+		});
+	};
+	
+	function updatePositions(scene) {
+		return scene.meshes.filter(function (e) {
+			return !!e.targetPosition;
+		}).forEach(function (e) {
+			var dir = e.targetPosition.subtract(e.position);
+			e.targetPosition = dir.length() < 1 ? undefined : e.targetPosition;
+			dir.normalize();
+			e.position.x += dir.x * 0.5;
+			e.position.z += dir.z * 0.5;
+		});
+	}
+	exports.default = {
+		setTargetPosition: setTargetPosition,
+		updatePositions: updatePositions
+	};
+
+/***/ },
 /* 209 */
 /*!************************************!*\
   !*** ./src/client/3d/materials.js ***!
@@ -34288,7 +34290,7 @@
 	    value: true
 	});
 	
-	var _babylonjs = __webpack_require__(/*! babylonjs */ 203);
+	var _babylonjs = __webpack_require__(/*! babylonjs */ 202);
 	
 	var _babylonjs2 = _interopRequireDefault(_babylonjs);
 	
@@ -34329,8 +34331,24 @@
 	    scene.materialsBlue.specularColor = new _babylonjs2.default.Color3(0, 0, 0);
 	};
 	
+	function selectMeshes(scene, meshes) {
+	    return scene.meshes.filter(function (e) {
+	        return meshes.indexOf(e.name) !== -1;
+	    }).forEach(function (e) {
+	        return e.onSelect();
+	    });
+	}
+	function deselectMeshes(scene, meshes) {
+	    return scene.meshes.filter(function (e) {
+	        return meshes.indexOf(e.name) !== -1;
+	    }).forEach(function (e) {
+	        console.log(e);e.onDeselect();
+	    });
+	}
 	exports.default = {
-	    initMaterials: initMaterials
+	    initMaterials: initMaterials,
+	    selectMeshes: selectMeshes,
+	    deselectMeshes: deselectMeshes
 	};
 
 /***/ },
@@ -34346,11 +34364,11 @@
 		value: true
 	});
 	
-	var _babylonjs = __webpack_require__(/*! babylonjs */ 203);
+	var _babylonjs = __webpack_require__(/*! babylonjs */ 202);
 	
 	var _babylonjs2 = _interopRequireDefault(_babylonjs);
 	
-	var _utils = __webpack_require__(/*! ./utils.js */ 208);
+	var _utils = __webpack_require__(/*! ./utils.js */ 207);
 	
 	var _utils2 = _interopRequireDefault(_utils);
 	

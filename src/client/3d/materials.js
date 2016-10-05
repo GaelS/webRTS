@@ -35,6 +35,18 @@ function initMaterials(scene){
     scene.materialsBlue.specularColor = new BABYLON.Color3(0, 0, 0);
 };
 
+function selectMeshes(scene, meshes){
+    return scene.meshes
+        .filter(e => meshes.indexOf(e.name) !== -1)
+        .forEach( e => e.onSelect());
+}
+function deselectMeshes(scene, meshes){
+    return scene.meshes
+        .filter(e => meshes.indexOf(e.name) !== -1)
+        .forEach( e => { console.log(e);e.onDeselect()});    
+}
 export default {
 	initMaterials,
+    selectMeshes,
+    deselectMeshes,
 }

@@ -1,7 +1,11 @@
 import defaultState from './defaultState.js';
-import R from 'ramda';
+
 import creation from '../3d/creation.js';
+import interaction from '../3d/interaction.js'
 import movement from '../3d/movement.js';
+import materials from '../3d/materials.js';
+
+import R from 'ramda';
 import BABYLON from 'babylonjs';
 
 export default ( ( state = defaultState, action ) => {
@@ -21,7 +25,10 @@ export default ( ( state = defaultState, action ) => {
 			 ...creation.createGuy( newState.scene, value ) ];
 			 break;
 		case 'START_SELECTION' :
-			newState.selectedMeshes = [...newState.selectedMeshes, value];
+			let index = newState.selectedMeshes.indexOf(value);
+			let fn = (index === -1) ? materials.selectMeshes : materials.deselectMeshes;
+			newState.selectedMeshes = (index === -1) ? [...newState.selectedMeshes, value] : R.remove(index, index+1, newState.selectedMeshes);
+			fn( newState.scene, value );
 			break;
 		case 'MOVE_SELECTION' : 
 			let {x,z} = action.value;
