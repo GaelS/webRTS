@@ -31,7 +31,6 @@ function initScene( dispatchEvents ){
 		return scene;	
 	}
 	let scene = createScene(dispatchEvents);
-
 	scene.registerBeforeRender(() => {
 				movement.updatePositions(scene);
 	} );

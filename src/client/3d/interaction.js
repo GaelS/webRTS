@@ -6,7 +6,8 @@ import actions from '../flux/actions.js';
 function onPointerLeftUpEvent( event, dispatchEvents ){
 	let mesh = event.pickInfo.pickedMesh;
 	//store event
-	!!mesh && mesh.name !== 'ground' ? dispatchEvents( actions.select( mesh.id ) ) : null;
+	let action = !!mesh && mesh.name !== 'ground' ? actions.select( mesh.id ) : actions.deselectAll()
+	return dispatchEvents( action );
 };
 
 function onPointerRightDownEvent( event, dispatchEvents ){

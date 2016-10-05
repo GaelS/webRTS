@@ -4,21 +4,21 @@ function initScene(dispatchEvents){
 		value : {
 			dispatchEvents,
 		},
-	}
+	};
 };
 
 function createGuy( value ){
 	return {
 		type : 'CREATE_GUY',
 		value,
-	}
+	};
 };
 
 function select(idMesh){
 	return {
 		type : 'START_SELECTION',
 		value : idMesh,
-	}
+	};
 };
 
 function moveSelection(x,z){
@@ -28,7 +28,15 @@ function moveSelection(x,z){
 			x,
 			z,
 		},
-	}
+	};
+}
+
+function deselectAll(){
+	return {
+		type : 'DESELECT_ALL',
+		value : null,
+	};
+
 }
 
 export default {
@@ -36,4 +44,5 @@ export default {
 	createGuy,
 	select,
 	moveSelection,
+	deselectAll,
 };

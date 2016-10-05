@@ -6,6 +6,7 @@ import movement from '../3d/movement.js';
 import materials from '../3d/materials.js';
 
 import R from 'ramda';
+
 import BABYLON from 'babylonjs';
 
 export default ( ( state = defaultState, action ) => {
@@ -29,6 +30,10 @@ export default ( ( state = defaultState, action ) => {
 			let fn = (index === -1) ? materials.selectMeshes : materials.deselectMeshes;
 			newState.selectedMeshes = (index === -1) ? [...newState.selectedMeshes, value] : R.remove(index, index+1, newState.selectedMeshes);
 			fn( newState.scene, value );
+			break;
+		case 'DESELECT_ALL' :
+			materials.deselectMeshes(newState.scene, newState.selectedMeshes);
+			newState.selectedMeshes = [];
 			break;
 		case 'MOVE_SELECTION' : 
 			let {x,z} = action.value;

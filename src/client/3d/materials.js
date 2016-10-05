@@ -43,7 +43,7 @@ function selectMeshes(scene, meshes){
 function deselectMeshes(scene, meshes){
     return scene.meshes
         .filter(e => meshes.indexOf(e.name) !== -1)
-        .forEach( e => { console.log(e);e.onDeselect()});    
+        .forEach( e => e.onDeselect());    
 }
 export default {
 	initMaterials,
