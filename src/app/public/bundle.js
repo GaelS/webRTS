@@ -23393,7 +23393,7 @@
 		return dispatchEvents(action);
 	};
 	
-	function onPointerRightDownEvent(event, dispatchEvents) {
+	function onPointerRightUpEvent(event, dispatchEvents) {
 		//Get position on mesh clicked
 		var mesh = event.pickInfo.pickedMesh;
 		//Move the selected cube(s)
@@ -23403,11 +23403,15 @@
 	function instantiateEvents(canvas, scene, dispatchEvents) {
 	
 		scene.onPointerObservable.add(function (e) {
+			var isLeftClicked = e.event.which === 1;
+			var isRightClicked = e.event.which === 3;
+	
 			switch (e.event.type) {
-				case 'mousedown':
-					var isLeft = e.event.buttons === 1 || e.event.button === 1;
-					var fn = isLeft ? onPointerLeftUpEvent : onPointerRightDownEvent;
+				case 'mouseup':
+					var fn = isLeftClicked ? onPointerLeftUpEvent : onPointerRightUpEvent;
 					fn(e, dispatchEvents);
+					break;
+				case 'mousemove':
 					break;
 			}
 			return;

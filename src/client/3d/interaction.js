@@ -6,11 +6,11 @@ import actions from '../flux/actions.js';
 function onPointerLeftUpEvent( event, dispatchEvents ){
 	let mesh = event.pickInfo.pickedMesh;
 	//store event
-	let action = !!mesh && mesh.name !== 'ground' ? actions.select( mesh.id ) : actions.deselectAll()
+	let action = !!mesh && mesh.name !== 'ground' ? actions.select( mesh.id ) : actions.deselectAll();
 	return dispatchEvents( action );
 };
 
-function onPointerRightDownEvent( event, dispatchEvents ){
+function onPointerRightUpEvent( event, dispatchEvents ){
 	//Get position on mesh clicked
 	let mesh = event.pickInfo.pickedMesh;
 	//Move the selected cube(s)
@@ -22,11 +22,15 @@ function onPointerRightDownEvent( event, dispatchEvents ){
 function instantiateEvents(canvas, scene, dispatchEvents){
 	
 	scene.onPointerObservable.add((e) => {
+		let isLeftClicked = e.event.which === 1; 
+		let isRightClicked = e.event.which === 3; 
+		
 		switch(e.event.type){
-			case 'mousedown':
-				let isLeft = e.event.buttons === 1 || e.event.button === 1; 
-				let fn = isLeft ? onPointerLeftUpEvent : onPointerRightDownEvent;
+			case 'mouseup':
+				let fn = isLeftClicked ? onPointerLeftUpEvent : onPointerRightUpEvent;
 				fn(e,dispatchEvents);
+				break;
+			case 'mousemove' :
 				break;
 		}
 		return;
