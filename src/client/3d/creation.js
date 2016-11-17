@@ -1,4 +1,3 @@
-import BABYLON from 'babylonjs';
 import uuid from 'uuid';
 import interaction from './interaction.js';
 import movement from './movement.js';

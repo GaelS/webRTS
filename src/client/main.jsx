@@ -1,4 +1,6 @@
 import React from 'react';
+import BABYLON from 'babylonjs';
+
 import { render } from 'react-dom';
 
 import { createStore } from 'redux'
@@ -14,8 +16,10 @@ let store = createStore(
 //Dev ONLY 
 window.store = store;
 
+window.BABYLON = BABYLON;
+
 render(
-	<Provider store={ store } >
+	<Provider store={ store }>
 		<App/>
 	</Provider>,
 	document.getElementById('app')

@@ -1,13 +1,14 @@
-import BABYLON from 'babylonjs';
-
-function vector3(a,b,c){
+export const vector3 = (a,b,c) => {
 	return new BABYLON.Vector3(a,b,c);
 }
-function emptyFunc(){
+export const emptyFunc = () => {
 	console.log('empty func')
 	return function(){return;};
 }
-export default {
-	vector3,
-	emptyFunc,
+
+export const degToRad = (angle) => {
+	return angle * Math.PI / 180;
+}
+export const radToDeg = (angle) => {
+	return angle * 180/ Math.PI;
 }

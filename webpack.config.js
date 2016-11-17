@@ -3,11 +3,13 @@ var path = require('path');
 
 var BUILD_DIR = path.resolve(__dirname, 'src/app/public');
 var APP_DIR = path.resolve(__dirname, 'src/client');
-console.log(BUILD_DIR, APP_DIR)
 var config = {
-  entry: APP_DIR + '/main.jsx',
+  entry: {
+    app : [APP_DIR + '/main.jsx']
+  },
   output: {
     path: BUILD_DIR,
+    publicPath : '/assets/',
     filename: 'bundle.js'
   },
   module : {

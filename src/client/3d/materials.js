@@ -1,5 +1,3 @@
-import BABYLON from 'babylonjs';
-
 function initMaterials(scene){
 	
 	scene.materialsBlack = new BABYLON.StandardMaterial("blackMaterial", scene);

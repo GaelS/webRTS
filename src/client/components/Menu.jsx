@@ -3,9 +3,17 @@ import actions from '../flux/actions.js';
 import { connect } from 'react-redux';
 
 const Menu = ( { guys, createOneGuy } ) => {
+	const S = {
+		menu : {
+			position : 'absolute',
+			bottom : '0px',
+		},
+	};
+
 	return (
-		<div>
-			
+		<div
+			style={ S.menu }
+		>
 			<input
 				type='button'
 				value='create peon'

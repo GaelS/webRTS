@@ -19,20 +19,22 @@ class App extends React.Component {
 
     render(){
         const S = {
-            width : '100%',
-            height : '100%',
-            touchAction : 'none',
+            canvas : {
+                width : '100%',
+                height : '100%',
+                touchAction : 'none',
+            },
         };
     	return (
     		<div>
 	    		<canvas 
-                    style = { S }
+                    style = { S.canvas }
 	    			id='3dview'
 	    		>
 	    		</canvas>
                 <Menu />
     		</div>
-    	)
+    	);
     }
 };
 

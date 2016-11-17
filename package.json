@@ -21,7 +21,8 @@
     "webpack": "^1.13.2"
   },
   "scripts": {
-    "dev": "webpack -d --watch"
+    "dev": "webpack -d --watch",
+	"server" : "webpack-dev-server --progress --colors --content-base src/app/"
   },
   "author": "",
   "license": "ISC"
