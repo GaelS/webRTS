@@ -18,11 +18,8 @@ let mouseEvents = (camera) => {
 	return (eventData,eventState) => {
 		let mouseWheel = eventData.type === 8;
 		if(!mouseWheel) return;
-		let cameraPos = camera.position;
-		let up = camera.upVector;
 		let sign = eventData.event.wheelDelta < 0 ? 5 : -5;
-		let displacement = camera.position.add(up.multiplyByFloats(sign, sign, sign));
-		console.log(displacement);
+		let displacement = camera.position.add(camera.upVector.multiplyByFloats(sign, sign, sign));
 		camera.setPosition(displacement);
 	} 
 }
@@ -40,9 +37,8 @@ export default {
 		let camera = new BABYLON.ArcRotateCamera("camera", 1, 0.8, 10, BABYLON.Vector3.Zero(), scene);
 		initCameraSettings(camera);	
 		initCameraEvents(camera, scene);
-		
 		camera.attachControl( canvas, false );
-		camera.setPosition(new BABYLON.Vector3(0, 50, -30));
+		camera.setPosition(vector3(0, 50, -30));
 		return camera;
 	},
 };

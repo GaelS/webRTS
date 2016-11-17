@@ -26,10 +26,10 @@ export default ( ( state = defaultState, action ) => {
 			 ...creation.createGuy( newState.scene, value ) ];
 			 break;
 		case 'START_SELECTION' :
-			let index = newState.selectedMeshes.indexOf(value);
-			let fn = (index === -1) ? materials.selectMeshes : materials.deselectMeshes;
-			newState.selectedMeshes = (index === -1) ? [...newState.selectedMeshes, value] : R.remove(index, index+1, newState.selectedMeshes);
-			fn( newState.scene, value );
+			//Reset already selected meshes
+			materials.deselectMeshes( newState.scene, newState.selectedMeshes );
+			materials.selectMeshes( newState.scene, value );
+			newState.selectedMeshes = Array.isArray(value) ? value : [ value ];
 			break;
 		case 'DESELECT_ALL' :
 			materials.deselectMeshes(newState.scene, newState.selectedMeshes);
