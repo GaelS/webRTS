@@ -14,15 +14,24 @@ let initCameraSettings = (camera) => {
 	camera.upperRadiusLimit = 200;
 	camera.setTarget(vector3(0,0,0));
 };
-let keyboardEvents = (camera) => {
-	return pi => {
-		//console.log(pi);
+let mouseEvents = (camera) => {
+	return (eventData,eventState) => {
+		let mouseWheel = eventData.type === 8;
+		if(!mouseWheel) return;
+		let cameraPos = camera.position;
+		let up = camera.upVector;
+		let sign = eventData.event.wheelDelta < 0 ? 5 : -5;
+		let displacement = camera.position.add(up.multiplyByFloats(sign, sign, sign));
+		console.log(displacement);
+		camera.setPosition(displacement);
 	} 
 }
 let initCameraEvents = (camera, scene) => {
 	//Remove all preset control 
 	camera.inputs.clear();
-	scene.onPointerObservable.add(keyboardEvents(camera));
+	//mouse input
+	scene.onPointerObservable.add(mouseEvents(camera));
+	//keyboard input
 	camera.inputs.add(new CustomInputs(camera));
 };
 

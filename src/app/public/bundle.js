@@ -24696,15 +24696,24 @@
 		camera.upperRadiusLimit = 200;
 		camera.setTarget((0, _utils.vector3)(0, 0, 0));
 	};
-	var keyboardEvents = function keyboardEvents(camera) {
-		return function (pi) {
-			//console.log(pi);
+	var mouseEvents = function mouseEvents(camera) {
+		return function (eventData, eventState) {
+			var mouseWheel = eventData.type === 8;
+			if (!mouseWheel) return;
+			var cameraPos = camera.position;
+			var up = camera.upVector;
+			var sign = eventData.event.wheelDelta < 0 ? 5 : -5;
+			var displacement = camera.position.add(up.multiplyByFloats(sign, sign, sign));
+			console.log(displacement);
+			camera.setPosition(displacement);
 		};
 	};
 	var initCameraEvents = function initCameraEvents(camera, scene) {
 		//Remove all preset control 
 		camera.inputs.clear();
-		scene.onPointerObservable.add(keyboardEvents(camera));
+		//mouse input
+		scene.onPointerObservable.add(mouseEvents(camera));
+		//keyboard input
 		camera.inputs.add(new _CustomInputs2.default(camera));
 	};
 	

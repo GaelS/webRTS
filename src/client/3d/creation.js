@@ -30,7 +30,7 @@ function initScene( dispatchEvents ){
 	}
 	let scene = createScene(dispatchEvents);
 	scene.registerBeforeRender(() => {
-				movement.updatePositions(scene);
+		movement.updatePositions(scene);
 	} );
 	engine.runRenderLoop( () => {
 		scene.render();
