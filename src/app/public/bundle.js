@@ -22979,10 +22979,12 @@
 		var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : _defaultState2.default;
 		var action = arguments[1];
 	
-		var newState = _ramda2.default.clone(state);
-		var value = action.value;
+	
+		var newState = _ramda2.default.clone(_ramda2.default.omit('scene', state));
 		//scene cannot be cloned
 		newState.scene = state.scene;
+	
+		var value = action.value;
 		switch (action.type) {
 			case 'INIT':
 				var scene = _creation2.default.initScene(value.dispatchEvents);
@@ -23078,14 +23080,15 @@
 	
 		var createScene = function createScene(dispatchEvents) {
 			var scene = new BABYLON.Scene(engine);
-			/*materialsLib.initMaterials(scene);
-	  scene.clearColor = new BABYLON.Color3(0, 0, 1);
-	          let light = new BABYLON.HemisphericLight("light1", vector3(0, 1, 0), scene);
-	        light.intensity = 1;
-	  		let ground = BABYLON.Mesh.CreateGround("ground", 600, 600, 2, scene);
-	  ground.material = new BABYLON.StandardMaterial( 'texture1', scene );
-	  ground.material.diffuseColor = new BABYLON.Color3(0, 1, 0);
-	  */
+			_materials2.default.initMaterials(scene);
+			scene.clearColor = new BABYLON.Color3(0, 0, 1);
+	
+			var light = new BABYLON.HemisphericLight("light1", (0, _utils.vector3)(0, 1, 0), scene);
+			light.intensity = 1;
+	
+			var ground = BABYLON.Mesh.CreateGround("ground", 600, 600, 2, scene);
+			ground.material = new BABYLON.StandardMaterial('texture1', scene);
+			ground.material.diffuseColor = new BABYLON.Color3(0, 1, 0);
 			var canvas = document.getElementById('3dview');
 			//Step to manage different resolution 
 			//to keep consistency between DOM and canvas pixel event
@@ -23121,7 +23124,7 @@
 		return new BABYLON.ScreenSpaceCanvas2D(scene, {
 			id: 'canvas2D',
 			size: new BABYLON.Size(window.width, window.height),
-			backgroundFill: "#FFF0408F"
+			backgroundFill: '#00000000'
 		});
 	};
 	
@@ -23143,7 +23146,6 @@
 	}
 	
 	function createSelectionRectangle(scene, startPosition, width, height) {
-		console.log(width, height);
 		return new BABYLON.Rectangle2D({
 			id: 'rec',
 			parent: scene.screenSpaceCanvas2D,
@@ -23151,14 +23153,21 @@
 			y: startPosition[1],
 			height: height,
 			width: width,
-			border: BABYLON.Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF"),
-			borderThickness: 4
+			border: BABYLON.Canvas2D.GetSolidColorBrushFromHex('#FFFFFFFF'),
+			borderThickness: 2
 		});
 	};
+	function deleteSelectionRectangle(scene) {
+		//Delete previous rectangle
+		var prevRec = scene.screenSpaceCanvas2D.children[1];
+		if (!!prevRec) prevRec.dispose();
+	};
+	
 	exports.default = {
 		initScene: initScene,
 		createGuy: createGuy,
-		createSelectionRectangle: createSelectionRectangle
+		createSelectionRectangle: createSelectionRectangle,
+		deleteSelectionRectangle: deleteSelectionRectangle
 	};
 
 /***/ },
@@ -23422,7 +23431,9 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	function onPointerLeftUpEvent(event, dispatchEvents) {
+	function onPointerLeftUpEvent(event, dispatchEvents, scene) {
+		//Delete previous rectangle
+		_creation2.default.deleteSelectionRectangle(scene);
 		var mesh = event.pickInfo.pickedMesh;
 		//store event
 		var action = !!mesh && mesh.name !== 'ground' ? _actions2.default.select(mesh.id) : _actions2.default.deselectAll();
@@ -23440,11 +23451,16 @@
 		var window = document.getElementById('3dview');
 		var width = e.event.clientX - startPoint[0];
 		var height = window.height - e.event.clientY - startPoint[1];
+		//Delete previous rectangle
+		_creation2.default.deleteSelectionRectangle(scene);
+		//Create new Rectangle
 		_creation2.default.createSelectionRectangle(scene, startPoint, width, height);
 	};
 	
 	function instantiateEvents(canvas, scene, dispatchEvents) {
 		var startPoint = [0, 0];
+		var windowEventActivated = false;
+	
 		scene.onPointerObservable.add(function (e) {
 			var isLeftClicked = e.event.which === 1;
 			var isRightClicked = e.event.which === 3;
@@ -23452,8 +23468,8 @@
 			//For rectangle selection
 			switch (e.event.type) {
 				case 'mouseup':
-					if (!endDragging) (isLeftClicked ? onPointerLeftUpEvent : onPointerRightUpEvent)(e, dispatchEvents);
-					if (endDragging) startPoint = [0, 0];
+					(isLeftClicked ? onPointerLeftUpEvent : onPointerRightUpEvent)(e, dispatchEvents, scene);
+					startPoint = [0, 0];
 					break;
 				case 'mousedown':
 					var window = document.getElementById('3dview');
@@ -23461,6 +23477,10 @@
 					onPointerDragEvent(e, startPoint, scene);
 					break;
 				case 'mousemove':
+					// selection rectangle is 
+					//deleted here in case mouseup
+					//is done outside canvas				
+					_creation2.default.deleteSelectionRectangle(scene);
 					isLeftClicked && onPointerDragEvent(e, startPoint, scene);
 					break;
 			}

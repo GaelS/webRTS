@@ -12,7 +12,7 @@ function initScene( dispatchEvents ){
 
 	let createScene = ( dispatchEvents ) => {
 		let scene = new BABYLON.Scene( engine );
-		/*materialsLib.initMaterials(scene);
+		materialsLib.initMaterials(scene);
 		scene.clearColor = new BABYLON.Color3(0, 0, 1);
 
         let light = new BABYLON.HemisphericLight("light1", vector3(0, 1, 0), scene);
@@ -21,7 +21,6 @@ function initScene( dispatchEvents ){
 		let ground = BABYLON.Mesh.CreateGround("ground", 600, 600, 2, scene);
 		ground.material = new BABYLON.StandardMaterial( 'texture1', scene );
 		ground.material.diffuseColor = new BABYLON.Color3(0, 1, 0);
-		*/
 		let canvas = document.getElementById( '3dview' );
 		//Step to manage different resolution 
 		//to keep consistency between DOM and canvas pixel event
@@ -57,7 +56,7 @@ function createScreenSpaceCanvas2D(scene){
 	return new BABYLON.ScreenSpaceCanvas2D(scene, {
 		id : 'canvas2D',
 		size : new BABYLON.Size(window.width, window.height),
-		backgroundFill: "#FFF0408F",
+		backgroundFill: '#00000000',
 	} );
 };
 
@@ -74,8 +73,7 @@ function createGuy( scene, number ){
 	} );
 }
 
-function createSelectionRectangle(scene, startPosition, width, height ){
-	console.log(width, height)
+function createSelectionRectangle(scene, startPosition, width, height ){	
 	return new BABYLON.Rectangle2D( {
 		id : 'rec',
 		parent : scene.screenSpaceCanvas2D,
@@ -83,12 +81,19 @@ function createSelectionRectangle(scene, startPosition, width, height ){
 		y : startPosition[1],
 		height,
 		width,
-		border : BABYLON.Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF"),
-		borderThickness : 4,
-	} );	
+		border : BABYLON.Canvas2D.GetSolidColorBrushFromHex('#FFFFFFFF'),
+		borderThickness : 2,
+	} );
 };
+function deleteSelectionRectangle(scene){
+	//Delete previous rectangle
+	let prevRec = scene.screenSpaceCanvas2D.children[1];
+	if(!!prevRec) prevRec.dispose();
+};
+
 export default {
 	initScene,
 	createGuy,
 	createSelectionRectangle,
+	deleteSelectionRectangle
 };

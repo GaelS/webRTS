@@ -2,7 +2,9 @@ import utils from './utils.js';
 import actions from '../flux/actions.js';
 import creation from './creation.js';
 
-function onPointerLeftUpEvent( event, dispatchEvents ){
+function onPointerLeftUpEvent( event, dispatchEvents, scene ){
+	//Delete previous rectangle
+	creation.deleteSelectionRectangle( scene );
 	let mesh = event.pickInfo.pickedMesh;
 	//store event
 	let action = !!mesh && mesh.name !== 'ground' ? actions.select( mesh.id ) : actions.deselectAll();
@@ -23,11 +25,17 @@ function onPointerDragEvent( e, startPoint, scene ){
 	let window = document.getElementById('3dview');
 	let width = e.event.clientX - startPoint[0];
 	let height = window.height - e.event.clientY - startPoint[1];
+	//Delete previous rectangle
+	creation.deleteSelectionRectangle( scene );
+	//Create new Rectangle
 	creation.createSelectionRectangle( scene, startPoint, width, height );
 };
 
 function instantiateEvents(canvas, scene, dispatchEvents){
 	let startPoint = [0,0];
+	let windowEventActivated = false;
+	
+	
 	scene.onPointerObservable.add((e) => {
 		let isLeftClicked = e.event.which === 1; 
 		let isRightClicked = e.event.which === 3; 
@@ -35,8 +43,8 @@ function instantiateEvents(canvas, scene, dispatchEvents){
 		//For rectangle selection
 		switch(e.event.type){
 			case 'mouseup':
-				if(!endDragging) (isLeftClicked ? onPointerLeftUpEvent : onPointerRightUpEvent)( e,dispatchEvents );
-				if(endDragging) startPoint = [0,0]; 
+				(isLeftClicked ? onPointerLeftUpEvent : onPointerRightUpEvent)( e, dispatchEvents, scene );
+				startPoint = [0,0]; 		
 				break;
 			case 'mousedown' :
 				let window = document.getElementById('3dview');
@@ -44,6 +52,10 @@ function instantiateEvents(canvas, scene, dispatchEvents){
 				onPointerDragEvent( e, startPoint, scene );
 				break;
 			case 'mousemove' :
+				// selection rectangle is 
+				//deleted here in case mouseup
+				//is done outside canvas				
+				creation.deleteSelectionRectangle(scene);
 				isLeftClicked && onPointerDragEvent( e, startPoint, scene );
 				break;
 		}

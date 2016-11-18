@@ -10,10 +10,12 @@ import R from 'ramda';
 import BABYLON from 'babylonjs';
 
 export default ( ( state = defaultState, action ) => {
-	let newState = R.clone(state);
-	let value = action.value;
+	
+	let newState = R.clone( R.omit('scene',state ) );
 	//scene cannot be cloned
 	newState.scene = state.scene;
+	
+	let value = action.value;
 	switch(action.type){
 		case 'INIT' :
 			let scene = creation.initScene(
