@@ -27,7 +27,7 @@ function initScene( dispatchEvents ){
 		//to keep consistency between DOM and canvas pixel event
 		canvas.width = canvas.width / window.devicePixelRatio;
 		canvas.height = canvas.height / window.devicePixelRatio;
-		
+
 		let camera = cameraLib.createCamera( canvas, scene );
 		interaction.instantiateEvents(canvas, scene, dispatchEvents);
 		return scene;	
@@ -75,7 +75,7 @@ function createGuy( scene, number ){
 }
 
 function createSelectionRectangle(scene, startPosition, width, height ){
-	console.log(scene.screenSpaceCanvas2D.engine.getRenderWidth())
+	console.log(width, height)
 	return new BABYLON.Rectangle2D( {
 		id : 'rec',
 		parent : scene.screenSpaceCanvas2D,

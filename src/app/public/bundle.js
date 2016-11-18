@@ -23143,7 +23143,7 @@
 	}
 	
 	function createSelectionRectangle(scene, startPosition, width, height) {
-		console.log(scene.screenSpaceCanvas2D.engine.getRenderWidth());
+		console.log(width, height);
 		return new BABYLON.Rectangle2D({
 			id: 'rec',
 			parent: scene.screenSpaceCanvas2D,
@@ -23437,9 +23437,10 @@
 	};
 	
 	function onPointerDragEvent(e, startPoint, scene) {
-		var width = e.event.layerX - startPoint[0];
-		var height = e.event.layerY - startPoint[1];
-		_creation2.default.createSelectionRectangle(scene, startPoint, /*width, height*/100, 100);
+		var window = document.getElementById('3dview');
+		var width = e.event.clientX - startPoint[0];
+		var height = window.height - e.event.clientY - startPoint[1];
+		_creation2.default.createSelectionRectangle(scene, startPoint, width, height);
 	};
 	
 	function instantiateEvents(canvas, scene, dispatchEvents) {
@@ -23457,12 +23458,10 @@
 				case 'mousedown':
 					var window = document.getElementById('3dview');
 					startPoint = [event.clientX, window.height - event.clientY];
-					console.log(startPoint);
-	
 					onPointerDragEvent(e, startPoint, scene);
 					break;
 				case 'mousemove':
-					//isLeftClicked && onPointerDragEvent( e, startPoint, scene );
+					isLeftClicked && onPointerDragEvent(e, startPoint, scene);
 					break;
 			}
 			return;

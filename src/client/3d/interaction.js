@@ -20,9 +20,10 @@ function onPointerRightUpEvent( event, dispatchEvents ){
 };
 
 function onPointerDragEvent( e, startPoint, scene ){
-	let width = e.event.layerX - startPoint[0];
-	let height = e.event.layerY - startPoint[1];
-	creation.createSelectionRectangle( scene, startPoint, /*width, height*/ 100,100 );
+	let window = document.getElementById('3dview');
+	let width = e.event.clientX - startPoint[0];
+	let height = window.height - e.event.clientY - startPoint[1];
+	creation.createSelectionRectangle( scene, startPoint, width, height );
 };
 
 function instantiateEvents(canvas, scene, dispatchEvents){
@@ -40,12 +41,10 @@ function instantiateEvents(canvas, scene, dispatchEvents){
 			case 'mousedown' :
 				let window = document.getElementById('3dview');
 				startPoint =  [ event.clientX, window.height - event.clientY ];
-				console.log(startPoint)
-				
 				onPointerDragEvent( e, startPoint, scene );
 				break;
 			case 'mousemove' :
-				//isLeftClicked && onPointerDragEvent( e, startPoint, scene );
+				isLeftClicked && onPointerDragEvent( e, startPoint, scene );
 				break;
 		}
 		return;
