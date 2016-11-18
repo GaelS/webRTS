@@ -1,4 +1,4 @@
-import { vector3 } from './utils.js';
+import { vector3 } from '../utils.js';
 export default class CustomInputs {
         
 		constructor(camera){

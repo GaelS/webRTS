@@ -75,9 +75,9 @@
 	
 	var _reducer2 = _interopRequireDefault(_reducer);
 	
-	var _reactRedux = __webpack_require__(/*! react-redux */ 202);
+	var _reactRedux = __webpack_require__(/*! react-redux */ 201);
 	
-	var _App = __webpack_require__(/*! ./components/App.jsx */ 211);
+	var _App = __webpack_require__(/*! ./components/App.jsx */ 210);
 	
 	var _App2 = _interopRequireDefault(_App);
 	
@@ -22955,15 +22955,15 @@
 	
 	var _interaction2 = _interopRequireDefault(_interaction);
 	
-	var _movement = __webpack_require__(/*! ../3d/movement.js */ 197);
+	var _movement = __webpack_require__(/*! ../3d/movement.js */ 196);
 	
 	var _movement2 = _interopRequireDefault(_movement);
 	
-	var _materials = __webpack_require__(/*! ../3d/materials.js */ 198);
+	var _materials = __webpack_require__(/*! ../3d/materials.js */ 197);
 	
 	var _materials2 = _interopRequireDefault(_materials);
 	
-	var _ramda = __webpack_require__(/*! ramda */ 201);
+	var _ramda = __webpack_require__(/*! ramda */ 200);
 	
 	var _ramda2 = _interopRequireDefault(_ramda);
 	
@@ -23054,17 +23054,17 @@
 	
 	var _interaction2 = _interopRequireDefault(_interaction);
 	
-	var _movement = __webpack_require__(/*! ./movement.js */ 197);
+	var _movement = __webpack_require__(/*! ./movement.js */ 196);
 	
 	var _movement2 = _interopRequireDefault(_movement);
 	
-	var _utils = __webpack_require__(/*! ./utils.js */ 195);
+	var _utils = __webpack_require__(/*! ./utils.js */ 194);
 	
-	var _materials = __webpack_require__(/*! ./materials.js */ 198);
+	var _materials = __webpack_require__(/*! ./materials.js */ 197);
 	
 	var _materials2 = _interopRequireDefault(_materials);
 	
-	var _camera = __webpack_require__(/*! ./camera.js */ 199);
+	var _camera = __webpack_require__(/*! ./camera/camera.js */ 198);
 	
 	var _camera2 = _interopRequireDefault(_camera);
 	
@@ -23078,23 +23078,26 @@
 	
 		var createScene = function createScene(dispatchEvents) {
 			var scene = new BABYLON.Scene(engine);
-			_materials2.default.initMaterials(scene);
-			scene.clearColor = new BABYLON.Color3(0, 0, 1);
-	
-			var light = new BABYLON.HemisphericLight("light1", (0, _utils.vector3)(0, 1, 0), scene);
-			light.intensity = 1;
-	
-			var ground = BABYLON.Mesh.CreateGround("ground", 600, 600, 2, scene);
-			ground.material = new BABYLON.StandardMaterial('texture1', scene);
-			ground.material.diffuseColor = new BABYLON.Color3(0, 1, 0);
-	
+			/*materialsLib.initMaterials(scene);
+	  scene.clearColor = new BABYLON.Color3(0, 0, 1);
+	          let light = new BABYLON.HemisphericLight("light1", vector3(0, 1, 0), scene);
+	        light.intensity = 1;
+	  		let ground = BABYLON.Mesh.CreateGround("ground", 600, 600, 2, scene);
+	  ground.material = new BABYLON.StandardMaterial( 'texture1', scene );
+	  ground.material.diffuseColor = new BABYLON.Color3(0, 1, 0);
+	  */
 			var canvas = document.getElementById('3dview');
+			//Step to manage different resolution 
+			//to keep consistency between DOM and canvas pixel event
+			canvas.width = canvas.width / window.devicePixelRatio;
+			canvas.height = canvas.height / window.devicePixelRatio;
+	
 			var camera = _camera2.default.createCamera(canvas, scene);
 			_interaction2.default.instantiateEvents(canvas, scene, dispatchEvents);
-	
 			return scene;
 		};
 		var scene = createScene(dispatchEvents);
+		scene.screenSpaceCanvas2D = createScreenSpaceCanvas2D(scene);
 		scene.registerBeforeRender(function () {
 			_movement2.default.updatePositions(scene);
 		});
@@ -23104,11 +23107,23 @@
 	
 		// Watch for browser/canvas resize events
 		window.addEventListener("resize", function () {
+			//dispose and redraw canvas2D for rectangle selection
+			scene.screenSpaceCanvas2D.dispose();
+			scene.screenSpaceCanvas2D = createScreenSpaceCanvas2D(scene);
 			engine.resize();
 		});
 	
 		return scene;
-	}
+	};
+	
+	function createScreenSpaceCanvas2D(scene) {
+		var window = document.getElementById('3dview');
+		return new BABYLON.ScreenSpaceCanvas2D(scene, {
+			id: 'canvas2D',
+			size: new BABYLON.Size(window.width, window.height),
+			backgroundFill: "#FFF0408F"
+		});
+	};
 	
 	function createGuy(scene, number) {
 		return [].concat(_toConsumableArray(Array(number).keys())).map(function (i) {
@@ -23126,9 +23141,24 @@
 			return s.id;
 		});
 	}
+	
+	function createSelectionRectangle(scene, startPosition, width, height) {
+		console.log(scene.screenSpaceCanvas2D.engine.getRenderWidth());
+		return new BABYLON.Rectangle2D({
+			id: 'rec',
+			parent: scene.screenSpaceCanvas2D,
+			x: startPosition[0],
+			y: startPosition[1],
+			height: height,
+			width: width,
+			border: BABYLON.Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF"),
+			borderThickness: 4
+		});
+	};
 	exports.default = {
 		initScene: initScene,
-		createGuy: createGuy
+		createGuy: createGuy,
+		createSelectionRectangle: createSelectionRectangle
 	};
 
 /***/ },
@@ -23378,17 +23408,17 @@
 		value: true
 	});
 	
-	var _monet = __webpack_require__(/*! monet */ 194);
-	
-	var _monet2 = _interopRequireDefault(_monet);
-	
-	var _utils = __webpack_require__(/*! ./utils.js */ 195);
+	var _utils = __webpack_require__(/*! ./utils.js */ 194);
 	
 	var _utils2 = _interopRequireDefault(_utils);
 	
-	var _actions = __webpack_require__(/*! ../flux/actions.js */ 196);
+	var _actions = __webpack_require__(/*! ../flux/actions.js */ 195);
 	
 	var _actions2 = _interopRequireDefault(_actions);
+	
+	var _creation = __webpack_require__(/*! ./creation.js */ 190);
+	
+	var _creation2 = _interopRequireDefault(_creation);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -23402,49 +23432,37 @@
 	function onPointerRightUpEvent(event, dispatchEvents) {
 		//Get position on mesh clicked
 		var mesh = event.pickInfo.pickedMesh;
-		//Move the selected cube(s)
-		return _monet.Maybe.fromNull(mesh).isSome() ? dispatchEvents(_actions2.default.moveSelection(event.pickInfo.pickedPoint.x, event.pickInfo.pickedPoint.z)) : _utils2.default.emptyFunc();
+		//Move the selected cube(s) in not null
+		return !!mesh ? dispatchEvents(_actions2.default.moveSelection(event.pickInfo.pickedPoint.x, event.pickInfo.pickedPoint.z)) : _utils2.default.emptyFunc();
 	};
 	
-	function onPointerLeftDownEvent(event, dispatchEvents, scene) {/*
-	                                                               var canvas = new BABYLON.ScreenSpaceCanvas2D(scene, 
-	                                                               { 
-	                                                               id: "ScreenCanvas", size: new BABYLON.Size(600, 500), 
-	                                                               backgroundFill: "#C0C0C040", backgroundRoundRadius: 50 
-	                                                               });
-	                                                               var rect = new BABYLON.Rectangle2D({
-	                                                               id: "mainRect", parent: canvas, x: 200, y: 200, width: 100, height: 100, 
-	                                                               fill: "#404080FF", border: "#A040A0D0, #FFFFFFFF", borderThickness: 10, 
-	                                                               roundRadius: 10, 
-	                                                               children: 
-	                                                               [
-	                                                               new BABYLON.Rectangle2D(
-	                                                               { 
-	                                                               id: "insideRect", marginAlignment: "v: center, h: center", 
-	                                                               width: 40, height: 40, fill: "#FAFF75FF", roundRadius: 10 
-	                                                               })
-	                                                               ]});
-	                                                               scene.activeCamera.attachControl(canvas, false);
-	                                                               window.setTimeout(() =>{
-	                                                               canvas.isVisible = false;
-	                                                               canvas.levelVisible = false;
-	                                                               }, 1000) */
-	}
-	function instantiateEvents(canvas, scene, dispatchEvents) {
+	function onPointerDragEvent(e, startPoint, scene) {
+		var width = e.event.layerX - startPoint[0];
+		var height = e.event.layerY - startPoint[1];
+		_creation2.default.createSelectionRectangle(scene, startPoint, /*width, height*/100, 100);
+	};
 	
+	function instantiateEvents(canvas, scene, dispatchEvents) {
+		var startPoint = [0, 0];
 		scene.onPointerObservable.add(function (e) {
 			var isLeftClicked = e.event.which === 1;
 			var isRightClicked = e.event.which === 3;
-	
+			var endDragging = startPoint[0] !== 0 && startPoint[1] !== 0;
+			//For rectangle selection
 			switch (e.event.type) {
 				case 'mouseup':
-					var fn = isLeftClicked ? onPointerLeftUpEvent : onPointerRightUpEvent;
-					fn(e, dispatchEvents);
+					if (!endDragging) (isLeftClicked ? onPointerLeftUpEvent : onPointerRightUpEvent)(e, dispatchEvents);
+					if (endDragging) startPoint = [0, 0];
 					break;
 				case 'mousedown':
-					//onPointerLeftDownEvent(e, dispatchEvents,scene);
+					var window = document.getElementById('3dview');
+					startPoint = [event.clientX, window.height - event.clientY];
+					console.log(startPoint);
+	
+					onPointerDragEvent(e, startPoint, scene);
 					break;
 				case 'mousemove':
+					//isLeftClicked && onPointerDragEvent( e, startPoint, scene );
 					break;
 			}
 			return;
@@ -23457,1022 +23475,6 @@
 
 /***/ },
 /* 194 */
-/*!**********************************************!*\
-  !*** ./~/monet/src/main/javascript/monet.js ***!
-  \**********************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	//     Monet.js 0.8.10
-	
-	//     (c) 2012-2016 Chris Myers
-	//     Monet.js may be freely distributed under the MIT license.
-	//     For all details and documentation:
-	//     https://cwmyers.github.com/monet.js
-	
-	
-	(function(root, factory) {
-	    if (true) {
-	        module.exports = factory(root);
-	    } else if (typeof define === 'function' && define.amd) {
-	        define(factory);
-	    } else {
-	        root.curry = factory(root);
-	    }
-	}(this, function(root) {
-	    "use strict";
-	
-	    var curry = function (fn, args) {
-	      return function () {
-	        var args1 = args.append(List.fromArray(Array.prototype.slice.call(arguments)));
-	        return args1.size() >= fn.length ? fn.apply(this, args1.toArray().slice(0, args1.size())) : curry(fn, args1);
-	      };
-	    };
-	
-	    var isFunction = function (f) {
-	        return !!(f && f.constructor && f.call && f.apply)
-	    };
-	
-	    var idFunction = function (value) {
-	        return value
-	    };
-	    var trueFunction = function () {
-	        return true
-	    };
-	    var falseFunction = function () {
-	        return false
-	    };
-	
-	    var Monet = root.Monet = {}
-	
-	    var swap = Monet.swap = function (f) {
-	        return function (a, b) {
-	            return f(b, a)
-	        }
-	    }
-	
-	    var map = function (fn) {
-	        return this.bind(this.of.compose(fn))
-	    }
-	
-	    var apply2 = Monet.apply2 = function(a1, a2, f) {
-	        return a2.ap(a1.map(f.curry()))
-	    }
-	
-	    Monet.curry = function (fn) {
-	        return curry(fn, Nil);
-	    }
-	
-	    Function.prototype.curry = function () {
-	        return curry(this, Nil)
-	    }
-	
-	    // List monad
-	
-	    var list;
-	    var List = list = root.List = function (head, tail) {
-	        return new List.fn.init(head, tail)
-	    }
-	
-	    var listMap = function (fn, l) {
-	        return listMapC(fn, l).run()
-	    }
-	
-	    var listMapC = function (fn, l) {
-	        return l.isNil ? Return(l) : Suspend(function () {
-	            return listMapC(fn, l.tail())
-	        }).map(cons.curry()(fn(l.head())))
-	    }
-	
-	    var listEach = function (effectFn, l) {
-	        if (!l.isNil) {
-	            effectFn(l.head())
-	            listEach(effectFn, l.tail())
-	        }
-	    }
-	
-	    var foldLeft = function (fn, acc, l) {
-	        function fL(acc, l) {
-	            return l.isNil ?
-	                Return(acc) :
-	                Suspend(function () {
-	                    return fL(fn(acc, l.head()), l.tail())
-	                })
-	        }
-	
-	        return fL(acc, l).run()
-	    }
-	
-	    var foldRight = function (fn, l, acc) {
-	        function fR(l, acc) {
-	            return l.isNil ?
-	                Return(acc) :
-	                Suspend(function () {
-	                    return fR(l.tail(), acc)
-	                }).map(function (acc1) {
-	                        return fn(l.head(), acc1)
-	                    })
-	        }
-	
-	        return fR(l, acc).run()
-	    }
-	
-	
-	    var append = function (list1, list2) {
-	        function append1(list1, list2) {
-	            return list1.isNil ?
-	                Return(list2) :
-	                Suspend(function () {
-	                    return append1(list1.tail(), list2).map(function (list) {
-	                        return list.cons(list1.head())
-	                    })
-	                })
-	        }
-	
-	        return append1(list1, list2).run()
-	    }
-	
-	    var sequence = function (list, type) {
-	        return list.foldRight(type.of(Nil))(type.map2(cons))
-	    }
-	
-	    var sequenceValidation = function (list) {
-	        return list.foldLeft(Success(Nil))(function (acc, a) {
-	            return  acc.ap(a.map(function (v) {
-	                return function (t) {
-	                    return cons(v, t)
-	                }
-	            }))
-	        }).map(listReverse)
-	    }
-	
-	    var listReverse = function (list) {
-	        return list.foldLeft(Nil)(swap(cons))
-	    }
-	
-	    var listFilter = function(list, fn) {
-	      return list.foldRight(Nil)(function(a, acc) {
-	        return fn(a) ? cons(a,acc): acc
-	      })
-	    }
-	
-	    var listAp = function(list1, list2) {
-	        return list1.bind(function(x) {
-	          return list2.map(function(f) {
-	                return f(x)
-	            })
-	        })
-	    }
-	
-	    var cons = function (head, tail) {
-	        return tail.cons(head)
-	    }
-	
-	
-	    List.fn = List.prototype = {
-	        init: function (head, tail) {
-	            if (head == null) {
-	                this.isNil = true
-	                this.size_ = 0
-	            } else {
-	                this.isNil = false
-	                this.head_ = head
-	                this.tail_ = tail == null ? Nil : tail
-	                this.size_ = tail == null ? 0 : tail.size() + 1
-	            }
-	        },
-	        of: function (value) {
-	            return new List(value)
-	        },
-	        size: function () {
-	            return this.size_
-	        },
-	        cons: function (head) {
-	            return List(head, this)
-	        },
-	        snoc: function (element) {
-	            return this.concat(List(element))
-	        },
-	        map: function (fn) {
-	            return listMap(fn, this)
-	        },
-	        toArray: function () {
-	            return foldLeft(function (acc, e) {
-	                acc.push(e)
-	                return acc
-	            }, [], this)
-	        },
-	        foldLeft: function (initialValue) {
-	            var self = this
-	            return function (fn) {
-	                return foldLeft(fn, initialValue, self)
-	            }
-	        },
-	        foldRight: function (initialValue) {
-	            var self = this
-	            return function (fn) {
-	                return foldRight(fn, self, initialValue)
-	            }
-	        },
-	        append: function (list2) {
-	            return append(this, list2)
-	        },
-	        filter: function(fn) {
-	          return listFilter(this, fn)
-	        },
-	        flatten: function () {
-	            return foldRight(append, this, Nil)
-	        },
-	        flattenMaybe: function () {
-	            return this.flatMap(Maybe.toList)
-	        },
-	        reverse: function () {
-	            return listReverse(this)
-	        },
-	        bind: function (fn) {
-	            return this.map(fn).flatten()
-	        },
-	        each: function (effectFn) {
-	            listEach(effectFn, this)
-	        },
-	        // transforms a list of Maybes to a Maybe list
-	        sequenceMaybe: function () {
-	            return sequence(this, Maybe)
-	        },
-	        sequenceValidation: function () {
-	            return sequenceValidation(this)
-	        },
-	        sequenceEither: function () {
-	            return sequence(this, Either)
-	        },
-	        sequenceIO: function () {
-	            return sequence(this, IO)
-	        },
-	        sequenceReader: function () {
-	            return sequence(this, Reader)
-	        },
-	        sequence: function (monadType) {
-	            return sequence(this, monadType)
-	        },
-	        head: function () {
-	            return this.head_
-	        },
-	        headMaybe: function () {
-	            return this.isNil ? None() : Some(this.head_)
-	        },
-	        tail: function () {
-	            return this.isNil ? Nil : this.tail_
-	        },
-	        tails: function () {
-	            return this.isNil ? List(Nil, Nil) : this.tail().tails().cons(this)
-	        },
-	        ap: function(list) {
-	            return listAp(this, list)
-	        },
-	        isNEL: falseFunction
-	    }
-	
-	    List.fn.init.prototype = List.fn;
-	    var Nil = root.Nil = new List.fn.init()
-	
-	    // Aliases
-	
-	    List.prototype.empty = function () {
-	        return Nil
-	    }
-	
-	
-	    List.fromArray = function (array) {
-	        var l = Nil
-	        for (var i = array.length; i--; i <= 0) {
-	            l = l.cons(array[i])
-	        }
-	        return l
-	
-	    }
-	
-	
-	    List.of = function (a) {
-	        return new List(a, Nil)
-	    }
-	
-	    /*
-	     * Non-Empty List monad
-	     * This is also a comonad because there exists the implementation of extract(copure), which is just head
-	     * and cobind and cojoin.
-	     *
-	     */
-	
-	    var NonEmptyList;
-	    var NEL = root.NEL = NonEmptyList = root.NonEmptyList = function (head, tail) {
-	        if (head == null) {
-	            throw "Cannot create an empty Non-Empty List."
-	        }
-	        return new NEL.fn.init(head, tail)
-	    }
-	
-	    NEL.of = function(a) {
-	      return NEL(a, Nil)
-	    }
-	
-	    NEL.fn = NEL.prototype = {
-	        init: function (head, tail) {
-	            if (head == null) {
-	                this.isNil = true
-	                this.size_ = 0
-	            } else {
-	                this.isNil = false
-	                this.head_ = head
-	                this.tail_ = tail == null ? Nil : tail
-	                this.size_ = this.tail_.size() + 1
-	            }
-	        },
-	        map: function (fn) {
-	            return NEL(fn(this.head_), listMap(fn, this.tail_))
-	        },
-	
-	        bind: function (fn) {
-	            var p = fn(this.head_)
-	            if (!p.isNEL()) {
-	                throw "function must return a NonEmptyList."
-	            }
-	            var list = this.tail().foldLeft(Nil.snoc(p.head()).append(p.tail()))(function (acc, e) {
-	                var list2 = fn(e).toList()
-	                return acc.snoc(list2.head()).append(list2.tail())
-	            })
-	
-	            return new NEL(list.head(), list.tail())
-	        },
-	
-	        head: function () {
-	            return this.head_
-	        },
-	
-	        tail: function () {
-	            return this.tail_
-	        },
-	        //NEL[A] -> NEL[NEL[A]]
-	        tails: function () {
-	            var listsOfNels = this.toList().tails().map(NEL.fromList).flattenMaybe();
-	            return  NEL(listsOfNels.head(), listsOfNels.tail())
-	        },
-	        toList: function () {
-	            return List(this.head_, this.tail_)
-	        },
-	        reverse: function () {
-	            if (this.tail().isNil) {
-	                return this
-	            } else {
-	                var reversedTail = this.tail().reverse()
-	                return NEL(reversedTail.head(), reversedTail.tail().append(List(this.head())))
-	            }
-	        },
-	        foldLeft: function (initialValue) {
-	            return this.toList().foldLeft(initialValue)
-	        },
-	        foldRight: function (initialValue) {
-	            return this.toList().foldRight(initialValue)
-	        },
-	        reduceLeft: function (fn) {
-	          return this.tail().foldLeft(this.head())(fn)
-	        },
-	        filter: function (fn) {
-	            return listFilter(this.toList(), fn)
-	        },
-	        append: function (list2) {
-	            return NEL.fromList(this.toList().append(list2.toList())).some()
-	        },
-	        // NEL[A] -> (NEL[A] -> B) -> NEL[B]
-	        cobind: function (fn) {
-	            return this.cojoin().map(fn)
-	        },
-	        size: function () {
-	            return this.size_
-	        },
-	        isNEL: trueFunction
-	    }
-	
-	    NEL.fromList = function (list) {
-	        return list.isNil ? None() : Some(NEL(list.head(), list.tail()))
-	    }
-	
-	    NEL.fn.init.prototype = NEL.fn;
-	    NEL.prototype.toArray = List.prototype.toArray
-	    NEL.prototype.extract = NEL.prototype.copure = NEL.prototype.head
-	    NEL.prototype.cojoin = NEL.prototype.tails
-	    NEL.prototype.coflatMap = NEL.prototype.mapTails = NEL.prototype.cobind
-	    NEL.prototype.ap = List.prototype.ap
-	
-	
-	    /* Maybe Monad */
-	
-	    var Maybe = root.Maybe = {}
-	
-	    Maybe.fromNull = function (val) {
-	        return val == null ? Maybe.None() : Maybe.Some(val)
-	    };
-	
-	    Maybe.of = function (a) {
-	        return Some(a)
-	    }
-	
-	    var Just;
-	    var Some = Just = Maybe.Just = Maybe.Some = root.Some = root.Just = function (val) {
-	        return new Maybe.fn.init(true, val)
-	    };
-	
-	    var Nothing;
-	    var None = Nothing = Maybe.Nothing = Maybe.None = root.None = function () {
-	        return new Maybe.fn.init(false, null)
-	    };
-	
-	    Maybe.toList = function (maybe) {
-	        return maybe.toList()
-	    }
-	
-	    Maybe.fn = Maybe.prototype = {
-	        init: function (isValue, val) {
-	            this.isValue = isValue
-	            if (val == null && isValue) {
-	                throw "Illegal state exception"
-	            }
-	            this.val = val
-	        },
-	        isSome: function () {
-	            return this.isValue
-	        },
-	        isNone: function () {
-	            return !this.isSome()
-	        },
-	        bind: function (bindFn) {
-	            return this.isValue ? bindFn(this.val) : this
-	        },
-	        some: function () {
-	            if (this.isValue) {
-	                return this.val
-	            } else {
-	                throw "Illegal state exception"
-	            }
-	        },
-	        orSome: function (otherValue) {
-	            return this.isValue ? this.val : otherValue
-	        },
-	        orElse: function (maybe) {
-	            return this.isValue ? this : maybe
-	        },
-	        ap: function (maybeWithFunction) {
-	            var value = this.val
-	            return this.isValue ? maybeWithFunction.map(function (fn) {
-	                return fn(value)
-	            }) : this
-	        },
-	
-	        toList: function () {
-	            return this.map(List).orSome(Nil)
-	        },
-	        toEither: function (failVal) {
-	            return this.isSome() ? Right(this.val) : Left(failVal)
-	        },
-	        toValidation: function (failVal) {
-	            return this.isSome() ? Success(this.val) : Fail(failVal)
-	        },
-	        fold: function (defaultValue) {
-	            var self = this
-	            return function (fn) {
-	                return self.isSome() ? fn(self.val) : defaultValue
-	            }
-	        },
-	        cata: function (none, some) {
-	            return this.isSome() ? some(this.val) : none()
-	        },
-	        filter: function(fn) {
-	          var self = this
-	          return self.flatMap(function(a) {
-	            return fn(a) ? self : None()
-	          })
-	        }
-	    };
-	
-	    // aliases
-	    Maybe.prototype.orJust = Maybe.prototype.orSome
-	    Maybe.prototype.just = Maybe.prototype.some
-	    Maybe.prototype.isJust = Maybe.prototype.isSome
-	    Maybe.prototype.isNothing = Maybe.prototype.isNone
-	
-	    Maybe.fn.init.prototype = Maybe.fn
-	
-	    var Validation = root.Validation = {};
-	
-	    var Success = Validation.Success = Validation.success = root.Success = function (val) {
-	        return new Validation.fn.init(val, true)
-	    }
-	
-	    var Fail = Validation.Fail = Validation.fail = root.Fail = function (error) {
-	        return new Validation.fn.init(error, false)
-	    }
-	
-	    Validation.of = function (v) {
-	        return Success(v)
-	    }
-	
-	    Validation.fn = Validation.prototype = {
-	        init: function (val, success) {
-	            this.val = val
-	            this.isSuccessValue = success
-	        },
-	        success: function () {
-	            if (this.isSuccess())
-	                return this.val;
-	            else
-	                throw 'Illegal state. Cannot call success() on a Validation.fail'
-	        },
-	        isSuccess: function () {
-	            return this.isSuccessValue
-	        },
-	        isFail: function () {
-	            return !this.isSuccessValue
-	        },
-	        fail: function () {
-	            if (this.isSuccess())
-	                throw 'Illegal state. Cannot call fail() on a Validation.success'
-	            else
-	                return this.val
-	        },
-	        bind: function (fn) {
-	            return this.isSuccess() ? fn(this.val) : this
-	        },
-	        ap: function (validationWithFn) {
-	            var value = this.val
-	            return this.isSuccess() ?
-	                validationWithFn.map(function (fn) {
-	                    return fn(value);
-	                })
-	                :
-	                (validationWithFn.isFail() ?
-	                    Validation.Fail(Semigroup.append(value, validationWithFn.fail()))
-	                    : this)
-	        },
-	        acc: function () {
-	            var x = function () {
-	                return x
-	            }
-	            return this.isSuccessValue ? Validation.success(x) : this
-	        },
-	        cata: function (fail, success) {
-	            return this.isSuccessValue ?
-	                success(this.val)
-	                : fail(this.val)
-	        },
-	        failMap: function (fn) {
-	            return this.isFail() ? Fail(fn(this.val)) : this
-	        },
-	        bimap: function (fail, success) {
-	            return this.isSuccessValue ? this.map(success) : this.failMap(fail)
-	        },
-	        toMaybe: function () {
-	            return this.isSuccess() ? Some(this.val) : None()
-	        },
-	        toEither: function () {
-	            return (this.isSuccess() ? Right : Left)(this.val)
-	        }
-	    };
-	
-	    Validation.fn.init.prototype = Validation.fn;
-	
-	
-	    var Semigroup = root.Semigroup = {}
-	
-	    Semigroup.append = function (a, b) {
-	        if (a instanceof Array) {
-	            return a.concat(b)
-	        }
-	        if (typeof a === "string") {
-	            return a + b
-	        }
-	        if (isFunction(a.concat)) {
-	            return a.concat(b)
-	        }
-	        throw "Couldn't find a semigroup appender in the environment, please specify your own append function"
-	    }
-	
-	    var monadT, monadTransformer, MonadTransformer;
-	    var MonadT = monadT = monadTransformer = MonadTransformer = root.monadTransformer = root.MonadT = root.monadT = function (monad) {
-	        return new MonadT.fn.init(monad)
-	    }
-	
-	    MonadT.of = function (m) {
-	        return MonadT(m)
-	    }
-	
-	    MonadT.fn = MonadT.prototype = {
-	        init: function (monad) {
-	            this.monad = monad
-	        },
-	        map: function (fn) {
-	            return monadT(this.monad.map(function (v) {
-	                return v.map(fn)
-	            }))
-	        },
-	        bind: function (fn) {
-	            return monadT(this.monad.map(function (v) {
-	                return v.flatMap(fn)
-	            }))
-	        },
-	        ap: function (monadWithFn) {
-	            return monadT(this.monad.flatMap(function (v) {
-	                return monadWithFn.perform().map(function (v2) {
-	                    return v.ap(v2)
-	                })
-	            }))
-	        },
-	        perform: function () {
-	            return this.monad;
-	        }
-	    }
-	
-	    MonadT.fn.init.prototype = MonadT.fn;
-	
-	    var io;
-	    var IO = io = root.IO = root.io = function (effectFn) {
-	        return new IO.fn.init(effectFn)
-	    }
-	
-	    IO.of = function (a) {
-	        return IO(function() {
-	          return a
-	        })
-	    }
-	
-	    IO.fn = IO.prototype = {
-	        init: function (effectFn) {
-	            if (!isFunction(effectFn))
-	                throw "IO requires a function"
-	            this.effectFn = effectFn;
-	        },
-	        map: function (fn) {
-	            var self = this;
-	            return IO(function () {
-	                return fn(self.effectFn())
-	            })
-	        },
-	        bind: function (fn) {
-	            var self = this
-	            return IO(function () {
-	                return fn(self.effectFn()).run()
-	            });
-	        },
-	        ap: function (ioWithFn) {
-	            var self = this
-	            return ioWithFn.map(function (fn) {
-	                return fn(self.effectFn())
-	            })
-	        },
-	        run: function () {
-	            return this.effectFn()
-	        }
-	    }
-	
-	    IO.fn.init.prototype = IO.fn;
-	
-	    IO.prototype.perform = IO.prototype.performUnsafeIO = IO.prototype.run
-	
-	    /* Either Monad */
-	
-	    var Either = root.Either = {}
-	
-	    Either.of = function (a) {
-	        return Right(a)
-	    }
-	
-	    var Right = Either.Right = root.Right = function (val) {
-	        return new Either.fn.init(val, true)
-	    };
-	    var Left = Either.Left = root.Left = function (val) {
-	        return new Either.fn.init(val, false)
-	    };
-	
-	    Either.fn = Either.prototype = {
-	        init: function (val, isRightValue) {
-	            this.isRightValue = isRightValue
-	            this.value = val
-	        },
-	        bind: function (fn) {
-	            return this.isRightValue ? fn(this.value) : this
-	        },
-	        ap: function (eitherWithFn) {
-	            var self = this
-	            return this.isRightValue ? eitherWithFn.map(function (fn) {
-	                return fn(self.value)
-	            }) : this
-	        },
-	        leftMap: function (fn) {
-	            return this.isLeft() ? Left(fn(this.value)) : this
-	        },
-	        isRight: function () {
-	            return this.isRightValue
-	        },
-	        isLeft: function () {
-	            return !this.isRight()
-	        },
-	        right: function () {
-	            if (this.isRightValue) {
-	                return this.value
-	            } else {
-	                throw "Illegal state. Cannot call right() on a Either.left"
-	            }
-	        },
-	        left: function () {
-	            if (this.isRightValue) {
-	                throw "Illegal state. Cannot call left() on a Either.right"
-	            } else {
-	                return this.value
-	            }
-	        },
-	        cata: function (leftFn, rightFn) {
-	            return this.isRightValue ? rightFn(this.value) : leftFn(this.value)
-	        },
-	        bimap: function (leftFn, rightFn) {
-	            return this.isRightValue ? this.map(rightFn) : this.leftMap(leftFn)
-	        },
-	        toMaybe: function () {
-	            return this.isRight() ? Some(this.value) : None()
-	        },
-	        toValidation: function () {
-	            return this.isRight() ? Success(this.value) : Fail(this.value)
-	        }
-	    }
-	
-	    Either.fn.init.prototype = Either.fn;
-	
-	    var reader;
-	    var Reader = reader = root.Reader = function (fn) {
-	        return new Reader.fn.init(fn)
-	    }
-	
-	    Reader.of = function (x) {
-	      return Reader(function (_) {
-	        return x
-	      })
-	    }
-	
-	    Reader.ask = function () {
-	      return Reader(idFunction)
-	    }
-	
-	    Reader.fn = Reader.prototype = {
-	        init: function (fn) {
-	            this.f = fn
-	        },
-	        run: function (config) {
-	            return this.f(config)
-	        },
-	        bind: function (fn) {
-	            var self = this
-	            return Reader(function (config) {
-	                return fn(self.run(config)).run(config)
-	            })
-	        },
-	        ap: function (readerWithFn) {
-	            var self = this
-	            return readerWithFn.bind(function (fn) {
-	                return Reader(function (config) {
-	                    return fn(self.run(config))
-	                })
-	            })
-	        },
-	        map: function (fn) {
-	            var self = this
-	            return Reader(function (config) {
-	                return fn(self.run(config))
-	            })
-	        },
-	        local: function(fn) {
-	            var self = this
-	             return Reader(function(c) {
-	                 return self.run(fn(c))
-	            })
-	        }
-	    }
-	
-	    Reader.fn.init.prototype = Reader.fn;
-	
-	    var Free = root.Free = {}
-	
-	    var Suspend = Free.Suspend = root.Suspend = function (functor) {
-	        return new Free.fn.init(functor, true)
-	    }
-	    var Return = Free.Return = root.Return = function (val) {
-	        return new Free.fn.init(val, false)
-	    }
-	
-	    Free.of = function (a) {
-	        return Return(a)
-	    }
-	
-	    Free.liftF = function (functor) {
-	        return Suspend(functor.map(Return))
-	    }
-	
-	    Free.fn = Free.prototype = {
-	        init: function (val, isSuspend) {
-	            this.isSuspend = isSuspend
-	            if (isSuspend) {
-	                this.functor = val
-	            } else {
-	                this.val = val
-	            }
-	        },
-	        run: function () {
-	            return this.go(function (f) {
-	                return f()
-	            })
-	        },
-	        bind: function (fn) {
-	            return this.isSuspend ?
-	                Suspend(
-	                    this.functor.map(
-	                        function (free) {
-	                            return free.bind(fn)
-	                        })) :
-	                fn(this.val)
-	        },
-	        ap: function(ff) {
-	          return this.bind(function(x) {
-	            return ff.map(function(f) {
-	              return f(x)
-	            })
-	          })
-	        },
-	
-	        resume: function () {
-	            return this.isSuspend ? Left(this.functor) : Right(this.val)
-	        },
-	
-	        go1: function (f) {
-	            function go2(t) {
-	                return t.resume().cata(function (functor) {
-	                    return go2(f(functor))
-	                }, idFunction)
-	            }
-	
-	            return go2(this)
-	        },
-	        go: function (f) {
-	            var result = this.resume()
-	            while (result.isLeft()) {
-	                var next = f(result.left())
-	                result = next.resume()
-	            }
-	
-	            return result.right()
-	        }
-	
-	    }
-	
-	    Free.fn.init.prototype = Free.fn;
-	
-	    var Identity = root.Identity = function (a) {
-	        return new Identity.fn.init(a)
-	    }
-	
-	    Identity.of = function (a) {
-	        return new Identity(a)
-	    }
-	
-	    Identity.fn = Identity.prototype = {
-	        init: function (val) {
-	            this.val = val
-	        },
-	        bind: function (fn) {
-	            return fn(this.val);
-	        },
-	        get: function () {
-	            return this.val
-	        }
-	    }
-	
-	    Identity.fn.init.prototype = Identity.fn;
-	
-	
-	    Function.prototype.io = function () {
-	        return IO(this)
-	    }
-	
-	    Function.prototype.io1 = function () {
-	        var f = this;
-	        return function (x) {
-	            return IO(
-	                function () {
-	                    return f(x)
-	                }
-	            )
-	        }
-	    }
-	
-	    Function.prototype.reader = function () {
-	        var f = this
-	        var wrapReader = function (fn, args) {
-	            return function () {
-	                var args1 = args.append(List.fromArray(Array.prototype.slice.call(arguments)));
-	                var self = this
-	                return args1.size() + 1 == fn.length ?
-	                    Reader(function (c) {
-	                        return fn.apply(self, (args1.append(List(c))).toArray())
-	                    }) :
-	                    wrapReader(fn, args1)
-	            }
-	        }
-	        return wrapReader(f, Nil)
-	    }
-	
-	    Function.prototype.compose = Function.prototype.o = function (g) {
-	        var f = this
-	        return function (x) {
-	            return f(g(x))
-	        }
-	    }
-	
-	    Function.prototype.andThen = Function.prototype.map = function (g) {
-	        var f = this
-	        return function (x) {
-	            return g(f(x))
-	        }
-	    }
-	
-	    function addAliases(type) {
-	        type.prototype.flatMap = type.prototype.chain = type.prototype.bind
-	        type.pure = type.unit = type.of
-	        type.prototype.of = type.of
-	        if (type.prototype.append != null) {
-	            type.prototype.concat = type.prototype.append
-	        }
-	        type.prototype.point = type.prototype.pure = type.prototype.unit = type.prototype.of
-	    }
-	
-	
-	    // Wire up aliases
-	    function addMonadOps(type) {
-	        type.prototype.join = function () {
-	            return this.flatMap(idFunction)
-	        }
-	
-	        type.map2 = function (fn) {
-	            return function (ma, mb) {
-	                return ma.flatMap(function (a) {
-	                    return mb.map(function (b) {
-	                        return fn(a, b)
-	                    })
-	                })
-	            }
-	        }
-	    }
-	
-	    function addFunctorOps(type) {
-	        if (type.prototype.map == null) {
-	            type.prototype.map = function (fn) {
-	                return map.call(this, fn)
-	            }
-	        }
-	    }
-	
-	    function addApplicativeOps(type) {
-	        type.prototype.takeLeft = function (m) {
-	            return apply2(this, m, function (a, b) {
-	                return a
-	            })
-	        }
-	
-	        type.prototype.takeRight = function (m) {
-	            return apply2(this, m, function (a, b) {
-	                return b
-	            })
-	        }
-	    }
-	
-	    function decorate(type) {
-	        addAliases(type)
-	        addMonadOps(type);
-	        addFunctorOps(type);
-	        addApplicativeOps(type);
-	    }
-	
-	    decorate(MonadT)
-	    decorate(Either)
-	    decorate(Maybe)
-	    decorate(IO)
-	    decorate(NEL)
-	    decorate(List)
-	    decorate(Validation)
-	    decorate(Reader)
-	    decorate(Free)
-	    decorate(Identity)
-	
-	    return root
-	}));
-	
-
-
-/***/ },
-/* 195 */
 /*!********************************!*\
   !*** ./src/client/3d/utils.js ***!
   \********************************/
@@ -24501,7 +23503,7 @@
 	};
 
 /***/ },
-/* 196 */
+/* 195 */
 /*!************************************!*\
   !*** ./src/client/flux/actions.js ***!
   \************************************/
@@ -24561,7 +23563,7 @@
 	};
 
 /***/ },
-/* 197 */
+/* 196 */
 /*!***********************************!*\
   !*** ./src/client/3d/movement.js ***!
   \***********************************/
@@ -24595,7 +23597,7 @@
 	};
 
 /***/ },
-/* 198 */
+/* 197 */
 /*!************************************!*\
   !*** ./src/client/3d/materials.js ***!
   \************************************/
@@ -24662,10 +23664,10 @@
 	};
 
 /***/ },
-/* 199 */
-/*!*********************************!*\
-  !*** ./src/client/3d/camera.js ***!
-  \*********************************/
+/* 198 */
+/*!****************************************!*\
+  !*** ./src/client/3d/camera/camera.js ***!
+  \****************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -24674,11 +23676,11 @@
 		value: true
 	});
 	
-	var _utils = __webpack_require__(/*! ./utils.js */ 195);
+	var _utils = __webpack_require__(/*! ../utils.js */ 194);
 	
-	var _CustomInputs = __webpack_require__(/*! ./CustomInputs.js */ 200);
+	var _customInputs = __webpack_require__(/*! ./customInputs.js */ 199);
 	
-	var _CustomInputs2 = _interopRequireDefault(_CustomInputs);
+	var _customInputs2 = _interopRequireDefault(_customInputs);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -24709,7 +23711,7 @@
 		//mouse input
 		scene.onPointerObservable.add(mouseEvents(camera));
 		//keyboard input
-		camera.inputs.add(new _CustomInputs2.default(camera));
+		camera.inputs.add(new _customInputs2.default(camera));
 	};
 	
 	exports.default = {
@@ -24724,10 +23726,10 @@
 	};
 
 /***/ },
-/* 200 */
-/*!***************************************!*\
-  !*** ./src/client/3d/CustomInputs.js ***!
-  \***************************************/
+/* 199 */
+/*!**********************************************!*\
+  !*** ./src/client/3d/camera/customInputs.js ***!
+  \**********************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -24738,7 +23740,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _utils = __webpack_require__(/*! ./utils.js */ 195);
+	var _utils = __webpack_require__(/*! ../utils.js */ 194);
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
@@ -24870,7 +23872,7 @@
 	exports.default = CustomInputs;
 
 /***/ },
-/* 201 */
+/* 200 */
 /*!*******************************!*\
   !*** ./~/ramda/dist/ramda.js ***!
   \*******************************/
@@ -33710,7 +32712,7 @@
 
 
 /***/ },
-/* 202 */
+/* 201 */
 /*!************************************!*\
   !*** ./~/react-redux/lib/index.js ***!
   \************************************/
@@ -33721,11 +32723,11 @@
 	exports.__esModule = true;
 	exports.connect = exports.Provider = undefined;
 	
-	var _Provider = __webpack_require__(/*! ./components/Provider */ 203);
+	var _Provider = __webpack_require__(/*! ./components/Provider */ 202);
 	
 	var _Provider2 = _interopRequireDefault(_Provider);
 	
-	var _connect = __webpack_require__(/*! ./components/connect */ 206);
+	var _connect = __webpack_require__(/*! ./components/connect */ 205);
 	
 	var _connect2 = _interopRequireDefault(_connect);
 	
@@ -33735,7 +32737,7 @@
 	exports.connect = _connect2["default"];
 
 /***/ },
-/* 203 */
+/* 202 */
 /*!**************************************************!*\
   !*** ./~/react-redux/lib/components/Provider.js ***!
   \**************************************************/
@@ -33748,11 +32750,11 @@
 	
 	var _react = __webpack_require__(/*! react */ 2);
 	
-	var _storeShape = __webpack_require__(/*! ../utils/storeShape */ 204);
+	var _storeShape = __webpack_require__(/*! ../utils/storeShape */ 203);
 	
 	var _storeShape2 = _interopRequireDefault(_storeShape);
 	
-	var _warning = __webpack_require__(/*! ../utils/warning */ 205);
+	var _warning = __webpack_require__(/*! ../utils/warning */ 204);
 	
 	var _warning2 = _interopRequireDefault(_warning);
 	
@@ -33822,7 +32824,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! ./~/process/browser.js */ 4)))
 
 /***/ },
-/* 204 */
+/* 203 */
 /*!***********************************************!*\
   !*** ./~/react-redux/lib/utils/storeShape.js ***!
   \***********************************************/
@@ -33841,7 +32843,7 @@
 	});
 
 /***/ },
-/* 205 */
+/* 204 */
 /*!********************************************!*\
   !*** ./~/react-redux/lib/utils/warning.js ***!
   \********************************************/
@@ -33873,7 +32875,7 @@
 	}
 
 /***/ },
-/* 206 */
+/* 205 */
 /*!*************************************************!*\
   !*** ./~/react-redux/lib/components/connect.js ***!
   \*************************************************/
@@ -33888,19 +32890,19 @@
 	
 	var _react = __webpack_require__(/*! react */ 2);
 	
-	var _storeShape = __webpack_require__(/*! ../utils/storeShape */ 204);
+	var _storeShape = __webpack_require__(/*! ../utils/storeShape */ 203);
 	
 	var _storeShape2 = _interopRequireDefault(_storeShape);
 	
-	var _shallowEqual = __webpack_require__(/*! ../utils/shallowEqual */ 207);
+	var _shallowEqual = __webpack_require__(/*! ../utils/shallowEqual */ 206);
 	
 	var _shallowEqual2 = _interopRequireDefault(_shallowEqual);
 	
-	var _wrapActionCreators = __webpack_require__(/*! ../utils/wrapActionCreators */ 208);
+	var _wrapActionCreators = __webpack_require__(/*! ../utils/wrapActionCreators */ 207);
 	
 	var _wrapActionCreators2 = _interopRequireDefault(_wrapActionCreators);
 	
-	var _warning = __webpack_require__(/*! ../utils/warning */ 205);
+	var _warning = __webpack_require__(/*! ../utils/warning */ 204);
 	
 	var _warning2 = _interopRequireDefault(_warning);
 	
@@ -33908,11 +32910,11 @@
 	
 	var _isPlainObject2 = _interopRequireDefault(_isPlainObject);
 	
-	var _hoistNonReactStatics = __webpack_require__(/*! hoist-non-react-statics */ 209);
+	var _hoistNonReactStatics = __webpack_require__(/*! hoist-non-react-statics */ 208);
 	
 	var _hoistNonReactStatics2 = _interopRequireDefault(_hoistNonReactStatics);
 	
-	var _invariant = __webpack_require__(/*! invariant */ 210);
+	var _invariant = __webpack_require__(/*! invariant */ 209);
 	
 	var _invariant2 = _interopRequireDefault(_invariant);
 	
@@ -34275,7 +33277,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! ./~/process/browser.js */ 4)))
 
 /***/ },
-/* 207 */
+/* 206 */
 /*!*************************************************!*\
   !*** ./~/react-redux/lib/utils/shallowEqual.js ***!
   \*************************************************/
@@ -34309,7 +33311,7 @@
 	}
 
 /***/ },
-/* 208 */
+/* 207 */
 /*!*******************************************************!*\
   !*** ./~/react-redux/lib/utils/wrapActionCreators.js ***!
   \*******************************************************/
@@ -34329,7 +33331,7 @@
 	}
 
 /***/ },
-/* 209 */
+/* 208 */
 /*!********************************************!*\
   !*** ./~/hoist-non-react-statics/index.js ***!
   \********************************************/
@@ -34388,7 +33390,7 @@
 
 
 /***/ },
-/* 210 */
+/* 209 */
 /*!********************************!*\
   !*** ./~/invariant/browser.js ***!
   \********************************/
@@ -34449,7 +33451,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! ./~/process/browser.js */ 4)))
 
 /***/ },
-/* 211 */
+/* 210 */
 /*!***************************************!*\
   !*** ./src/client/components/App.jsx ***!
   \***************************************/
@@ -34467,13 +33469,13 @@
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _actions = __webpack_require__(/*! ../flux/actions.js */ 196);
+	var _actions = __webpack_require__(/*! ../flux/actions.js */ 195);
 	
 	var _actions2 = _interopRequireDefault(_actions);
 	
-	var _reactRedux = __webpack_require__(/*! react-redux */ 202);
+	var _reactRedux = __webpack_require__(/*! react-redux */ 201);
 	
-	var _Menu = __webpack_require__(/*! ./Menu.jsx */ 212);
+	var _Menu = __webpack_require__(/*! ./Menu.jsx */ 211);
 	
 	var _Menu2 = _interopRequireDefault(_Menu);
 	
@@ -34544,7 +33546,7 @@
 	exports.default = (0, _reactRedux.connect)(mapStateToProps, mapDispatchToProps)(App);
 
 /***/ },
-/* 212 */
+/* 211 */
 /*!****************************************!*\
   !*** ./src/client/components/Menu.jsx ***!
   \****************************************/
@@ -34560,11 +33562,11 @@
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _actions = __webpack_require__(/*! ../flux/actions.js */ 196);
+	var _actions = __webpack_require__(/*! ../flux/actions.js */ 195);
 	
 	var _actions2 = _interopRequireDefault(_actions);
 	
-	var _reactRedux = __webpack_require__(/*! react-redux */ 202);
+	var _reactRedux = __webpack_require__(/*! react-redux */ 201);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	

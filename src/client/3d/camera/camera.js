@@ -1,5 +1,5 @@
-import { degToRad, vector3 } from './utils.js';
-import CustomInputs from './CustomInputs.js';
+import { degToRad, vector3 } from '../utils.js';
+import CustomInputs from './customInputs.js';
  
 
 let initCameraSettings = (camera) => {
