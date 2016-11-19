@@ -85,7 +85,7 @@ function createSelectionRectangle(scene, startPosition, targetPosition ){
 	let width = ( targetPosition[0] - point[0] ) * window.devicePixelRatio;
 	let height = ( point[1] - targetPosition[1] ) * window.devicePixelRatio;
 	point[1] = (canvas.height/window.devicePixelRatio - point[1]);	
-	return new BABYLON.Rectangle2D( {
+	let rectangle = new BABYLON.Rectangle2D( {
 		id : 'rec',
 		parent : scene.screenSpaceCanvas2D,
 		x : point[0] * window.devicePixelRatio,
@@ -95,6 +95,12 @@ function createSelectionRectangle(scene, startPosition, targetPosition ){
 		border : BABYLON.Canvas2D.GetSolidColorBrushFromHex('#FFFFFFFF'),
 		borderThickness : 2,
 	} );
+	return {
+		xmin : _.min( [startPosition[0],targetPosition[0] ] ),
+		ymin : _.min( [startPosition[1],targetPosition[1] ] ),
+		xmax : _.max( [startPosition[0],targetPosition[0] ] ),
+		ymax : _.max( [startPosition[1],targetPosition[1] ] ),
+	};
 };
 function deleteSelectionRectangle(scene){
 	//Delete previous rectangle

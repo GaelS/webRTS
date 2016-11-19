@@ -23326,7 +23326,7 @@
 		var width = (targetPosition[0] - point[0]) * window.devicePixelRatio;
 		var height = (point[1] - targetPosition[1]) * window.devicePixelRatio;
 		point[1] = canvas.height / window.devicePixelRatio - point[1];
-		return new BABYLON.Rectangle2D({
+		var rectangle = new BABYLON.Rectangle2D({
 			id: 'rec',
 			parent: scene.screenSpaceCanvas2D,
 			x: point[0] * window.devicePixelRatio,
@@ -23336,6 +23336,12 @@
 			border: BABYLON.Canvas2D.GetSolidColorBrushFromHex('#FFFFFFFF'),
 			borderThickness: 2
 		});
+		return {
+			xmin: _lodash2.default.min([startPosition[0], targetPosition[0]]),
+			ymin: _lodash2.default.min([startPosition[1], targetPosition[1]]),
+			xmax: _lodash2.default.max([startPosition[0], targetPosition[0]]),
+			ymax: _lodash2.default.max([startPosition[1], targetPosition[1]])
+		};
 	};
 	function deleteSelectionRectangle(scene) {
 		//Delete previous rectangle
@@ -23614,11 +23620,32 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	function onPointerLeftUpEvent(event, dispatchEvents, scene) {
-		var mesh = event.pickInfo.pickedMesh;
-		var pos = event.pickInfo.pickedPoint;
-		//store event
-		var action = !!mesh && mesh.name !== 'ground' ? _actions2.default.select(mesh.id) : _actions2.default.deselectAll();
+	function onPointerLeftUpEvent(event, dispatchEvents, rectangleProps, scene) {
+		//action to dispatch to redux
+		var action = void 0;
+		if (rectangleProps.xmin === rectangleProps.xmax && rectangleProps.ymin === rectangleProps.ymax) {
+			//Empty rectangle => classic selection
+			var mesh = event.pickInfo.pickedMesh;
+			var pos = event.pickInfo.pickedPoint;
+			//store event
+			action = !!mesh && mesh.name !== 'ground' ? _actions2.default.select([mesh.id]) : _actions2.default.deselectAll();
+		} else {
+			(function () {
+				//selection using rectangle selection
+				var lowerLeft = scene.pick(rectangleProps.xmin, rectangleProps.ymin).pickedPoint;
+				var upperRight = scene.pick(rectangleProps.xmax, rectangleProps.ymax).pickedPoint;
+				//Get true Lower Left and Upper Right in 3D world
+				var trueUpperRight = [_.max([lowerLeft.x, upperRight.x]), _.max([lowerLeft.z, upperRight.z])];
+				var trueLowerLeft = [_.min([lowerLeft.x, upperRight.x]), _.min([lowerLeft.z, upperRight.z])];
+				//Get meshes inside 2D rectangle
+				var meshes = _.filter(scene.meshes, function (mesh) {
+					return mesh.name !== 'ground' && mesh.position.x >= trueLowerLeft[0] && mesh.position.x <= trueUpperRight[0] && mesh.position.z >= trueLowerLeft[1] && mesh.position.z <= trueUpperRight[1];
+				}).map(function (mesh) {
+					return mesh.id;
+				});
+				action = meshes.length !== 0 ? _actions2.default.select(meshes) : _actions2.default.deselectAll();
+			})();
+		}
 		return dispatchEvents(action);
 	};
 	
@@ -23634,11 +23661,13 @@
 		//Delete previous rectangle
 		_creation2.default.deleteSelectionRectangle(scene);
 		//Create new Rectangle
-		_creation2.default.createSelectionRectangle(scene, startPoint, [e.event.clientX, e.event.clientY]);
+		return _creation2.default.createSelectionRectangle(scene, startPoint, [e.event.clientX, e.event.clientY]);
 	};
 	
 	function instantiateEvents(canvas, scene, dispatchEvents) {
+		//Variable to keep props of selection rectangle
 		var startPoint = [0, 0];
+		var selectionRectangleProps = null;
 	
 		scene.onPointerObservable.add(function (e) {
 			var isLeftClicked = e.event.which === 1;
@@ -23647,8 +23676,9 @@
 			//For rectangle selection
 			switch (e.event.type) {
 				case 'mouseup':
-					(isLeftClicked ? onPointerLeftUpEvent : onPointerRightUpEvent)(e, dispatchEvents, scene);
+					(isLeftClicked ? onPointerLeftUpEvent : onPointerRightUpEvent)(e, dispatchEvents, selectionRectangleProps, scene);
 					startPoint = [0, 0];
+					selectionRectangleProps = null;
 					break;
 				case 'mousedown':
 					startPoint = [e.event.clientX, e.event.clientY];
@@ -23663,7 +23693,7 @@
 						_creation2.default.deleteSelectionRectangle(scene);
 						_creation2.default.deleteScreenSpaceCanvas2D(scene);
 					} else {
-						onPointerDragEvent(e, startPoint, scene);
+						selectionRectangleProps = onPointerDragEvent(e, startPoint, scene);
 					}
 					break;
 			}
@@ -23732,10 +23762,10 @@
 		};
 	};
 	
-	function select(idMesh) {
+	function select(idsMesh) {
 		return {
 			type: 'START_SELECTION',
-			value: idMesh
+			value: idsMesh
 		};
 	};
 	

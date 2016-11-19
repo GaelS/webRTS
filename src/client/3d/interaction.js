@@ -2,12 +2,34 @@ import utils from './utils.js';
 import actions from '../flux/actions.js';
 import creation from './creation.js';
 
-function onPointerLeftUpEvent( event, dispatchEvents, scene ){
-	let mesh = event.pickInfo.pickedMesh;
-	let pos = event.pickInfo.pickedPoint;
-	//store event
-	let action = !!mesh && mesh.name !== 'ground' ? actions.select( mesh.id ) : actions.deselectAll();
-	return dispatchEvents( action );
+function onPointerLeftUpEvent( event, dispatchEvents, rectangleProps, scene ){
+	//action to dispatch to redux
+	let action;
+	if(rectangleProps.xmin === rectangleProps.xmax && rectangleProps.ymin === rectangleProps.ymax){
+		//Empty rectangle => classic selection
+		let mesh = event.pickInfo.pickedMesh;
+		let pos = event.pickInfo.pickedPoint;
+		//store event
+		action = !!mesh && mesh.name !== 'ground' ? actions.select( [ mesh.id ] ) : actions.deselectAll();
+	} else {
+		//selection using rectangle selection
+		let lowerLeft = scene.pick(rectangleProps.xmin, rectangleProps.ymin).pickedPoint;
+		let upperRight = scene.pick(rectangleProps.xmax, rectangleProps.ymax).pickedPoint;
+		//Get true Lower Left and Upper Right in 3D world
+		let trueUpperRight = [_.max([ lowerLeft.x, upperRight.x ] ),_.max([ lowerLeft.z, upperRight.z ] )]
+		let trueLowerLeft = [_.min([ lowerLeft.x, upperRight.x ] ),_.min( [ lowerLeft.z, upperRight.z ] )]
+		//Get meshes inside 2D rectangle
+		let meshes = _.filter(scene.meshes, mesh => {
+			return mesh.name !== 'ground' && 
+					mesh.position.x >= trueLowerLeft[0] && 
+						mesh.position.x <= trueUpperRight[0] &&
+							mesh.position.z >= trueLowerLeft[1] && 
+								mesh.position.z <= trueUpperRight[1];  
+		} )
+		.map( mesh => mesh.id); 
+		action = meshes.length !== 0 ? actions.select(meshes) : actions.deselectAll();
+	}	
+		return dispatchEvents( action );
 };
 
 function onPointerRightUpEvent( event, dispatchEvents ){
@@ -25,11 +47,13 @@ function onPointerDragEvent( e, startPoint, scene ){
 	//Delete previous rectangle
 	creation.deleteSelectionRectangle( scene );
 	//Create new Rectangle
-	creation.createSelectionRectangle( scene, startPoint, [ e.event.clientX, e.event.clientY ] );	
+	return creation.createSelectionRectangle( scene, startPoint, [ e.event.clientX, e.event.clientY ] );	
 };
 
 function instantiateEvents(canvas, scene, dispatchEvents){
+	//Variable to keep props of selection rectangle
 	let startPoint = [0,0];
+	let selectionRectangleProps = null;
 
 	scene.onPointerObservable.add((e) => {
 		let isLeftClicked = e.event.which === 1; 
@@ -38,8 +62,9 @@ function instantiateEvents(canvas, scene, dispatchEvents){
 		//For rectangle selection
 		switch(e.event.type){
 			case 'mouseup':
-				(isLeftClicked ? onPointerLeftUpEvent : onPointerRightUpEvent)( e, dispatchEvents, scene );
+				(isLeftClicked ? onPointerLeftUpEvent : onPointerRightUpEvent)( e, dispatchEvents, selectionRectangleProps, scene );
 				startPoint = [0,0];
+				selectionRectangleProps = null;
 				break;
 			case 'mousedown' :
 				startPoint =  [ e.event.clientX, e.event.clientY ];
@@ -54,7 +79,7 @@ function instantiateEvents(canvas, scene, dispatchEvents){
 					creation.deleteSelectionRectangle(scene);
 					creation.deleteScreenSpaceCanvas2D(scene);
 				} else {
-					onPointerDragEvent( e, startPoint, scene );
+					selectionRectangleProps = onPointerDragEvent( e, startPoint, scene );
 				}
 				break;
 		}

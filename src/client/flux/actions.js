@@ -14,10 +14,10 @@ function createGuy( value ){
 	};
 };
 
-function select(idMesh){
+function select(idsMesh){
 	return {
 		type : 'START_SELECTION',
-		value : idMesh,
+		value : idsMesh,
 	};
 };
 
