@@ -5,7 +5,7 @@ import creation from './creation.js';
 function onPointerLeftUpEvent( event, dispatchEvents, rectangleProps, scene ){
 	//action to dispatch to redux
 	let action;
-	if(rectangleProps.xmin === rectangleProps.xmax && rectangleProps.ymin === rectangleProps.ymax){
+	if(!rectangleProps || rectangleProps.xmin === rectangleProps.xmax && rectangleProps.ymin === rectangleProps.ymax){
 		//Empty rectangle => classic selection
 		let mesh = event.pickInfo.pickedMesh;
 		let pos = event.pickInfo.pickedPoint;

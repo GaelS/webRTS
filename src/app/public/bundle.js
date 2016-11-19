@@ -23623,7 +23623,7 @@
 	function onPointerLeftUpEvent(event, dispatchEvents, rectangleProps, scene) {
 		//action to dispatch to redux
 		var action = void 0;
-		if (rectangleProps.xmin === rectangleProps.xmax && rectangleProps.ymin === rectangleProps.ymax) {
+		if (!rectangleProps || rectangleProps.xmin === rectangleProps.xmax && rectangleProps.ymin === rectangleProps.ymax) {
 			//Empty rectangle => classic selection
 			var mesh = event.pickInfo.pickedMesh;
 			var pos = event.pickInfo.pickedPoint;
