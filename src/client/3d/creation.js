@@ -57,6 +57,7 @@ function createScreenSpaceCanvas2D(scene){
 		id : 'canvas2D',
 		size : new BABYLON.Size(window.width, window.height),
 		backgroundFill: '#00000000',
+		allow3DEventBelowCanvas : true,
 	} );
 };
 
