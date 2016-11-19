@@ -23128,6 +23128,8 @@
 	
 	var _materials2 = _interopRequireDefault(_materials);
 	
+	var _utils = __webpack_require__(/*! ../3d/utils.js */ 200);
+	
 	var _ramda = __webpack_require__(/*! ramda */ 208);
 	
 	var _ramda2 = _interopRequireDefault(_ramda);
@@ -23156,13 +23158,20 @@
 				newState.scene = scene;
 				break;
 			case 'CREATE_GUY':
-				newState.guys = [].concat(_toConsumableArray(state.guys), _toConsumableArray(_creation2.default.createGuy(newState.scene, value)));
+				newState.guys = [].concat(_toConsumableArray(state.guys), _toConsumableArray(_creation2.default.createGuy(newState.scene, value.qty, value.type)));
+				break;
+			case 'CLICK_ON_BUILDING_CREATION':
+				newState.buildingCreation = true;
+				_creation2.default.startBuildingCreation(newState.scene);
+				break;
+			case 'BUILDING_CREATION_DONE':
+				newState.buildingCreation = false;
 				break;
 			case 'START_SELECTION':
 				//Reset already selected meshes
 				_materials2.default.deselectMeshes(newState.scene, newState.selectedMeshes);
 				_materials2.default.selectMeshes(newState.scene, value);
-				newState.selectedMeshes = Array.isArray(value) ? value : [value];
+				newState.selectedMeshes = value;
 				break;
 			case 'DESELECT_ALL':
 				_materials2.default.deselectMeshes(newState.scene, newState.selectedMeshes);
@@ -23176,7 +23185,7 @@
 				var meshes = newState.scene.meshes.filter(function (elt) {
 					return newState.selectedMeshes.indexOf(elt.name) !== -1;
 				});
-				_movement2.default.setTargetPosition(meshes, new _babylonjs2.default.Vector3(x, 0, z));
+				_movement2.default.setTargetPosition(meshes, (0, _utils.vector3)(x, 0, z));
 				break;
 		}
 		return newState;
@@ -23197,7 +23206,8 @@
 	exports.default = {
 		scene: null,
 		guys: [],
-		selectedMeshes: []
+		selectedMeshes: [],
+		buildingCreation: false
 	};
 
 /***/ },
@@ -23261,6 +23271,10 @@
 	
 			var camera = _camera2.default.createCamera(canvas, scene);
 			_interaction2.default.instantiateEvents(canvas, scene, dispatchEvents);
+	
+			//Shadow building instantiation
+			createBuilding(scene, (0, _utils.vector3)(0, 0, 0), '', true);
+	
 			return scene;
 		};
 		var scene = createScene(dispatchEvents);
@@ -23298,8 +23312,8 @@
 		scene.screenSpaceCanvas2D = null;
 	}
 	
-	function createGuy(scene, number) {
-		return [].concat(_toConsumableArray(Array(number).keys())).map(function (i) {
+	function createGuy(scene, qty, type) {
+		return [].concat(_toConsumableArray(Array(qty).keys())).map(function (i) {
 	
 			var s = BABYLON.Mesh.CreateBox(_uuid2.default.v1(), 2, scene);
 			s.position.z = Math.random() * 20;
@@ -23310,19 +23324,54 @@
 			s.onDeselect = function (evt) {
 				s.material = scene.getMaterialByName('redMaterial');
 			};
+			s.type = type;
 			return s.id;
 		});
-	}
+	};
+	function startBuildingCreation(scene) {
+		var shadowMesh = scene.getMeshByID('shadowBuilding');
+		//shadowMesh.isPickable = true;
+		//instantiating event for ghost building
+		_interaction2.default.ghostBuildingManager(scene);
+	};
+	
+	function endBuildingCreation(scene) {
+		var shadowMesh = scene.getMeshByID('shadowBuilding');
+		var pos = shadowMesh.position;
+		createBuilding(scene, pos, 'house', false);
+		//set visibility back to 0
+		shadowMesh.visibility = 0;
+		//removing event for ghost building
+		_interaction2.default.endGhostBuildingManager(scene);
+	};
+	
+	function createBuilding(scene, position, type, shadow) {
+		//Do not add shadow building if one is already created
+		if (!!scene.getMeshByID('shadowBuilding') && shadow) return;
+		var id = !shadow ? _uuid2.default.v1() : 'shadowBuilding';
+		var s = BABYLON.Mesh.CreateBox(id, 20, scene);
+		s.position = position;
+		s.material = scene.getMaterialByName('yellowMaterial');
+		s.onSelect = function (evt) {
+			s.material = scene.getMaterialByName('blackerMaterial');
+		};
+		s.onDeselect = function (evt) {
+			s.material = scene.getMaterialByName('yellowMaterial');
+		};
+		s.type = type;
+		s.isPickable = shadow ? false : true;
+		s.visibility = !shadow ? 1 : 0;
+		return s.id;
+	};
 	
 	function createSelectionRectangle(scene, startPosition, targetPosition) {
-		var canvas = document.getElementById('3dview');
-		//move from top left origin to bottom left origin
-		//and remove device pixel ratio between DOM and canvas
-	
 		//HACK : clone to prevent strange behaviour
 		//when point is modified (ref issue...)
 		var point = _lodash2.default.clone(startPosition);
 	
+		//move from top left origin to bottom left origin
+		//and remove device pixel ratio between DOM and canvas
+		var canvas = document.getElementById('3dview');
 		var width = (targetPosition[0] - point[0]) * window.devicePixelRatio;
 		var height = (point[1] - targetPosition[1]) * window.devicePixelRatio;
 		point[1] = canvas.height / window.devicePixelRatio - point[1];
@@ -23353,10 +23402,13 @@
 	exports.default = {
 		initScene: initScene,
 		createGuy: createGuy,
+		startBuildingCreation: startBuildingCreation,
+		createBuilding: createBuilding,
 		createSelectionRectangle: createSelectionRectangle,
 		deleteSelectionRectangle: deleteSelectionRectangle,
 		createScreenSpaceCanvas2D: createScreenSpaceCanvas2D,
-		deleteScreenSpaceCanvas2D: deleteScreenSpaceCanvas2D
+		deleteScreenSpaceCanvas2D: deleteScreenSpaceCanvas2D,
+		endBuildingCreation: endBuildingCreation
 	};
 
 /***/ },
@@ -23608,11 +23660,7 @@
 	
 	var _utils = __webpack_require__(/*! ./utils.js */ 200);
 	
-	var _utils2 = _interopRequireDefault(_utils);
-	
 	var _actions = __webpack_require__(/*! ../flux/actions.js */ 201);
-	
-	var _actions2 = _interopRequireDefault(_actions);
 	
 	var _creation = __webpack_require__(/*! ./creation.js */ 196);
 	
@@ -23628,7 +23676,7 @@
 			var mesh = event.pickInfo.pickedMesh;
 			var pos = event.pickInfo.pickedPoint;
 			//store event
-			action = !!mesh && mesh.name !== 'ground' ? _actions2.default.select([mesh.id]) : _actions2.default.deselectAll();
+			action = !!mesh && mesh.name !== 'ground' ? (0, _actions.select)([mesh.id]) : (0, _actions.deselectAll)();
 		} else {
 			(function () {
 				//selection using rectangle selection
@@ -23643,7 +23691,7 @@
 				}).map(function (mesh) {
 					return mesh.id;
 				});
-				action = meshes.length !== 0 ? _actions2.default.select(meshes) : _actions2.default.deselectAll();
+				action = meshes.length !== 0 ? (0, _actions.select)(meshes) : (0, _actions.deselectAll)();
 			})();
 		}
 		return dispatchEvents(action);
@@ -23653,7 +23701,7 @@
 		//Get position on mesh clicked
 		var mesh = event.pickInfo.pickedMesh;
 		//Move the selected cube(s) in not null
-		return !!mesh ? dispatchEvents(_actions2.default.moveSelection(event.pickInfo.pickedPoint.x, event.pickInfo.pickedPoint.z)) : _utils2.default.emptyFunc();
+		return !!mesh ? dispatchEvents((0, _actions.moveSelection)(event.pickInfo.pickedPoint.x, event.pickInfo.pickedPoint.z)) : utils.emptyFunc();
 	};
 	
 	function onPointerDragEvent(e, startPoint, scene) {
@@ -23662,6 +23710,34 @@
 		_creation2.default.deleteSelectionRectangle(scene);
 		//Create new Rectangle
 		return _creation2.default.createSelectionRectangle(scene, startPoint, [e.event.clientX, e.event.clientY]);
+	};
+	function ghostBuildingManager(scene) {
+		scene.onPointerObservable.add(function (e) {
+			switch (e.event.type) {
+				case 'mousemove':
+					var shadowMesh = scene.getMeshByID('shadowBuilding');
+					//set to visible if not
+					//to display if directly on mouse cursor
+					//and not at origin
+					shadowMesh.visibility = 0.5;
+	
+					//only considering mousemove fro ghost building
+					var cursorPosition = scene.pick(e.event.clientX, e.event.clientY).pickedPoint;
+					//move to cursor
+					shadowMesh.position = cursorPosition;
+					break;
+				case 'mouseup':
+					var isLeftClicked = e.event.which === 1;
+					_creation2.default.endBuildingCreation(scene);
+					break;
+	
+			}
+		});
+	};
+	function endGhostBuildingManager(scene) {
+		//Delete last observable which is the one 
+		//for ghost building
+		scene.onPointerObservable._observers.pop();
 	};
 	
 	function instantiateEvents(canvas, scene, dispatchEvents) {
@@ -23702,7 +23778,9 @@
 	};
 	
 	exports.default = {
-		instantiateEvents: instantiateEvents
+		instantiateEvents: instantiateEvents,
+		ghostBuildingManager: ghostBuildingManager,
+		endGhostBuildingManager: endGhostBuildingManager
 	};
 
 /***/ },
@@ -23746,7 +23824,7 @@
 	Object.defineProperty(exports, "__esModule", {
 		value: true
 	});
-	function initScene(dispatchEvents) {
+	var initScene = exports.initScene = function initScene(dispatchEvents) {
 		return {
 			type: 'INIT',
 			value: {
@@ -23755,21 +23833,29 @@
 		};
 	};
 	
-	function createGuy(value) {
+	var createGuy = exports.createGuy = function createGuy(qty, type) {
 		return {
 			type: 'CREATE_GUY',
-			value: value
+			value: {
+				qty: qty,
+				type: type
+			}
 		};
 	};
-	
-	function select(idsMesh) {
+	var startBuildingCreation = exports.startBuildingCreation = function startBuildingCreation() {
+		return {
+			type: 'CLICK_ON_BUILDING_CREATION',
+			value: null
+		};
+	};
+	var select = exports.select = function select(idsMesh) {
 		return {
 			type: 'START_SELECTION',
 			value: idsMesh
 		};
 	};
 	
-	function moveSelection(x, z) {
+	var moveSelection = exports.moveSelection = function moveSelection(x, z) {
 		return {
 			type: 'MOVE_SELECTION',
 			value: {
@@ -23777,21 +23863,13 @@
 				z: z
 			}
 		};
-	}
+	};
 	
-	function deselectAll() {
+	var deselectAll = exports.deselectAll = function deselectAll() {
 		return {
 			type: 'DESELECT_ALL',
 			value: null
 		};
-	}
-	
-	exports.default = {
-		initScene: initScene,
-		createGuy: createGuy,
-		select: select,
-		moveSelection: moveSelection,
-		deselectAll: deselectAll
 	};
 
 /***/ },
@@ -50797,8 +50875,6 @@
 	
 	var _actions = __webpack_require__(/*! ../flux/actions.js */ 201);
 	
-	var _actions2 = _interopRequireDefault(_actions);
-	
 	var _reactRedux = __webpack_require__(/*! react-redux */ 209);
 	
 	var _Menu = __webpack_require__(/*! ./Menu.jsx */ 219);
@@ -50857,7 +50933,7 @@
 	var mapDispatchToProps = function mapDispatchToProps(dispatch) {
 	    return {
 	        initScene: function initScene(dispatchEvents) {
-	            return dispatch(_actions2.default.initScene(dispatchEvents));
+	            return dispatch((0, _actions.initScene)(dispatchEvents));
 	        },
 	        dispatchEvents: function dispatchEvents(action) {
 	            return dispatch(action);
@@ -50890,14 +50966,14 @@
 	
 	var _actions = __webpack_require__(/*! ../flux/actions.js */ 201);
 	
-	var _actions2 = _interopRequireDefault(_actions);
-	
 	var _reactRedux = __webpack_require__(/*! react-redux */ 209);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	var Menu = function Menu(_ref) {
 		var guys = _ref.guys;
+		var selectedGuys = _ref.selectedGuys;
+		var startBuildingCreation = _ref.startBuildingCreation;
 		var createOneGuy = _ref.createOneGuy;
 	
 		var S = {
@@ -50906,7 +50982,6 @@
 				bottom: '0px'
 			}
 		};
-	
 		return _react2.default.createElement(
 			'div',
 			{
@@ -50916,6 +50991,11 @@
 				type: 'button',
 				value: 'create peon',
 				onClick: createOneGuy
+			}),
+			selectedGuys.length !== 0 && _react2.default.createElement('input', {
+				type: 'button',
+				value: 'create a building',
+				onClick: startBuildingCreation
 			})
 		);
 	};
@@ -50923,14 +51003,20 @@
 	var mapDispatchToProps = function mapDispatchToProps(dispatch) {
 		return {
 			createOneGuy: function createOneGuy() {
-				return dispatch(_actions2.default.createGuy(1));
+				return dispatch((0, _actions.createGuy)(1, 'citizen'));
+			},
+			startBuildingCreation: function startBuildingCreation() {
+				return dispatch((0, _actions.startBuildingCreation)());
 			}
 		};
 	};
 	
 	var mapStateToProps = function mapStateToProps(state) {
 		return {
-			guys: state.guys.length
+			guys: state.guys.length,
+			selectedGuys: state.selectedMeshes.filter(function (m) {
+				return state.scene.getMeshByID(m).type === 'citizen';
+			})
 		};
 	};
 	

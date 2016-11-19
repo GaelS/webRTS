@@ -24,6 +24,10 @@ function initScene( dispatchEvents ){
 		
 		let camera = cameraLib.createCamera( canvas, scene );
 		interaction.instantiateEvents(canvas, scene, dispatchEvents);
+
+		//Shadow building instantiation
+		createBuilding(scene, vector3(0,0,0), '', true);
+		
 		return scene;	
 	}
 	let scene = createScene(dispatchEvents);
@@ -61,27 +65,58 @@ function deleteScreenSpaceCanvas2D(scene){
 	scene.screenSpaceCanvas2D = null;
 }
 
-function createGuy( scene, number ){
-	return [...Array(number).keys()].map( i => {
+function createGuy( scene, qty, type ){
+	return [...Array(qty).keys()].map( i => {
 		
 		let s = BABYLON.Mesh.CreateBox( uuid.v1(), 2, scene ); 
 		s.position.z = Math.random()*20;
 		s.material = scene.getMaterialByName('redMaterial');
 		s.onSelect = (evt) => { s.material = scene.getMaterialByName('blackerMaterial') };
 		s.onDeselect = (evt) => { s.material = scene.getMaterialByName('redMaterial') };
+		s.type = type;
 		return s.id;
 	} );
-}
+};
+function startBuildingCreation(scene){
+	let shadowMesh = scene.getMeshByID('shadowBuilding');
+	//shadowMesh.isPickable = true;
+	//instantiating event for ghost building
+	interaction.ghostBuildingManager(scene);
+};
+
+function endBuildingCreation(scene){
+	let shadowMesh = scene.getMeshByID('shadowBuilding');
+	let pos = shadowMesh.position;
+	createBuilding(scene,pos,'house',false);
+	//set visibility back to 0
+	shadowMesh.visibility = 0;
+	//removing event for ghost building
+	interaction.endGhostBuildingManager(scene);
+};
+
+function createBuilding( scene, position, type, shadow ){
+	//Do not add shadow building if one is already created
+	if( !!scene.getMeshByID( 'shadowBuilding' )  && shadow ) return; 
+	let id = !shadow ? uuid.v1() : 'shadowBuilding';
+	let s = BABYLON.Mesh.CreateBox( id, 20, scene ); 
+	s.position = position;
+	s.material = scene.getMaterialByName('yellowMaterial');
+	s.onSelect = (evt) => { s.material = scene.getMaterialByName('blackerMaterial') };
+	s.onDeselect = (evt) => { s.material = scene.getMaterialByName('yellowMaterial') };
+	s.type = type;
+	s.isPickable = shadow ? false : true;
+	s.visibility = !shadow ? 1 : 0;
+	return s.id;
+};
 
 function createSelectionRectangle(scene, startPosition, targetPosition ){
-	let canvas = document.getElementById('3dview');
-	//move from top left origin to bottom left origin
-	//and remove device pixel ratio between DOM and canvas
-	
 	//HACK : clone to prevent strange behaviour
 	//when point is modified (ref issue...)
 	let point = _.clone(startPosition);
-	
+
+	//move from top left origin to bottom left origin
+	//and remove device pixel ratio between DOM and canvas
+	let canvas = document.getElementById('3dview');	
 	let width = ( targetPosition[0] - point[0] ) * window.devicePixelRatio;
 	let height = ( point[1] - targetPosition[1] ) * window.devicePixelRatio;
 	point[1] = (canvas.height/window.devicePixelRatio - point[1]);	
@@ -112,8 +147,11 @@ function deleteSelectionRectangle(scene){
 export default {
 	initScene,
 	createGuy,
+	startBuildingCreation,
+	createBuilding,
 	createSelectionRectangle,
 	deleteSelectionRectangle,
 	createScreenSpaceCanvas2D,
 	deleteScreenSpaceCanvas2D,
+	endBuildingCreation,
 };

@@ -1,4 +1,4 @@
-function initScene(dispatchEvents){
+export const initScene = (dispatchEvents) => {
 	return {
 		type : 'INIT',
 		value : {
@@ -7,21 +7,29 @@ function initScene(dispatchEvents){
 	};
 };
 
-function createGuy( value ){
+export const createGuy = ( qty, type ) => {
 	return {
 		type : 'CREATE_GUY',
-		value,
+		value : {
+			qty,
+			type,
+		 },
 	};
 };
-
-function select(idsMesh){
+export const startBuildingCreation = () => {
+	return {
+		type : 'CLICK_ON_BUILDING_CREATION',
+		value : null,
+	};
+}
+export const select = (idsMesh) => {
 	return {
 		type : 'START_SELECTION',
 		value : idsMesh,
 	};
 };
 
-function moveSelection(x,z){
+export const moveSelection = (x,z) => {
 	return {
 		type : 'MOVE_SELECTION',
 		value : {
@@ -31,18 +39,9 @@ function moveSelection(x,z){
 	};
 }
 
-function deselectAll(){
+export const deselectAll = () => {
 	return {
 		type : 'DESELECT_ALL',
 		value : null,
 	};
-
-}
-
-export default {
-	initScene,
-	createGuy,
-	select,
-	moveSelection,
-	deselectAll,
 };

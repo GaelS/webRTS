@@ -4,7 +4,7 @@ import creation from '../3d/creation.js';
 import interaction from '../3d/interaction.js'
 import movement from '../3d/movement.js';
 import materials from '../3d/materials.js';
-
+import { vector3 } from '../3d/utils.js';
 import R from 'ramda';
 
 import BABYLON from 'babylonjs';
@@ -25,13 +25,20 @@ export default ( ( state = defaultState, action ) => {
 			break;
 		case 'CREATE_GUY' :
 			newState.guys = [...state.guys,
-			 ...creation.createGuy( newState.scene, value ) ];
+			 ...creation.createGuy( newState.scene, value.qty, value.type ) ];
 			 break;
+		case 'CLICK_ON_BUILDING_CREATION' :
+			newState.buildingCreation = true;
+			creation.startBuildingCreation( newState.scene );
+			break;	 
+		case 'BUILDING_CREATION_DONE' :
+			newState.buildingCreation = false;
+			break;	 
 		case 'START_SELECTION' :
 			//Reset already selected meshes
 			materials.deselectMeshes( newState.scene, newState.selectedMeshes );
 			materials.selectMeshes( newState.scene, value );
-			newState.selectedMeshes = Array.isArray(value) ? value : [ value ];
+			newState.selectedMeshes = value;
 			break;
 		case 'DESELECT_ALL' :
 			materials.deselectMeshes(newState.scene, newState.selectedMeshes);
@@ -40,7 +47,7 @@ export default ( ( state = defaultState, action ) => {
 		case 'MOVE_SELECTION' : 
 			let {x,z} = action.value;
 			let meshes = newState.scene.meshes.filter(elt => newState.selectedMeshes.indexOf(elt.name) !== -1);
-			movement.setTargetPosition(meshes, new BABYLON.Vector3(x, 0, z));
+			movement.setTargetPosition(meshes, vector3(x, 0, z));
 			break;
 	}
 	return newState;

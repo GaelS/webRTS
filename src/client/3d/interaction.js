@@ -1,5 +1,5 @@
-import utils from './utils.js';
-import actions from '../flux/actions.js';
+import { vector3, emptyFunc } from './utils.js';
+import { select, deselectAll, moveSelection } from '../flux/actions.js';
 import creation from './creation.js';
 
 function onPointerLeftUpEvent( event, dispatchEvents, rectangleProps, scene ){
@@ -10,7 +10,7 @@ function onPointerLeftUpEvent( event, dispatchEvents, rectangleProps, scene ){
 		let mesh = event.pickInfo.pickedMesh;
 		let pos = event.pickInfo.pickedPoint;
 		//store event
-		action = !!mesh && mesh.name !== 'ground' ? actions.select( [ mesh.id ] ) : actions.deselectAll();
+		action = !!mesh && mesh.name !== 'ground' ? select( [ mesh.id ] ) : deselectAll();
 	} else {
 		//selection using rectangle selection
 		let lowerLeft = scene.pick(rectangleProps.xmin, rectangleProps.ymin).pickedPoint;
@@ -27,7 +27,7 @@ function onPointerLeftUpEvent( event, dispatchEvents, rectangleProps, scene ){
 								mesh.position.z <= trueUpperRight[1];  
 		} )
 		.map( mesh => mesh.id); 
-		action = meshes.length !== 0 ? actions.select(meshes) : actions.deselectAll();
+		action = meshes.length !== 0 ? select(meshes) : deselectAll();
 	}	
 		return dispatchEvents( action );
 };
@@ -37,7 +37,7 @@ function onPointerRightUpEvent( event, dispatchEvents ){
 	let mesh = event.pickInfo.pickedMesh;
 	//Move the selected cube(s) in not null
 	return !!mesh ? 
-		dispatchEvents( actions.moveSelection( event.pickInfo.pickedPoint.x,  event.pickInfo.pickedPoint.z ) )
+		dispatchEvents( moveSelection( event.pickInfo.pickedPoint.x,  event.pickInfo.pickedPoint.z ) )
 		:
 		utils.emptyFunc();
 };
@@ -48,6 +48,34 @@ function onPointerDragEvent( e, startPoint, scene ){
 	creation.deleteSelectionRectangle( scene );
 	//Create new Rectangle
 	return creation.createSelectionRectangle( scene, startPoint, [ e.event.clientX, e.event.clientY ] );	
+};
+function ghostBuildingManager( scene ){
+	scene.onPointerObservable.add(e => { 
+		switch(e.event.type){
+			case('mousemove'):
+				let shadowMesh = scene.getMeshByID('shadowBuilding'); 
+				//set to visible if not
+				//to display if directly on mouse cursor
+				//and not at origin
+				shadowMesh.visibility = 0.5;
+				
+				//only considering mousemove fro ghost building
+				let cursorPosition = scene.pick(e.event.clientX, e.event.clientY).pickedPoint;
+				//move to cursor
+				shadowMesh.position = cursorPosition;
+				break;
+			case('mouseup') :
+				let isLeftClicked = e.event.which === 1;
+				creation.endBuildingCreation(scene);
+				break;
+
+		} 	
+	} );
+};
+function endGhostBuildingManager( scene ){
+	//Delete last observable which is the one 
+	//for ghost building
+	scene.onPointerObservable._observers.pop();
 };
 
 function instantiateEvents(canvas, scene, dispatchEvents){
@@ -89,4 +117,6 @@ function instantiateEvents(canvas, scene, dispatchEvents){
 
 export default {
 	instantiateEvents,
+	ghostBuildingManager,
+	endGhostBuildingManager,
 };

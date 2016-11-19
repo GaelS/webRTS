@@ -1,5 +1,5 @@
 import React from 'react';
-import actions from '../flux/actions.js';
+import { initScene } from '../flux/actions.js';
 import { connect } from 'react-redux';
 import Menu from './Menu.jsx';
 
@@ -41,7 +41,7 @@ class App extends React.Component {
 
 const mapDispatchToProps = ( dispatch ) => {
     return {
-        initScene : (dispatchEvents) => dispatch( actions.initScene(dispatchEvents) ),
+        initScene : (dispatchEvents) => dispatch( initScene(dispatchEvents) ),
         dispatchEvents : (action) => dispatch(action),
     }
 };
