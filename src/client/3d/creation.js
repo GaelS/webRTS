@@ -4,7 +4,7 @@ import movement from './movement.js';
 import { vector3 } from './utils.js';
 import materialsLib from './materials.js';
 import cameraLib from './camera/camera.js';
-
+import _ from 'lodash';
 
 function initScene( dispatchEvents ){
 	let canvas = document.getElementById( '3dview' );
@@ -21,18 +21,12 @@ function initScene( dispatchEvents ){
 		let ground = BABYLON.Mesh.CreateGround("ground", 600, 600, 2, scene);
 		ground.material = new BABYLON.StandardMaterial( 'texture1', scene );
 		ground.material.diffuseColor = new BABYLON.Color3(0, 1, 0);
-		let canvas = document.getElementById( '3dview' );
-		//Step to manage different resolution 
-		//to keep consistency between DOM and canvas pixel event
-		canvas.width = canvas.width / window.devicePixelRatio;
-		canvas.height = canvas.height / window.devicePixelRatio;
-
+		
 		let camera = cameraLib.createCamera( canvas, scene );
 		interaction.instantiateEvents(canvas, scene, dispatchEvents);
 		return scene;	
 	}
 	let scene = createScene(dispatchEvents);
-	scene.screenSpaceCanvas2D = createScreenSpaceCanvas2D(scene);
 	scene.registerBeforeRender(() => {
 		movement.updatePositions(scene);
 	} );
@@ -43,43 +37,59 @@ function initScene( dispatchEvents ){
 	// Watch for browser/canvas resize events
     window.addEventListener("resize", function () {
 		//dispose and redraw canvas2D for rectangle selection
-		scene.screenSpaceCanvas2D.dispose();
-		scene.screenSpaceCanvas2D = createScreenSpaceCanvas2D(scene);
-    	engine.resize();
+		if(!!scene.screenSpaceCanvas2D) scene.screenSpaceCanvas2D.dispose();
+		engine.resize();
     } );
 
 	return scene;
 };
 
 function createScreenSpaceCanvas2D(scene){
-	let window = document.getElementById('3dview');
-	return new BABYLON.ScreenSpaceCanvas2D(scene, {
+	//Step to manage different resolution 
+	//to keep consistency between DOM and canvas pixel event
+	let canvas = document.getElementById('3dview');
+	scene.screenSpaceCanvas2D =  new BABYLON.ScreenSpaceCanvas2D(scene, {
 		id : 'canvas2D',
-		size : new BABYLON.Size(window.width, window.height),
+		size : new BABYLON.Size(canvas.width, canvas.height),
 		backgroundFill: '#00000000',
-		allow3DEventBelowCanvas : true,
 	} );
 };
+
+function deleteScreenSpaceCanvas2D(scene){
+	if(!scene.screenSpaceCanvas2D) return;
+	scene.screenSpaceCanvas2D.dispose();
+	scene.screenSpaceCanvas2D = null;
+}
 
 function createGuy( scene, number ){
 	return [...Array(number).keys()].map( i => {
 		
-		let s = BABYLON.Mesh.CreateBox(uuid.v1(), 2, scene, ); 
+		let s = BABYLON.Mesh.CreateBox( uuid.v1(), 2, scene ); 
 		s.position.z = Math.random()*20;
-		s.material = scene.getMaterialByName('redMaterial')
+		s.material = scene.getMaterialByName('redMaterial');
 		s.onSelect = (evt) => { s.material = scene.getMaterialByName('blackerMaterial') };
 		s.onDeselect = (evt) => { s.material = scene.getMaterialByName('redMaterial') };
-		
 		return s.id;
 	} );
 }
 
-function createSelectionRectangle(scene, startPosition, width, height ){	
+function createSelectionRectangle(scene, startPosition, targetPosition ){
+	let canvas = document.getElementById('3dview');
+	//move from top left origin to bottom left origin
+	//and remove device pixel ratio between DOM and canvas
+	
+	//HACK : clone to prevent strange behaviour
+	//when point is modified (ref issue...)
+	let point = _.clone(startPosition);
+	
+	let width = ( targetPosition[0] - point[0] ) * window.devicePixelRatio;
+	let height = ( point[1] - targetPosition[1] ) * window.devicePixelRatio;
+	point[1] = (canvas.height/window.devicePixelRatio - point[1]);	
 	return new BABYLON.Rectangle2D( {
 		id : 'rec',
 		parent : scene.screenSpaceCanvas2D,
-		x : startPosition[0],
-		y : startPosition[1],
+		x : point[0] * window.devicePixelRatio,
+		y : point[1] * window.devicePixelRatio,
 		height,
 		width,
 		border : BABYLON.Canvas2D.GetSolidColorBrushFromHex('#FFFFFFFF'),
@@ -88,6 +98,7 @@ function createSelectionRectangle(scene, startPosition, width, height ){
 };
 function deleteSelectionRectangle(scene){
 	//Delete previous rectangle
+	if(!scene.screenSpaceCanvas2D) return;
 	let prevRec = scene.screenSpaceCanvas2D.children[1];
 	if(!!prevRec) prevRec.dispose();
 };
@@ -96,5 +107,7 @@ export default {
 	initScene,
 	createGuy,
 	createSelectionRectangle,
-	deleteSelectionRectangle
+	deleteSelectionRectangle,
+	createScreenSpaceCanvas2D,
+	deleteScreenSpaceCanvas2D,
 };

@@ -3,9 +3,8 @@ import actions from '../flux/actions.js';
 import creation from './creation.js';
 
 function onPointerLeftUpEvent( event, dispatchEvents, scene ){
-	//Delete previous rectangle
-	creation.deleteSelectionRectangle( scene );
 	let mesh = event.pickInfo.pickedMesh;
+	let pos = event.pickInfo.pickedPoint;
 	//store event
 	let action = !!mesh && mesh.name !== 'ground' ? actions.select( mesh.id ) : actions.deselectAll();
 	return dispatchEvents( action );
@@ -22,20 +21,16 @@ function onPointerRightUpEvent( event, dispatchEvents ){
 };
 
 function onPointerDragEvent( e, startPoint, scene ){
-	let window = document.getElementById('3dview');
-	let width = e.event.clientX - startPoint[0];
-	let height = window.height - e.event.clientY - startPoint[1];
+	let save = startPoint;
 	//Delete previous rectangle
 	creation.deleteSelectionRectangle( scene );
 	//Create new Rectangle
-	creation.createSelectionRectangle( scene, startPoint, width, height );
+	creation.createSelectionRectangle( scene, startPoint, [ e.event.clientX, e.event.clientY ] );	
 };
 
 function instantiateEvents(canvas, scene, dispatchEvents){
 	let startPoint = [0,0];
-	let windowEventActivated = false;
-	
-	
+
 	scene.onPointerObservable.add((e) => {
 		let isLeftClicked = e.event.which === 1; 
 		let isRightClicked = e.event.which === 3; 
@@ -44,19 +39,23 @@ function instantiateEvents(canvas, scene, dispatchEvents){
 		switch(e.event.type){
 			case 'mouseup':
 				(isLeftClicked ? onPointerLeftUpEvent : onPointerRightUpEvent)( e, dispatchEvents, scene );
-				startPoint = [0,0]; 		
+				startPoint = [0,0];
 				break;
 			case 'mousedown' :
-				let window = document.getElementById('3dview');
-				startPoint =  [ event.clientX, window.height - event.clientY ];
+				startPoint =  [ e.event.clientX, e.event.clientY ];
+				creation.createScreenSpaceCanvas2D(scene);
 				onPointerDragEvent( e, startPoint, scene );
 				break;
 			case 'mousemove' :
 				// selection rectangle is 
 				//deleted here in case mouseup
 				//is done outside canvas				
-				creation.deleteSelectionRectangle(scene);
-				isLeftClicked && onPointerDragEvent( e, startPoint, scene );
+				if(!isLeftClicked){
+					creation.deleteSelectionRectangle(scene);
+					creation.deleteScreenSpaceCanvas2D(scene);
+				} else {
+					onPointerDragEvent( e, startPoint, scene );
+				}
 				break;
 		}
 		return;

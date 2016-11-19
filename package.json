@@ -8,7 +8,7 @@
     "babel-preset-es2015": "^6.16.0",
     "babel-preset-react": "^6.16.0",
     "babylonjs": "^2.4.1",
-    "monet": "^0.8.10",
+    "lodash": "^4.17.2",
     "ramda": "^0.22.1",
     "react": "^15.3.2",
     "react-dom": "^15.3.2",
@@ -22,7 +22,7 @@
   },
   "scripts": {
     "dev": "webpack -d --watch",
-	"server" : "webpack-dev-server --progress --colors --content-base src/app/"
+    "server": "webpack-dev-server --progress --colors --content-base src/app/"
   },
   "author": "",
   "license": "ISC"
