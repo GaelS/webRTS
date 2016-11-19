@@ -2,5 +2,6 @@ export default {
 	scene : null,
 	guys : [],
 	selectedMeshes : [],
-	buildingCreation : false,
+	shadowBuildingDisplayed : false,
+	buildingOnCreation : [],
 };

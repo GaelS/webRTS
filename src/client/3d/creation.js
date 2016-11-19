@@ -5,6 +5,10 @@ import { vector3 } from './utils.js';
 import materialsLib from './materials.js';
 import cameraLib from './camera/camera.js';
 import _ from 'lodash';
+import { 
+		creatingBuilding as creatingBuildingAction,
+		buildingIsDone as buildingIsDoneAction, 
+ 	} from '../flux/actions.js';
 
 function initScene( dispatchEvents ){
 	let canvas = document.getElementById( '3dview' );
@@ -24,7 +28,7 @@ function initScene( dispatchEvents ){
 		
 		let camera = cameraLib.createCamera( canvas, scene );
 		interaction.instantiateEvents(canvas, scene, dispatchEvents);
-
+		scene.dispatchEvents = dispatchEvents;
 		//Shadow building instantiation
 		createBuilding(scene, vector3(0,0,0), '', true);
 		
@@ -78,8 +82,6 @@ function createGuy( scene, qty, type ){
 	} );
 };
 function startBuildingCreation(scene){
-	let shadowMesh = scene.getMeshByID('shadowBuilding');
-	//shadowMesh.isPickable = true;
 	//instantiating event for ghost building
 	interaction.ghostBuildingManager(scene);
 };
@@ -87,7 +89,8 @@ function startBuildingCreation(scene){
 function endBuildingCreation(scene){
 	let shadowMesh = scene.getMeshByID('shadowBuilding');
 	let pos = shadowMesh.position;
-	createBuilding(scene,pos,'house',false);
+	//Redux event
+	scene.dispatchEvents( creatingBuildingAction(pos, 'house', false) );
 	//set visibility back to 0
 	shadowMesh.visibility = 0;
 	//removing event for ghost building
@@ -102,10 +105,16 @@ function createBuilding( scene, position, type, shadow ){
 	s.position = position;
 	s.material = scene.getMaterialByName('yellowMaterial');
 	s.onSelect = (evt) => { s.material = scene.getMaterialByName('blackerMaterial') };
-	s.onDeselect = (evt) => { s.material = scene.getMaterialByName('yellowMaterial') };
+	s.onDeselect = (evt) => { s.material = scene.getMaterialByName('greenMaterial') };
 	s.type = type;
 	s.isPickable = shadow ? false : true;
 	s.visibility = !shadow ? 1 : 0;
+	s.underConstruction = true;
+	setTimeout(() => {
+		s.underConstruction = false;
+		s.material = scene.getMaterialByName('greenMaterial');
+		scene.dispatchEvents( buildingIsDoneAction(s.id) );
+	},3000);
 	return s.id;
 };
 

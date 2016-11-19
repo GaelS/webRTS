@@ -28,12 +28,18 @@ export default ( ( state = defaultState, action ) => {
 			 ...creation.createGuy( newState.scene, value.qty, value.type ) ];
 			 break;
 		case 'CLICK_ON_BUILDING_CREATION' :
-			newState.buildingCreation = true;
+			newState.shadowBuildingDisplayed = true;
 			creation.startBuildingCreation( newState.scene );
 			break;	 
-		case 'BUILDING_CREATION_DONE' :
-			newState.buildingCreation = false;
+		case 'CREATING_BUILDING' :
+			let { position, type } = action.value;
+			let id = creation.createBuilding( newState.scene, position, type, false );
+			newState.shadowBuildingDisplayed = false;
+			newState.buildingOnCreation = [ ...newState.buildingOnCreation, id ];
 			break;	 
+		case 'BUILDING_IS_DONE' : 
+			newState.buildingOnCreation = _.without(action.value.id);
+			break;
 		case 'START_SELECTION' :
 			//Reset already selected meshes
 			materials.deselectMeshes( newState.scene, newState.selectedMeshes );

@@ -21,6 +21,29 @@ export const startBuildingCreation = () => {
 		type : 'CLICK_ON_BUILDING_CREATION',
 		value : null,
 	};
+};
+export const creatingBuilding = ( position,type ) => {
+	return {
+		type : 'CREATING_BUILDING',
+		value : {
+			position,
+			type,
+		},
+	};
+};
+export const buildingIsDone = ( id ) => {
+	return {
+		type : 'BUILDING_IS_DONE',
+		value : {
+			id,
+		},
+	};
+};
+export const endBuildingCreation = () => {
+	return {
+		type : 'SHADOW_HIDDEN',
+		value : null,
+	};
 }
 export const select = (idsMesh) => {
 	return {

@@ -23161,11 +23161,20 @@
 				newState.guys = [].concat(_toConsumableArray(state.guys), _toConsumableArray(_creation2.default.createGuy(newState.scene, value.qty, value.type)));
 				break;
 			case 'CLICK_ON_BUILDING_CREATION':
-				newState.buildingCreation = true;
+				newState.shadowBuildingDisplayed = true;
 				_creation2.default.startBuildingCreation(newState.scene);
 				break;
-			case 'BUILDING_CREATION_DONE':
-				newState.buildingCreation = false;
+			case 'CREATING_BUILDING':
+				var _action$value = action.value;
+				var position = _action$value.position;
+				var type = _action$value.type;
+	
+				var id = _creation2.default.createBuilding(newState.scene, position, type, false);
+				newState.shadowBuildingDisplayed = false;
+				newState.buildingOnCreation = [].concat(_toConsumableArray(newState.buildingOnCreation), [id]);
+				break;
+			case 'BUILDING_IS_DONE':
+				newState.buildingOnCreation = _.without(action.value.id);
 				break;
 			case 'START_SELECTION':
 				//Reset already selected meshes
@@ -23178,9 +23187,9 @@
 				newState.selectedMeshes = [];
 				break;
 			case 'MOVE_SELECTION':
-				var _action$value = action.value;
-				var x = _action$value.x;
-				var z = _action$value.z;
+				var _action$value2 = action.value;
+				var x = _action$value2.x;
+				var z = _action$value2.z;
 	
 				var meshes = newState.scene.meshes.filter(function (elt) {
 					return newState.selectedMeshes.indexOf(elt.name) !== -1;
@@ -23207,7 +23216,8 @@
 		scene: null,
 		guys: [],
 		selectedMeshes: [],
-		buildingCreation: false
+		shadowBuildingDisplayed: false,
+		buildingOnCreation: []
 	};
 
 /***/ },
@@ -23249,6 +23259,8 @@
 	
 	var _lodash2 = _interopRequireDefault(_lodash);
 	
+	var _actions = __webpack_require__(/*! ../flux/actions.js */ 201);
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
@@ -23271,7 +23283,7 @@
 	
 			var camera = _camera2.default.createCamera(canvas, scene);
 			_interaction2.default.instantiateEvents(canvas, scene, dispatchEvents);
-	
+			scene.dispatchEvents = dispatchEvents;
 			//Shadow building instantiation
 			createBuilding(scene, (0, _utils.vector3)(0, 0, 0), '', true);
 	
@@ -23329,8 +23341,6 @@
 		});
 	};
 	function startBuildingCreation(scene) {
-		var shadowMesh = scene.getMeshByID('shadowBuilding');
-		//shadowMesh.isPickable = true;
 		//instantiating event for ghost building
 		_interaction2.default.ghostBuildingManager(scene);
 	};
@@ -23338,7 +23348,8 @@
 	function endBuildingCreation(scene) {
 		var shadowMesh = scene.getMeshByID('shadowBuilding');
 		var pos = shadowMesh.position;
-		createBuilding(scene, pos, 'house', false);
+		//Redux event
+		scene.dispatchEvents((0, _actions.creatingBuilding)(pos, 'house', false));
 		//set visibility back to 0
 		shadowMesh.visibility = 0;
 		//removing event for ghost building
@@ -23356,11 +23367,17 @@
 			s.material = scene.getMaterialByName('blackerMaterial');
 		};
 		s.onDeselect = function (evt) {
-			s.material = scene.getMaterialByName('yellowMaterial');
+			s.material = scene.getMaterialByName('greenMaterial');
 		};
 		s.type = type;
 		s.isPickable = shadow ? false : true;
 		s.visibility = !shadow ? 1 : 0;
+		s.underConstruction = true;
+		setTimeout(function () {
+			s.underConstruction = false;
+			s.material = scene.getMaterialByName('greenMaterial');
+			scene.dispatchEvents((0, _actions.buildingIsDone)(s.id));
+		}, 3000);
 		return s.id;
 	};
 	
@@ -23845,6 +23862,29 @@
 	var startBuildingCreation = exports.startBuildingCreation = function startBuildingCreation() {
 		return {
 			type: 'CLICK_ON_BUILDING_CREATION',
+			value: null
+		};
+	};
+	var creatingBuilding = exports.creatingBuilding = function creatingBuilding(position, type) {
+		return {
+			type: 'CREATING_BUILDING',
+			value: {
+				position: position,
+				type: type
+			}
+		};
+	};
+	var buildingIsDone = exports.buildingIsDone = function buildingIsDone(id) {
+		return {
+			type: 'BUILDING_IS_DONE',
+			value: {
+				id: id
+			}
+		};
+	};
+	var endBuildingCreation = exports.endBuildingCreation = function endBuildingCreation() {
+		return {
+			type: 'SHADOW_HIDDEN',
 			value: null
 		};
 	};
