@@ -5,7 +5,17 @@ import * as buildingTypes from '../types/buildings.js';
 import { connect } from 'react-redux';
 import R from 'ramda';
 
-const Menu = ( { startBuildingCreation, launchGuyCreation, buildingButtons, characterButtons, characterBeingCreated } ) => {
+const Menu = ( props ) => {
+	let { 
+			startBuildingCreation,
+			launchGuyCreation,
+			buildingButtons,
+			characterButtons,
+			characterBeingCreated,
+			selectedElements,
+		} = props;
+		console.log(props)
+	console.log(characterButtons)
 	const S = {
 		menu : {
 			position : 'absolute',
@@ -37,6 +47,16 @@ const Menu = ( { startBuildingCreation, launchGuyCreation, buildingButtons, char
 					/>
 				)	
 			}
+			{ selectedElements.length !== 0 && 
+				
+				selectedElements.map( ( element, i ) => 
+					<div
+						key={ i }
+					>
+						{ `${ element.type } // ${ element.life }` }
+					</div>
+				)
+			}
 			{ characterBeingCreated.length !== 0 && 
 				
 				characterBeingCreated.map( ( character, i ) => 
@@ -64,15 +84,23 @@ const mapStateToProps = (state) => {
 	let IsAbuildingSelected = firstMesh.class === 'BUILDING';
 	//GET CHARACTERS BEING CREATED IF ANY
 	let characterBeingCreated = !IsAbuildingSelected ? [] : ( state.charactersOnCreation[ firstID ] || [] ); 
+	let selectedElements = state.selectedMeshes.map(m => {
+		let mesh = state.scene.getMeshByID(m);
+		return {
+			mesh,
+			type : mesh.type,
+			life : mesh.life || 100,
+		};
+	} );
 	return {
-		selectedMeshes : state.selectedMeshes.map(m => state.scene.getMeshByID(m)),
+		selectedElements,
 		characterBeingCreated,  
 	};
 };
 const mergeProps = (stateProps, dispatchProps, ownProps) => {
 	let getButtonsFromMeshes = (arrayOfTypes, type) => {
-		return _.chain(stateProps.selectedMeshes)
-				.map(m => !!arrayOfTypes[m.type]?arrayOfTypes[m.type][type]:null )
+		return _.chain(stateProps.selectedElements)
+				.map(m => !!arrayOfTypes[m.mesh.type]?arrayOfTypes[m.mesh.type][type]:null )
 				.flatten()
 				.uniq()
 				.compact()
@@ -83,7 +111,8 @@ const mergeProps = (stateProps, dispatchProps, ownProps) => {
 		characterButtons : getButtonsFromMeshes(buildingTypes, 'characters'),
 		startBuildingCreation : dispatchProps.startBuildingCreation,
 		launchGuyCreation : dispatchProps.launchGuyCreation,
-		characterBeingCreated : stateProps.characterBeingCreated,		
+		characterBeingCreated : stateProps.characterBeingCreated,	
+		selectedElements : stateProps.selectedElements,	
 	};
 }
 
