@@ -41,14 +41,13 @@ export const createBuilding = ( scene, position, type, shadow ) => {
 	s.onDeselect = (evt) => { s.material = scene.getMaterialByName('greenMaterial') };
 	s.type = type;
     s.class = 'BUILDING';
-	s.characterCreationStack = [];
 	s.isPickable = shadow ? false : true;
 	s.visibility = !shadow ? 1 : 0;
 	s.scaling = vector3(1, !shadow ? 0 : 1,1);
 	s.underConstruction = true;
 	!shadow && [1,2,3,4].map( e => setTimeout(() => {
-			s.underConstruction = false;
 			if(e === 4 ){ 
+				s.underConstruction = false;
 				s.material = scene.getMaterialByName('greenMaterial');
 				scene.dispatchEvents( buildingIsDoneAction(s.id) );
 			} else {

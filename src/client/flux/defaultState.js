@@ -5,4 +5,5 @@ export default {
 	shadowBuildingDisplayed : false,
 	buildingOnCreation : [],
 	charactersOnCreation : {},
+	busyCharacters : {},
 };

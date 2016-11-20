@@ -58,6 +58,13 @@ export const buildingIsDone = ( id ) => {
 		},
 	};
 };
+export const updateUnderConstructionBuilding = () => {
+	console.log("ok")
+	return {
+			type : 'UPDATE_UNDER_CONSTRUCTION_BUILDING',
+			value : null,
+		};
+};
 export const endBuildingCreation = () => {
 	return {
 		type : 'SHADOW_HIDDEN',
@@ -71,12 +78,12 @@ export const select = (idsMesh) => {
 	};
 };
 
-export const moveSelection = (x,z) => {
+export const setTarget = ( target, buildingId ) => {
 	return {
-		type : 'MOVE_SELECTION',
+		type : 'SET_TARGET_CHARACTER',
 		value : {
-			x,
-			z,
+			target,
+			buildingId,
 		},
 	};
 }

@@ -7,6 +7,7 @@ import cameraLib from '../camera/camera.js';
 import * as characterTypes from '../../types/characters.js';
 import { createBuilding } from './building.js';
 import { createGuy } from './character.js';
+import { updateUnderConstructionBuilding, deselectAll } from '../../flux/actions.js';
 
 export default ( dispatchEvents ) => {
 	let canvas = document.getElementById( '3dview' );
@@ -30,23 +31,24 @@ export default ( dispatchEvents ) => {
 		//Shadow building instantiation
 		createBuilding(scene, vector3(0,0,0), '', true);
 		//First guy instantiation
-		createGuy(scene, 1, characterTypes.CITIZEN.label);		
+		createGuy(scene, 1, characterTypes.CITIZEN.label);	
 		return scene;	
 	}
 	let scene = createScene(dispatchEvents);
 	scene.registerBeforeRender(() => {
-		movement.updatePositions(scene);
+		movement.updatePositions(scene);	
+
 	} );
 	engine.runRenderLoop( () => {
 		scene.render();
 	} );
-
+	//update size of building in redux if buildings are under construction
+	setInterval( () => dispatchEvents( updateUnderConstructionBuilding() ), 1000 );
 	// Watch for browser/canvas resize events
     window.addEventListener("resize", function () {
 		//dispose and redraw canvas2D for rectangle selection
 		if(!!scene.screenSpaceCanvas2D) scene.screenSpaceCanvas2D.dispose();
 		engine.resize();
     } );
-
 	return scene;
 };

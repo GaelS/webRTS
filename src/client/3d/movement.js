@@ -1,6 +1,10 @@
 import * as characterTypes from '../types/characters.js';
-function setTargetPosition(meshes, targetPos){
-	return meshes.forEach(e => e.targetPosition = targetPos );
+
+function setTargetPosition( meshes, targetPos ){
+		
+	return meshes.forEach(e => { 
+		e.targetPosition = targetPos;	
+	} );
 };
 
 function updatePositions(scene){

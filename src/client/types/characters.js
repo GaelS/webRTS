@@ -16,10 +16,14 @@ export const CITIZEN = {
     ],
     cooldown : 2000,
     speed : 0.5,
+    life : 50,
+    attack : 10,
 }; 
 export const SOLDIER = { 
     label :'SOLDIER',
     buildings : [],
     cooldown : 5000,
     speed : 1,
+    life : 200,
+    attack : 25,
 }; 

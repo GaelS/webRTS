@@ -1,5 +1,5 @@
 import { vector3, emptyFunc } from './utils.js';
-import { select, deselectAll, moveSelection } from '../flux/actions.js';
+import { select, deselectAll, setTarget } from '../flux/actions.js';
 import { 
 	createSelectionRectangle,
 	deleteSelectionRectangle,
@@ -45,7 +45,7 @@ function onPointerRightUpEvent( event, dispatchEvents ){
 	let mesh = event.pickInfo.pickedMesh;
 	//Move the selected cube(s) if not null
 	return !!mesh ? 
-		dispatchEvents( moveSelection( event.pickInfo.pickedPoint.x,  event.pickInfo.pickedPoint.z ) )
+		dispatchEvents( setTarget( event.pickInfo.pickedPoint, mesh.class === 'BUILDING' ? mesh.id : null ) )
 		:
 		emptyFunc();
 };

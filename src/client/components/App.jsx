@@ -1,5 +1,5 @@
 import React from 'react';
-import { initScene } from '../flux/actions.js';
+import { initScene, updateUnderConstructionBuilding } from '../flux/actions.js';
 import { connect } from 'react-redux';
 import Menu from './Menu.jsx';
 
@@ -12,8 +12,6 @@ class App extends React.Component {
     componentDidMount(){
         this.props.initScene(
             this.props.dispatchEvents,
-            // this.props.startSelection,
-            // this.props.endSelection,
         );
     }
 
@@ -46,12 +44,7 @@ const mapDispatchToProps = ( dispatch ) => {
     }
 };
 
-const mapStateToProps = ( state ) => {
-    return {
-    }
-};
-
 export default connect(
-    mapStateToProps,
-    mapDispatchToProps
+    null /* mapStateToProps */,
+    mapDispatchToProps,
 )(App);
