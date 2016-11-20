@@ -41,6 +41,7 @@ export const createBuilding = ( scene, position, type, shadow ) => {
 	s.onDeselect = (evt) => { s.material = scene.getMaterialByName('greenMaterial') };
 	s.type = type;
     s.class = 'BUILDING';
+	s.characterCreationStack = [];
 	s.isPickable = shadow ? false : true;
 	s.visibility = !shadow ? 1 : 0;
 	s.scaling = vector3(1, !shadow ? 0 : 1,1);
@@ -58,10 +59,22 @@ export const createBuilding = ( scene, position, type, shadow ) => {
 };
 
 export const addCharacterToCreate = ( scene, type, buildingID, delay ) => {
-	//launch character creation after cooldown
-	setTimeout( () => {
+	let delayedCharacterCreation = () => setTimeout( () => {
+		//launch creation
 		createGuy( scene, 1, type, buildingID );
-		scene.dispatchEvents( characterIsCreatedAction( buildingID ))
-		console.log('CREATING',type)
+		scene.dispatchEvents( characterIsCreatedAction( buildingID ));
+		//remove last element of the stack
+		scene.getMeshByID(buildingID).characterCreationStack.pop();
+		//active next creation to create if
+		//there is one
+		let stack = scene.getMeshByID(buildingID).characterCreationStack;
+		if(stack.length > 0) _.last(stack).apply(this);
 	}, delay );
+	
+	//add function to be executed when 
+	//previous ones have been terminated
+	scene.getMeshByID(buildingID).characterCreationStack.push(delayedCharacterCreation);
+	//bootstrap character creation  if length == 1
+	let stack = scene.getMeshByID(buildingID).characterCreationStack;
+	if( stack.length === 1 ) stack[0].apply(this);
 };

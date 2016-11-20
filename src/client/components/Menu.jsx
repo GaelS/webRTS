@@ -5,7 +5,7 @@ import * as buildingTypes from '../types/buildings.js';
 import { connect } from 'react-redux';
 import R from 'ramda';
 
-const Menu = ( { guys, startBuildingCreation, launchGuyCreation, buildingButtons, characterButtons } ) => {
+const Menu = ( { startBuildingCreation, launchGuyCreation, buildingButtons, characterButtons } ) => {
 	const S = {
 		menu : {
 			position : 'absolute',
@@ -65,7 +65,8 @@ const mergeProps = (stateProps, dispatchProps, ownProps) => {
 		buildingButtons : getButtonsFromMeshes(characterTypes, 'buildings'),
 		characterButtons : getButtonsFromMeshes(buildingTypes, 'characters'),
 		startBuildingCreation : dispatchProps.startBuildingCreation,
-		launchGuyCreation : dispatchProps.launchGuyCreation,		
+		launchGuyCreation : dispatchProps.launchGuyCreation,
+				
 	};
 }
 
