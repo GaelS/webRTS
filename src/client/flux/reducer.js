@@ -10,7 +10,7 @@ import R from 'ramda';
 import BABYLON from 'babylonjs';
 
 export default ( ( state = defaultState, action ) => {
-	
+	console.log(action.type)
 	let newState = R.clone( R.omit('scene',state ) );
 	//scene cannot be cloned
 	newState.scene = state.scene;
@@ -29,7 +29,7 @@ export default ( ( state = defaultState, action ) => {
 			 break;
 		case 'CLICK_ON_BUILDING_CREATION' :
 			newState.shadowBuildingDisplayed = true;
-			creation.startBuildingCreation( newState.scene );
+			creation.startBuildingCreation( newState.scene, action.value.type );
 			break;	 
 		case 'CREATING_BUILDING' :
 			let { position, type } = action.value;
@@ -51,7 +51,7 @@ export default ( ( state = defaultState, action ) => {
 			newState.selectedMeshes = [];
 			break;
 		case 'MOVE_SELECTION' : 
-			let {x,z} = action.value;
+			let { x,z } = action.value;
 			let meshes = newState.scene.meshes.filter(elt => newState.selectedMeshes.indexOf(elt.name) !== -1);
 			movement.setTargetPosition(meshes, vector3(x, 0, z));
 			break;

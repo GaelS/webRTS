@@ -9,6 +9,8 @@ import {
 		creatingBuilding as creatingBuildingAction,
 		buildingIsDone as buildingIsDoneAction, 
  	} from '../flux/actions.js';
+import * as buildingTypes from '../types/buildings.js';
+import * as characterTypes from '../types/characters.js';
 
 function initScene( dispatchEvents ){
 	let canvas = document.getElementById( '3dview' );
@@ -31,7 +33,8 @@ function initScene( dispatchEvents ){
 		scene.dispatchEvents = dispatchEvents;
 		//Shadow building instantiation
 		createBuilding(scene, vector3(0,0,0), '', true);
-		
+		//First guy instantiation
+		createGuy(scene, 1, characterTypes.CITIZEN.label);		
 		return scene;	
 	}
 	let scene = createScene(dispatchEvents);
@@ -81,18 +84,21 @@ function createGuy( scene, qty, type ){
 		return s.id;
 	} );
 };
-function startBuildingCreation(scene){
+function startBuildingCreation( scene, type ){
 	//instantiating event for ghost building
 	interaction.ghostBuildingManager(scene);
+	let shadowMesh = scene.getMeshByID('shadowBuilding');
+	shadowMesh.type = type;
 };
 
 function endBuildingCreation(scene){
 	let shadowMesh = scene.getMeshByID('shadowBuilding');
 	let pos = shadowMesh.position;
 	//Redux event
-	scene.dispatchEvents( creatingBuildingAction(pos, 'house', false) );
+	scene.dispatchEvents( creatingBuildingAction(pos, buildingTypes[shadowMesh.type].label, false) );
 	//set visibility back to 0
 	shadowMesh.visibility = 0;
+	shadowMesh.type = null;
 	//removing event for ghost building
 	interaction.endGhostBuildingManager(scene);
 };
@@ -109,12 +115,17 @@ function createBuilding( scene, position, type, shadow ){
 	s.type = type;
 	s.isPickable = shadow ? false : true;
 	s.visibility = !shadow ? 1 : 0;
+	s.scaling = vector3(1, !shadow ? 0 : 1,1);
 	s.underConstruction = true;
-	setTimeout(() => {
-		s.underConstruction = false;
-		s.material = scene.getMaterialByName('greenMaterial');
-		scene.dispatchEvents( buildingIsDoneAction(s.id) );
-	},3000);
+	!shadow && [1,2,3,4].map( e => setTimeout(() => {
+			s.underConstruction = false;
+			if(e === 4 ){ 
+				s.material = scene.getMaterialByName('greenMaterial');
+				scene.dispatchEvents( buildingIsDoneAction(s.id) );
+			} else {
+				s.scaling = vector3(1,0.25 * e,1);
+			} 
+		},e * 1000) );
 	return s.id;
 };
 

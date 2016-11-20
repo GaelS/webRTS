@@ -16,13 +16,15 @@ export const createGuy = ( qty, type ) => {
 		 },
 	};
 };
-export const startBuildingCreation = () => {
+export const startBuildingCreation = ( type ) => {
 	return {
 		type : 'CLICK_ON_BUILDING_CREATION',
-		value : null,
+		value : {
+			type,
+		},
 	};
 };
-export const creatingBuilding = ( position,type ) => {
+export const creatingBuilding = ( position, type ) => {
 	return {
 		type : 'CREATING_BUILDING',
 		value : {

@@ -23120,11 +23120,11 @@
 	
 	var _interaction2 = _interopRequireDefault(_interaction);
 	
-	var _movement = __webpack_require__(/*! ../3d/movement.js */ 204);
+	var _movement = __webpack_require__(/*! ../3d/movement.js */ 202);
 	
 	var _movement2 = _interopRequireDefault(_movement);
 	
-	var _materials = __webpack_require__(/*! ../3d/materials.js */ 205);
+	var _materials = __webpack_require__(/*! ../3d/materials.js */ 203);
 	
 	var _materials2 = _interopRequireDefault(_materials);
 	
@@ -23146,7 +23146,7 @@
 		var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : _defaultState2.default;
 		var action = arguments[1];
 	
-	
+		console.log(action.type);
 		var newState = _ramda2.default.clone(_ramda2.default.omit('scene', state));
 		//scene cannot be cloned
 		newState.scene = state.scene;
@@ -23162,7 +23162,7 @@
 				break;
 			case 'CLICK_ON_BUILDING_CREATION':
 				newState.shadowBuildingDisplayed = true;
-				_creation2.default.startBuildingCreation(newState.scene);
+				_creation2.default.startBuildingCreation(newState.scene, action.value.type);
 				break;
 			case 'CREATING_BUILDING':
 				var _action$value = action.value;
@@ -23241,25 +23241,35 @@
 	
 	var _interaction2 = _interopRequireDefault(_interaction);
 	
-	var _movement = __webpack_require__(/*! ./movement.js */ 204);
+	var _movement = __webpack_require__(/*! ./movement.js */ 202);
 	
 	var _movement2 = _interopRequireDefault(_movement);
 	
 	var _utils = __webpack_require__(/*! ./utils.js */ 200);
 	
-	var _materials = __webpack_require__(/*! ./materials.js */ 205);
+	var _materials = __webpack_require__(/*! ./materials.js */ 203);
 	
 	var _materials2 = _interopRequireDefault(_materials);
 	
-	var _camera = __webpack_require__(/*! ./camera/camera.js */ 206);
+	var _camera = __webpack_require__(/*! ./camera/camera.js */ 204);
 	
 	var _camera2 = _interopRequireDefault(_camera);
 	
-	var _lodash = __webpack_require__(/*! lodash */ 202);
+	var _lodash = __webpack_require__(/*! lodash */ 206);
 	
 	var _lodash2 = _interopRequireDefault(_lodash);
 	
 	var _actions = __webpack_require__(/*! ../flux/actions.js */ 201);
+	
+	var _buildings = __webpack_require__(/*! ../types/buildings.js */ 221);
+	
+	var buildingTypes = _interopRequireWildcard(_buildings);
+	
+	var _characters = __webpack_require__(/*! ../types/characters.js */ 220);
+	
+	var characterTypes = _interopRequireWildcard(_characters);
+	
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -23286,7 +23296,8 @@
 			scene.dispatchEvents = dispatchEvents;
 			//Shadow building instantiation
 			createBuilding(scene, (0, _utils.vector3)(0, 0, 0), '', true);
-	
+			//First guy instantiation
+			createGuy(scene, 1, characterTypes.CITIZEN.label);
 			return scene;
 		};
 		var scene = createScene(dispatchEvents);
@@ -23340,18 +23351,21 @@
 			return s.id;
 		});
 	};
-	function startBuildingCreation(scene) {
+	function startBuildingCreation(scene, type) {
 		//instantiating event for ghost building
 		_interaction2.default.ghostBuildingManager(scene);
+		var shadowMesh = scene.getMeshByID('shadowBuilding');
+		shadowMesh.type = type;
 	};
 	
 	function endBuildingCreation(scene) {
 		var shadowMesh = scene.getMeshByID('shadowBuilding');
 		var pos = shadowMesh.position;
 		//Redux event
-		scene.dispatchEvents((0, _actions.creatingBuilding)(pos, 'house', false));
+		scene.dispatchEvents((0, _actions.creatingBuilding)(pos, buildingTypes[shadowMesh.type].label, false));
 		//set visibility back to 0
 		shadowMesh.visibility = 0;
+		shadowMesh.type = null;
 		//removing event for ghost building
 		_interaction2.default.endGhostBuildingManager(scene);
 	};
@@ -23372,12 +23386,19 @@
 		s.type = type;
 		s.isPickable = shadow ? false : true;
 		s.visibility = !shadow ? 1 : 0;
+		s.scaling = (0, _utils.vector3)(1, !shadow ? 0 : 1, 1);
 		s.underConstruction = true;
-		setTimeout(function () {
-			s.underConstruction = false;
-			s.material = scene.getMaterialByName('greenMaterial');
-			scene.dispatchEvents((0, _actions.buildingIsDone)(s.id));
-		}, 3000);
+		!shadow && [1, 2, 3, 4].map(function (e) {
+			return setTimeout(function () {
+				s.underConstruction = false;
+				if (e === 4) {
+					s.material = scene.getMaterialByName('greenMaterial');
+					scene.dispatchEvents((0, _actions.buildingIsDone)(s.id));
+				} else {
+					s.scaling = (0, _utils.vector3)(1, 0.25 * e, 1);
+				}
+			}, e * 1000);
+		});
 		return s.id;
 	};
 	
@@ -23859,10 +23880,12 @@
 			}
 		};
 	};
-	var startBuildingCreation = exports.startBuildingCreation = function startBuildingCreation() {
+	var startBuildingCreation = exports.startBuildingCreation = function startBuildingCreation(type) {
 		return {
 			type: 'CLICK_ON_BUILDING_CREATION',
-			value: null
+			value: {
+				type: type
+			}
 		};
 	};
 	var creatingBuilding = exports.creatingBuilding = function creatingBuilding(position, type) {
@@ -23914,6 +23937,315 @@
 
 /***/ },
 /* 202 */
+/*!***********************************!*\
+  !*** ./src/client/3d/movement.js ***!
+  \***********************************/
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	function setTargetPosition(meshes, targetPos) {
+		return meshes.forEach(function (e) {
+			return e.targetPosition = targetPos;
+		});
+	};
+	
+	function updatePositions(scene) {
+		return scene.meshes.filter(function (e) {
+			return !!e.targetPosition;
+		}).forEach(function (e) {
+			var dir = e.targetPosition.subtract(e.position);
+			e.targetPosition = dir.length() < 1 ? undefined : e.targetPosition;
+			dir.normalize();
+			e.position.x += dir.x * 0.5;
+			e.position.z += dir.z * 0.5;
+		});
+	}
+	exports.default = {
+		setTargetPosition: setTargetPosition,
+		updatePositions: updatePositions
+	};
+
+/***/ },
+/* 203 */
+/*!************************************!*\
+  !*** ./src/client/3d/materials.js ***!
+  \************************************/
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	function initMaterials(scene) {
+	
+	    scene.materialsBlack = new BABYLON.StandardMaterial("blackMaterial", scene);
+	    scene.materialsBlack.diffuseColor = new BABYLON.Color3(0.9, 0.9, 0.9);
+	    scene.materialsBlack.specularColor = new BABYLON.Color3(0, 0, 0);
+	
+	    scene.materialsBlacker = new BABYLON.StandardMaterial("blackerMaterial", scene);
+	    scene.materialsBlacker.diffuseColor = new BABYLON.Color3(0.2, 0.2, 0.2);
+	    scene.materialsBlacker.specularColor = new BABYLON.Color3(0, 0, 0);
+	
+	    scene.materialsWhite = new BABYLON.StandardMaterial("whiteMaterial", scene);
+	    scene.materialsWhite.diffuseColor = new BABYLON.Color3(1, 1, 1);
+	    scene.materialsWhite.specularColor = new BABYLON.Color3(0, 0, 0);
+	
+	    scene.materialsGreen = new BABYLON.StandardMaterial("greenMaterial", scene);
+	    scene.materialsGreen.diffuseColor = new BABYLON.Color3(27 / 255, 207 / 255, 37 / 255);
+	    scene.materialsGreen.specularColor = new BABYLON.Color3(0, 0, 0);
+	
+	    scene.materialsOrange = new BABYLON.StandardMaterial("orangeMaterial", scene);
+	    scene.materialsOrange.diffuseColor = new BABYLON.Color3(1, 165 / 255, 0);
+	    scene.materialsOrange.specularColor = new BABYLON.Color3(0, 0, 0);
+	
+	    scene.materialsYellow = new BABYLON.StandardMaterial("yellowMaterial", scene);
+	    scene.materialsYellow.diffuseColor = new BABYLON.Color3(1, 1, 0);
+	    scene.materialsYellow.specularColor = new BABYLON.Color3(0, 0, 0);
+	
+	    scene.materialsRed = new BABYLON.StandardMaterial("redMaterial", scene);
+	    scene.materialsRed.diffuseColor = new BABYLON.Color3(1, 0, 0);
+	    scene.materialsRed.specularColor = new BABYLON.Color3(0, 0, 0);
+	
+	    scene.materialsBlue = new BABYLON.StandardMaterial("blueMaterial", scene);
+	    scene.materialsBlue.diffuseColor = new BABYLON.Color3(27 / 255, 37 / 255, 207 / 255);
+	    scene.materialsBlue.specularColor = new BABYLON.Color3(0, 0, 0);
+	};
+	
+	function selectMeshes(scene, meshes) {
+	    return scene.meshes.filter(function (e) {
+	        return meshes.indexOf(e.name) !== -1;
+	    }).forEach(function (e) {
+	        return e.onSelect();
+	    });
+	}
+	function deselectMeshes(scene, meshes) {
+	    return scene.meshes.filter(function (e) {
+	        return meshes.indexOf(e.name) !== -1;
+	    }).forEach(function (e) {
+	        return e.onDeselect();
+	    });
+	}
+	exports.default = {
+	    initMaterials: initMaterials,
+	    selectMeshes: selectMeshes,
+	    deselectMeshes: deselectMeshes
+	};
+
+/***/ },
+/* 204 */
+/*!****************************************!*\
+  !*** ./src/client/3d/camera/camera.js ***!
+  \****************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	
+	var _utils = __webpack_require__(/*! ../utils.js */ 200);
+	
+	var _customInputs = __webpack_require__(/*! ./customInputs.js */ 205);
+	
+	var _customInputs2 = _interopRequireDefault(_customInputs);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var initCameraSettings = function initCameraSettings(camera) {
+		//block rotation on x axis 
+		camera.upperAlphaLimit = 0;
+		camera.lowerAlphaLimit = 0;
+		//block rotation on y axis 
+		camera.upperBetaLimit = (0, _utils.degToRad)(25);
+		camera.lowerBetaLimit = (0, _utils.degToRad)(25);
+		//limit zoom in/out
+		camera.lowerRadiusLimit = 10;
+		camera.upperRadiusLimit = 200;
+		camera.setTarget((0, _utils.vector3)(0, 0, 0));
+	};
+	var mouseEvents = function mouseEvents(camera) {
+		return function (eventData, eventState) {
+			var mouseWheel = eventData.type === 8;
+			if (!mouseWheel) return;
+			var sign = eventData.event.wheelDelta < 0 ? 5 : -5;
+			var displacement = camera.position.add(camera.upVector.multiplyByFloats(sign, sign, sign));
+			camera.setPosition(displacement);
+		};
+	};
+	var initCameraEvents = function initCameraEvents(camera, scene) {
+		//Remove all preset control 
+		camera.inputs.clear();
+		//mouse input
+		scene.onPointerObservable.add(mouseEvents(camera));
+		//keyboard input
+		camera.inputs.add(new _customInputs2.default(camera));
+	};
+	
+	exports.default = {
+		createCamera: function createCamera(canvas, scene) {
+			var camera = new BABYLON.ArcRotateCamera("camera", 1, 0.8, 10, BABYLON.Vector3.Zero(), scene);
+			initCameraSettings(camera);
+			initCameraEvents(camera, scene);
+			camera.attachControl(canvas, false);
+			camera.setPosition((0, _utils.vector3)(0, 50, -30));
+			return camera;
+		}
+	};
+
+/***/ },
+/* 205 */
+/*!**********************************************!*\
+  !*** ./src/client/3d/camera/customInputs.js ***!
+  \**********************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	var _utils = __webpack_require__(/*! ../utils.js */ 200);
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	var CustomInputs = function () {
+	    function CustomInputs(camera) {
+	        _classCallCheck(this, CustomInputs);
+	
+	        this.keysUp = [38];
+	        this.keysDown = [40];
+	        this.keysLeft = [37];
+	        this.keysRight = [39];
+	
+	        this.camera = camera;
+	        this._onKeyDown = null;
+	        this._onKeyUp = null;
+	        this._onLostFocus = null;
+	        this._keys = [];
+	    }
+	
+	    _createClass(CustomInputs, [{
+	        key: "attachControl",
+	        value: function attachControl(element, noPreventDefault) {
+	            var _this = this;
+	
+	            element.tabIndex = 1;
+	            this._onKeyDown = function (evt) {
+	
+	                if (_this.keysUp.indexOf(evt.keyCode) !== -1 || _this.keysDown.indexOf(evt.keyCode) !== -1 || _this.keysLeft.indexOf(evt.keyCode) !== -1 || _this.keysRight.indexOf(evt.keyCode) !== -1) {
+	                    var index = _this._keys.indexOf(evt.keyCode);
+	
+	                    if (index === -1) {
+	                        _this._keys.push(evt.keyCode);
+	                    }
+	
+	                    if (evt.preventDefault) {
+	                        if (!noPreventDefault) {
+	                            evt.preventDefault();
+	                        }
+	                    }
+	                }
+	            };
+	
+	            this._onKeyUp = function (evt) {
+	
+	                if (_this.keysUp.indexOf(evt.keyCode) !== -1 || _this.keysDown.indexOf(evt.keyCode) !== -1 || _this.keysLeft.indexOf(evt.keyCode) !== -1 || _this.keysRight.indexOf(evt.keyCode) !== -1) {
+	                    var index = _this._keys.indexOf(evt.keyCode);
+	
+	                    if (index >= 0) {
+	                        _this._keys.splice(index, 1);
+	                    }
+	
+	                    if (evt.preventDefault) {
+	                        if (!noPreventDefault) {
+	                            evt.preventDefault();
+	                        }
+	                    }
+	                }
+	            };
+	
+	            this._onLostFocus = function () {
+	                _this._keys = [];
+	            };
+	
+	            element.addEventListener("keydown", this._onKeyDown, false);
+	            element.addEventListener("keyup", this._onKeyUp, false);
+	        }
+	
+	        // element : HTML element
+	
+	    }, {
+	        key: "detachControl",
+	        value: function detachControl(element) {
+	            if (element) {
+	                element.removeEventListener("keydown", this._onKeyDown);
+	                element.removeEventListener("keyup", this._onKeyUp);
+	            }
+	
+	            this._keys = [];
+	            this._onKeyDown = null;
+	            this._onKeyUp = null;
+	            this._onLostFocus = null;
+	        }
+	    }, {
+	        key: "checkInputs",
+	        value: function checkInputs() {
+	            var camera = this.camera;
+	
+	            var cameraPos = camera.position;
+	            var targetPos = camera.target;
+	
+	            var fwd = targetPos.subtract(cameraPos).normalize();
+	            var left = BABYLON.Vector3.Cross(fwd, camera.upVector).normalize();
+	            for (var index = 0; index < this._keys.length; index++) {
+	
+	                var keyCode = this._keys[index];
+	                var leftKey = this.keysLeft.indexOf(keyCode) !== -1;
+	                var rightKey = this.keysRight.indexOf(keyCode) !== -1;
+	                var upKey = this.keysUp.indexOf(keyCode) !== -1;
+	                var downKey = this.keysDown.indexOf(keyCode) !== -1;
+	
+	                if (leftKey || rightKey) {
+	                    var factor = leftKey ? 1 : -1;
+	                    var mvt = (0, _utils.vector3)(factor * left.x, 0, factor * left.z).normalize();
+	                    camera.setPosition(cameraPos.addInPlace(mvt));
+	                    camera.setTarget(targetPos.addInPlace(mvt));
+	                } else if (upKey || downKey) {
+	                    var _factor = upKey ? 1 : -1;
+	                    var _mvt = (0, _utils.vector3)(_factor * fwd.x, 0, _factor * fwd.z).normalize();
+	                    camera.setPosition(cameraPos.addInPlace(_mvt));
+	                    camera.setTarget(targetPos.addInPlace(_mvt));
+	                }
+	            }
+	        }
+	    }, {
+	        key: "getTypeName",
+	        value: function getTypeName() {
+	            return "CustomWebRTSKeyboard";
+	        }
+	    }, {
+	        key: "getSimpleName",
+	        value: function getSimpleName() {
+	            return "CustomKeyboard";
+	        }
+	    }]);
+	
+	    return CustomInputs;
+	}();
+	
+	exports.default = CustomInputs;
+
+/***/ },
+/* 206 */
 /*!****************************!*\
   !*** ./~/lodash/lodash.js ***!
   \****************************/
@@ -40985,10 +41317,10 @@
 	  }
 	}.call(this));
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(/*! ./../webpack/buildin/module.js */ 203)(module)))
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(/*! ./../webpack/buildin/module.js */ 207)(module)))
 
 /***/ },
-/* 203 */
+/* 207 */
 /*!***********************************!*\
   !*** (webpack)/buildin/module.js ***!
   \***********************************/
@@ -41005,315 +41337,6 @@
 		return module;
 	}
 
-
-/***/ },
-/* 204 */
-/*!***********************************!*\
-  !*** ./src/client/3d/movement.js ***!
-  \***********************************/
-/***/ function(module, exports) {
-
-	"use strict";
-	
-	Object.defineProperty(exports, "__esModule", {
-		value: true
-	});
-	function setTargetPosition(meshes, targetPos) {
-		return meshes.forEach(function (e) {
-			return e.targetPosition = targetPos;
-		});
-	};
-	
-	function updatePositions(scene) {
-		return scene.meshes.filter(function (e) {
-			return !!e.targetPosition;
-		}).forEach(function (e) {
-			var dir = e.targetPosition.subtract(e.position);
-			e.targetPosition = dir.length() < 1 ? undefined : e.targetPosition;
-			dir.normalize();
-			e.position.x += dir.x * 0.5;
-			e.position.z += dir.z * 0.5;
-		});
-	}
-	exports.default = {
-		setTargetPosition: setTargetPosition,
-		updatePositions: updatePositions
-	};
-
-/***/ },
-/* 205 */
-/*!************************************!*\
-  !*** ./src/client/3d/materials.js ***!
-  \************************************/
-/***/ function(module, exports) {
-
-	"use strict";
-	
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	function initMaterials(scene) {
-	
-	    scene.materialsBlack = new BABYLON.StandardMaterial("blackMaterial", scene);
-	    scene.materialsBlack.diffuseColor = new BABYLON.Color3(0.9, 0.9, 0.9);
-	    scene.materialsBlack.specularColor = new BABYLON.Color3(0, 0, 0);
-	
-	    scene.materialsBlacker = new BABYLON.StandardMaterial("blackerMaterial", scene);
-	    scene.materialsBlacker.diffuseColor = new BABYLON.Color3(0.2, 0.2, 0.2);
-	    scene.materialsBlacker.specularColor = new BABYLON.Color3(0, 0, 0);
-	
-	    scene.materialsWhite = new BABYLON.StandardMaterial("whiteMaterial", scene);
-	    scene.materialsWhite.diffuseColor = new BABYLON.Color3(1, 1, 1);
-	    scene.materialsWhite.specularColor = new BABYLON.Color3(0, 0, 0);
-	
-	    scene.materialsGreen = new BABYLON.StandardMaterial("greenMaterial", scene);
-	    scene.materialsGreen.diffuseColor = new BABYLON.Color3(27 / 255, 207 / 255, 37 / 255);
-	    scene.materialsGreen.specularColor = new BABYLON.Color3(0, 0, 0);
-	
-	    scene.materialsOrange = new BABYLON.StandardMaterial("orangeMaterial", scene);
-	    scene.materialsOrange.diffuseColor = new BABYLON.Color3(1, 165 / 255, 0);
-	    scene.materialsOrange.specularColor = new BABYLON.Color3(0, 0, 0);
-	
-	    scene.materialsYellow = new BABYLON.StandardMaterial("yellowMaterial", scene);
-	    scene.materialsYellow.diffuseColor = new BABYLON.Color3(1, 1, 0);
-	    scene.materialsYellow.specularColor = new BABYLON.Color3(0, 0, 0);
-	
-	    scene.materialsRed = new BABYLON.StandardMaterial("redMaterial", scene);
-	    scene.materialsRed.diffuseColor = new BABYLON.Color3(1, 0, 0);
-	    scene.materialsRed.specularColor = new BABYLON.Color3(0, 0, 0);
-	
-	    scene.materialsBlue = new BABYLON.StandardMaterial("blueMaterial", scene);
-	    scene.materialsBlue.diffuseColor = new BABYLON.Color3(27 / 255, 37 / 255, 207 / 255);
-	    scene.materialsBlue.specularColor = new BABYLON.Color3(0, 0, 0);
-	};
-	
-	function selectMeshes(scene, meshes) {
-	    return scene.meshes.filter(function (e) {
-	        return meshes.indexOf(e.name) !== -1;
-	    }).forEach(function (e) {
-	        return e.onSelect();
-	    });
-	}
-	function deselectMeshes(scene, meshes) {
-	    return scene.meshes.filter(function (e) {
-	        return meshes.indexOf(e.name) !== -1;
-	    }).forEach(function (e) {
-	        return e.onDeselect();
-	    });
-	}
-	exports.default = {
-	    initMaterials: initMaterials,
-	    selectMeshes: selectMeshes,
-	    deselectMeshes: deselectMeshes
-	};
-
-/***/ },
-/* 206 */
-/*!****************************************!*\
-  !*** ./src/client/3d/camera/camera.js ***!
-  \****************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-		value: true
-	});
-	
-	var _utils = __webpack_require__(/*! ../utils.js */ 200);
-	
-	var _customInputs = __webpack_require__(/*! ./customInputs.js */ 207);
-	
-	var _customInputs2 = _interopRequireDefault(_customInputs);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	var initCameraSettings = function initCameraSettings(camera) {
-		//block rotation on x axis 
-		camera.upperAlphaLimit = 0;
-		camera.lowerAlphaLimit = 0;
-		//block rotation on y axis 
-		camera.upperBetaLimit = (0, _utils.degToRad)(25);
-		camera.lowerBetaLimit = (0, _utils.degToRad)(25);
-		//limit zoom in/out
-		camera.lowerRadiusLimit = 10;
-		camera.upperRadiusLimit = 200;
-		camera.setTarget((0, _utils.vector3)(0, 0, 0));
-	};
-	var mouseEvents = function mouseEvents(camera) {
-		return function (eventData, eventState) {
-			var mouseWheel = eventData.type === 8;
-			if (!mouseWheel) return;
-			var sign = eventData.event.wheelDelta < 0 ? 5 : -5;
-			var displacement = camera.position.add(camera.upVector.multiplyByFloats(sign, sign, sign));
-			camera.setPosition(displacement);
-		};
-	};
-	var initCameraEvents = function initCameraEvents(camera, scene) {
-		//Remove all preset control 
-		camera.inputs.clear();
-		//mouse input
-		scene.onPointerObservable.add(mouseEvents(camera));
-		//keyboard input
-		camera.inputs.add(new _customInputs2.default(camera));
-	};
-	
-	exports.default = {
-		createCamera: function createCamera(canvas, scene) {
-			var camera = new BABYLON.ArcRotateCamera("camera", 1, 0.8, 10, BABYLON.Vector3.Zero(), scene);
-			initCameraSettings(camera);
-			initCameraEvents(camera, scene);
-			camera.attachControl(canvas, false);
-			camera.setPosition((0, _utils.vector3)(0, 50, -30));
-			return camera;
-		}
-	};
-
-/***/ },
-/* 207 */
-/*!**********************************************!*\
-  !*** ./src/client/3d/camera/customInputs.js ***!
-  \**********************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-	
-	var _utils = __webpack_require__(/*! ../utils.js */ 200);
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-	
-	var CustomInputs = function () {
-	    function CustomInputs(camera) {
-	        _classCallCheck(this, CustomInputs);
-	
-	        this.keysUp = [38];
-	        this.keysDown = [40];
-	        this.keysLeft = [37];
-	        this.keysRight = [39];
-	
-	        this.camera = camera;
-	        this._onKeyDown = null;
-	        this._onKeyUp = null;
-	        this._onLostFocus = null;
-	        this._keys = [];
-	    }
-	
-	    _createClass(CustomInputs, [{
-	        key: "attachControl",
-	        value: function attachControl(element, noPreventDefault) {
-	            var _this = this;
-	
-	            element.tabIndex = 1;
-	            this._onKeyDown = function (evt) {
-	
-	                if (_this.keysUp.indexOf(evt.keyCode) !== -1 || _this.keysDown.indexOf(evt.keyCode) !== -1 || _this.keysLeft.indexOf(evt.keyCode) !== -1 || _this.keysRight.indexOf(evt.keyCode) !== -1) {
-	                    var index = _this._keys.indexOf(evt.keyCode);
-	
-	                    if (index === -1) {
-	                        _this._keys.push(evt.keyCode);
-	                    }
-	
-	                    if (evt.preventDefault) {
-	                        if (!noPreventDefault) {
-	                            evt.preventDefault();
-	                        }
-	                    }
-	                }
-	            };
-	
-	            this._onKeyUp = function (evt) {
-	
-	                if (_this.keysUp.indexOf(evt.keyCode) !== -1 || _this.keysDown.indexOf(evt.keyCode) !== -1 || _this.keysLeft.indexOf(evt.keyCode) !== -1 || _this.keysRight.indexOf(evt.keyCode) !== -1) {
-	                    var index = _this._keys.indexOf(evt.keyCode);
-	
-	                    if (index >= 0) {
-	                        _this._keys.splice(index, 1);
-	                    }
-	
-	                    if (evt.preventDefault) {
-	                        if (!noPreventDefault) {
-	                            evt.preventDefault();
-	                        }
-	                    }
-	                }
-	            };
-	
-	            this._onLostFocus = function () {
-	                _this._keys = [];
-	            };
-	
-	            element.addEventListener("keydown", this._onKeyDown, false);
-	            element.addEventListener("keyup", this._onKeyUp, false);
-	        }
-	
-	        // element : HTML element
-	
-	    }, {
-	        key: "detachControl",
-	        value: function detachControl(element) {
-	            if (element) {
-	                element.removeEventListener("keydown", this._onKeyDown);
-	                element.removeEventListener("keyup", this._onKeyUp);
-	            }
-	
-	            this._keys = [];
-	            this._onKeyDown = null;
-	            this._onKeyUp = null;
-	            this._onLostFocus = null;
-	        }
-	    }, {
-	        key: "checkInputs",
-	        value: function checkInputs() {
-	            var camera = this.camera;
-	
-	            var cameraPos = camera.position;
-	            var targetPos = camera.target;
-	
-	            var fwd = targetPos.subtract(cameraPos).normalize();
-	            var left = BABYLON.Vector3.Cross(fwd, camera.upVector).normalize();
-	            for (var index = 0; index < this._keys.length; index++) {
-	
-	                var keyCode = this._keys[index];
-	                var leftKey = this.keysLeft.indexOf(keyCode) !== -1;
-	                var rightKey = this.keysRight.indexOf(keyCode) !== -1;
-	                var upKey = this.keysUp.indexOf(keyCode) !== -1;
-	                var downKey = this.keysDown.indexOf(keyCode) !== -1;
-	
-	                if (leftKey || rightKey) {
-	                    var factor = leftKey ? 1 : -1;
-	                    var mvt = (0, _utils.vector3)(factor * left.x, 0, factor * left.z).normalize();
-	                    camera.setPosition(cameraPos.addInPlace(mvt));
-	                    camera.setTarget(targetPos.addInPlace(mvt));
-	                } else if (upKey || downKey) {
-	                    var _factor = upKey ? 1 : -1;
-	                    var _mvt = (0, _utils.vector3)(_factor * fwd.x, 0, _factor * fwd.z).normalize();
-	                    camera.setPosition(cameraPos.addInPlace(_mvt));
-	                    camera.setTarget(targetPos.addInPlace(_mvt));
-	                }
-	            }
-	        }
-	    }, {
-	        key: "getTypeName",
-	        value: function getTypeName() {
-	            return "CustomWebRTSKeyboard";
-	        }
-	    }, {
-	        key: "getSimpleName",
-	        value: function getSimpleName() {
-	            return "CustomKeyboard";
-	        }
-	    }]);
-	
-	    return CustomInputs;
-	}();
-	
-	exports.default = CustomInputs;
 
 /***/ },
 /* 208 */
@@ -51006,15 +51029,30 @@
 	
 	var _actions = __webpack_require__(/*! ../flux/actions.js */ 201);
 	
+	var _characters = __webpack_require__(/*! ../types/characters.js */ 220);
+	
+	var characterTypes = _interopRequireWildcard(_characters);
+	
+	var _buildings = __webpack_require__(/*! ../types/buildings.js */ 221);
+	
+	var buildingTypes = _interopRequireWildcard(_buildings);
+	
 	var _reactRedux = __webpack_require__(/*! react-redux */ 209);
+	
+	var _ramda = __webpack_require__(/*! ramda */ 208);
+	
+	var _ramda2 = _interopRequireDefault(_ramda);
+	
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	var Menu = function Menu(_ref) {
 		var guys = _ref.guys;
-		var selectedGuys = _ref.selectedGuys;
 		var startBuildingCreation = _ref.startBuildingCreation;
 		var createOneGuy = _ref.createOneGuy;
+		var buildingButtons = _ref.buildingButtons;
+		var characterButtons = _ref.characterButtons;
 	
 		var S = {
 			menu: {
@@ -51027,40 +51065,113 @@
 			{
 				style: S.menu
 			},
-			_react2.default.createElement('input', {
-				type: 'button',
-				value: 'create peon',
-				onClick: createOneGuy
+			characterButtons.length !== 0 && characterButtons.map(function (type) {
+				return _react2.default.createElement('input', {
+					key: type,
+					type: 'button',
+					value: 'create a ' + type.toLowerCase(),
+					onClick: function onClick() {
+						return createOneGuy(type);
+					}
+				});
 			}),
-			selectedGuys.length !== 0 && _react2.default.createElement('input', {
-				type: 'button',
-				value: 'create a building',
-				onClick: startBuildingCreation
+			buildingButtons.length !== 0 && buildingButtons.map(function (type) {
+				return _react2.default.createElement('input', {
+					key: type,
+					type: 'button',
+					value: 'create a ' + type.toLowerCase(),
+					onClick: function onClick() {
+						return startBuildingCreation(type);
+					}
+				});
 			})
 		);
 	};
 	
 	var mapDispatchToProps = function mapDispatchToProps(dispatch) {
 		return {
-			createOneGuy: function createOneGuy() {
-				return dispatch((0, _actions.createGuy)(1, 'citizen'));
+			createOneGuy: function createOneGuy(type) {
+				return dispatch((0, _actions.createGuy)(1, type));
 			},
-			startBuildingCreation: function startBuildingCreation() {
-				return dispatch((0, _actions.startBuildingCreation)());
+			startBuildingCreation: function startBuildingCreation(type) {
+				return dispatch((0, _actions.startBuildingCreation)(type));
 			}
 		};
 	};
 	
 	var mapStateToProps = function mapStateToProps(state) {
 		return {
-			guys: state.guys.length,
-			selectedGuys: state.selectedMeshes.filter(function (m) {
-				return state.scene.getMeshByID(m).type === 'citizen';
+			selectedMeshes: state.selectedMeshes.map(function (m) {
+				return state.scene.getMeshByID(m);
 			})
 		};
 	};
+	var mergeProps = function mergeProps(stateProps, dispatchProps, ownProps) {
+		var getButtonsFromMeshes = function getButtonsFromMeshes(arrayOfTypes, type) {
+			return _.chain(stateProps.selectedMeshes).map(function (m) {
+				return !!arrayOfTypes[m.type] ? arrayOfTypes[m.type][type] : null;
+			}).flatten().uniq().compact().value();
+		};
+		return {
+			buildingButtons: getButtonsFromMeshes(characterTypes, 'buildings'),
+			characterButtons: getButtonsFromMeshes(buildingTypes, 'characters'),
+			startBuildingCreation: dispatchProps.startBuildingCreation,
+			createOneGuy: dispatchProps.createOneGuy
+		};
+	};
 	
-	exports.default = (0, _reactRedux.connect)(mapStateToProps, mapDispatchToProps)(Menu);
+	exports.default = (0, _reactRedux.connect)(mapStateToProps, mapDispatchToProps, mergeProps)(Menu);
+
+/***/ },
+/* 220 */
+/*!****************************************!*\
+  !*** ./src/client/types/characters.js ***!
+  \****************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.SOLDIER = exports.CITIZEN = undefined;
+	
+	var _buildings = __webpack_require__(/*! ./buildings.js */ 221);
+	
+	var buildings = _interopRequireWildcard(_buildings);
+	
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+	
+	var CITIZEN = exports.CITIZEN = {
+	    label: 'CITIZEN',
+	    buildings: [buildings.HOUSE.label, buildings.BARRACK.label]
+	}; //label : name to display on button 
+	//buildings : type of buildings character can build
+	var SOLDIER = exports.SOLDIER = {
+	    label: 'SOLDIER',
+	    buildings: []
+	};
+
+/***/ },
+/* 221 */
+/*!***************************************!*\
+  !*** ./src/client/types/buildings.js ***!
+  \***************************************/
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	var HOUSE = exports.HOUSE = {
+	    label: 'HOUSE',
+	    characters: ['CITIZEN']
+	};
+	var BARRACK = exports.BARRACK = {
+	    label: 'BARRACK',
+	    characters: ['SOLDIER']
+	};
 
 /***/ }
 /******/ ]);
