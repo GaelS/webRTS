@@ -18,11 +18,13 @@
   },
   "devDependencies": {
     "babel-core": "^6.16.0",
-    "webpack": "^1.13.2"
+    "babel-preset-stage-3": "^6.17.0",
+    "webpack": "^1.13.2",
+    "webpack-dev-server": "^1.16.2"
   },
   "scripts": {
     "dev": "webpack -d --watch",
-    "server": "webpack-dev-server --progress --colors --content-base src/app/"
+    "server": "webpack-dev-server --progress --colors --content-base build/"
   },
   "author": "",
   "license": "ISC"

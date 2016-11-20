@@ -1,6 +1,6 @@
 import defaultState from './defaultState.js';
 
-import creation from '../3d/creation.js';
+import creation from '../3d/creation/_index.js';
 import interaction from '../3d/interaction.js'
 import movement from '../3d/movement.js';
 import materials from '../3d/materials.js';
@@ -10,7 +10,7 @@ import R from 'ramda';
 import BABYLON from 'babylonjs';
 
 export default ( ( state = defaultState, action ) => {
-	console.log(action.type)
+	console.log(creation)
 	let newState = R.clone( R.omit('scene',state ) );
 	//scene cannot be cloned
 	newState.scene = state.scene;

@@ -1,6 +1,14 @@
 import { vector3, emptyFunc } from './utils.js';
 import { select, deselectAll, moveSelection } from '../flux/actions.js';
-import creation from './creation.js';
+import { 
+	createSelectionRectangle,
+	deleteSelectionRectangle,
+	deleteScreenSpaceCanvas2D,
+	createScreenSpaceCanvas2D,
+} from './creation/rectangle2D.js';
+import {
+	endBuildingCreation,
+} from './creation/building.js';
 
 function onPointerLeftUpEvent( event, dispatchEvents, rectangleProps, scene ){
 	//action to dispatch to redux
@@ -45,9 +53,9 @@ function onPointerRightUpEvent( event, dispatchEvents ){
 function onPointerDragEvent( e, startPoint, scene ){
 	let save = startPoint;
 	//Delete previous rectangle
-	creation.deleteSelectionRectangle( scene );
+	deleteSelectionRectangle( scene );
 	//Create new Rectangle
-	return creation.createSelectionRectangle( scene, startPoint, [ e.event.clientX, e.event.clientY ] );	
+	return createSelectionRectangle( scene, startPoint, [ e.event.clientX, e.event.clientY ] );	
 };
 function ghostBuildingManager( scene ){
 	scene.onPointerObservable.add(e => { 
@@ -66,7 +74,7 @@ function ghostBuildingManager( scene ){
 				break;
 			case('mouseup') :
 				let isLeftClicked = e.event.which === 1;
-				creation.endBuildingCreation(scene);
+				endBuildingCreation(scene);
 				break;
 
 		} 	
@@ -96,7 +104,7 @@ function instantiateEvents(canvas, scene, dispatchEvents){
 				break;
 			case 'mousedown' :
 				startPoint =  [ e.event.clientX, e.event.clientY ];
-				creation.createScreenSpaceCanvas2D(scene);
+				createScreenSpaceCanvas2D(scene);
 				onPointerDragEvent( e, startPoint, scene );
 				break;
 			case 'mousemove' :
@@ -104,8 +112,8 @@ function instantiateEvents(canvas, scene, dispatchEvents){
 				//deleted here in case mouseup
 				//is done outside canvas				
 				if(!isLeftClicked){
-					creation.deleteSelectionRectangle(scene);
-					creation.deleteScreenSpaceCanvas2D(scene);
+					deleteSelectionRectangle(scene);
+					deleteScreenSpaceCanvas2D(scene);
 				} else {
 					selectionRectangleProps = onPointerDragEvent( e, startPoint, scene );
 				}
