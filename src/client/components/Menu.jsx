@@ -5,11 +5,12 @@ import * as buildingTypes from '../types/buildings.js';
 import { connect } from 'react-redux';
 import R from 'ramda';
 
-const Menu = ( { startBuildingCreation, launchGuyCreation, buildingButtons, characterButtons } ) => {
+const Menu = ( { startBuildingCreation, launchGuyCreation, buildingButtons, characterButtons, characterBeingCreated } ) => {
 	const S = {
 		menu : {
 			position : 'absolute',
 			bottom : '0px',
+			display : 'flex',	
 		},
 	};
 	return (
@@ -36,6 +37,16 @@ const Menu = ( { startBuildingCreation, launchGuyCreation, buildingButtons, char
 					/>
 				)	
 			}
+			{ characterBeingCreated.length !== 0 && 
+				
+				characterBeingCreated.map( ( character, i ) => 
+					<div
+						key={ i }
+					>
+						{ character.type }
+					</div>
+				)
+			}
 		</div>
 	);
 }
@@ -48,8 +59,14 @@ const mapDispatchToProps = (dispatch) => {
 };
 
 const mapStateToProps = (state) => {
+	let firstID = state.selectedMeshes[0]; 
+	let firstMesh = !!state.scene && !!firstID ? state.scene.getMeshByID( firstID  ) : {};
+	let IsAbuildingSelected = firstMesh.class === 'BUILDING';
+	//GET CHARACTERS BEING CREATED IF ANY
+	let characterBeingCreated = !IsAbuildingSelected ? [] : ( state.charactersOnCreation[ firstID ] || [] ); 
 	return {
 		selectedMeshes : state.selectedMeshes.map(m => state.scene.getMeshByID(m)),
+		characterBeingCreated,  
 	};
 };
 const mergeProps = (stateProps, dispatchProps, ownProps) => {
@@ -66,7 +83,7 @@ const mergeProps = (stateProps, dispatchProps, ownProps) => {
 		characterButtons : getButtonsFromMeshes(buildingTypes, 'characters'),
 		startBuildingCreation : dispatchProps.startBuildingCreation,
 		launchGuyCreation : dispatchProps.launchGuyCreation,
-				
+		characterBeingCreated : stateProps.characterBeingCreated,		
 	};
 }
 

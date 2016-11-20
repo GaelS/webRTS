@@ -37,16 +37,13 @@ export default ( ( state = defaultState, action ) => {
 				...(newState.charactersOnCreation[currentBuilding] || [] ),
 				{
 					type : typeToCreate.label,
-					timestamp : Date.now(),
 					duration : delay,
 				}, 
 			];
 			creation.addCharacterToCreate( newState.scene, typeToCreate.label, currentBuilding, delay );
 			break;
 		case 'CHARACTER_CREATED' :
-			console.log(newState.charactersOnCreation[ action.value.buildingId ] );
 			newState.charactersOnCreation[ action.value.buildingId ].pop();  
-			console.log(newState.charactersOnCreation[ action.value.buildingId ])
 			break;
 		case 'CLICK_ON_BUILDING_CREATION' :
 			newState.shadowBuildingDisplayed = true;
