@@ -10,12 +10,11 @@ import { Provider } from 'react-redux';
 import App from './components/App.jsx';
 
 let store = createStore(
-	reducer
+	reducer,
 );
 
 //Dev ONLY 
 window.store = store;
-
 window.BABYLON = BABYLON;
 
 render(

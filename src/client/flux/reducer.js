@@ -6,15 +6,14 @@ import movement from '../3d/movement.js';
 import materials from '../3d/materials.js';
 import { vector3 } from '../3d/utils.js';
 import R from 'ramda';
-
+import * as characterTypes from '../types/characters.js';
 import BABYLON from 'babylonjs';
 
 export default ( ( state = defaultState, action ) => {
-	console.log(creation)
 	let newState = R.clone( R.omit('scene',state ) );
 	//scene cannot be cloned
 	newState.scene = state.scene;
-	
+	console.log(action.type)
 	let value = action.value;
 	switch(action.type){
 		case 'INIT' :
@@ -27,6 +26,28 @@ export default ( ( state = defaultState, action ) => {
 			newState.guys = [...state.guys,
 			 ...creation.createGuy( newState.scene, value.qty, value.type ) ];
 			 break;
+		case 'LAUNCH_GUY_CREATION' :
+			//only one building can be selected
+			//when guy creation is launched
+			let currentBuilding = newState.selectedMeshes[0];
+			let typeToCreate = characterTypes[ action.value.type ];
+			let delay = typeToCreate.cooldown || 0;
+			//add new character type to create to the building selected
+			newState.charactersOnCreation[ currentBuilding ] = [ 
+				...(newState.charactersOnCreation[currentBuilding] || [] ),
+				{
+					type : typeToCreate.label,
+					timestamp : Date.now(),
+					duration : delay,
+				}, 
+			];
+			creation.addCharacterToCreate( newState.scene, typeToCreate.label, currentBuilding, delay );
+			break;
+		case 'CHARACTER_CREATED' :
+			console.log(newState.charactersOnCreation[ action.value.buildingId ] );
+			newState.charactersOnCreation[ action.value.buildingId ].pop();  
+			console.log(newState.charactersOnCreation[ action.value.buildingId ])
+			break;
 		case 'CLICK_ON_BUILDING_CREATION' :
 			newState.shadowBuildingDisplayed = true;
 			creation.startBuildingCreation( newState.scene, action.value.type );
@@ -52,7 +73,14 @@ export default ( ( state = defaultState, action ) => {
 			break;
 		case 'MOVE_SELECTION' : 
 			let { x,z } = action.value;
-			let meshes = newState.scene.meshes.filter(elt => newState.selectedMeshes.indexOf(elt.name) !== -1);
+			let meshes = _.chain(newState.selectedMeshes)
+							.map(elt => {
+								let mesh = newState.scene.getMeshByID(elt);
+								//move only character class polygon
+								return mesh.class === 'CHARACTER' ? mesh : null; 
+							} )
+							.compact()
+							.value();
 			movement.setTargetPosition(meshes, vector3(x, 0, z));
 			break;
 	}

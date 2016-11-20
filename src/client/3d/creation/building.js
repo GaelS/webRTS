@@ -5,8 +5,11 @@ import _ from 'lodash';
 import { 
 		creatingBuilding as creatingBuildingAction,
 		buildingIsDone as buildingIsDoneAction, 
+		characterIsCreated as characterIsCreatedAction,
  	} from '../../flux/actions.js';
 import * as buildingTypes from '../../types/buildings.js';
+import * as characterTypes from '../../types/characters.js';
+import { createGuy } from './character.js';
 
 export const startBuildingCreation = ( scene, type ) => {
 	//instantiating event for ghost building
@@ -37,6 +40,7 @@ export const createBuilding = ( scene, position, type, shadow ) => {
 	s.onSelect = (evt) => { s.material = scene.getMaterialByName('blackerMaterial') };
 	s.onDeselect = (evt) => { s.material = scene.getMaterialByName('greenMaterial') };
 	s.type = type;
+    s.class = 'BUILDING';
 	s.isPickable = shadow ? false : true;
 	s.visibility = !shadow ? 1 : 0;
 	s.scaling = vector3(1, !shadow ? 0 : 1,1);
@@ -51,4 +55,13 @@ export const createBuilding = ( scene, position, type, shadow ) => {
 			} 
 		},e * 1000) );
 	return s.id;
+};
+
+export const addCharacterToCreate = ( scene, type, buildingID, delay ) => {
+	//launch character creation after cooldown
+	setTimeout( () => {
+		createGuy( scene, 1, type, buildingID );
+		scene.dispatchEvents( characterIsCreatedAction( buildingID ))
+		console.log('CREATING',type)
+	}, delay );
 };

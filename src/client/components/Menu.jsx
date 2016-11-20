@@ -1,11 +1,11 @@
 import React from 'react';
-import { createGuy, startBuildingCreation } from '../flux/actions.js';
+import { createGuy, launchGuyCreation, startBuildingCreation } from '../flux/actions.js';
 import * as characterTypes from '../types/characters.js';
 import * as buildingTypes from '../types/buildings.js';
 import { connect } from 'react-redux';
 import R from 'ramda';
 
-const Menu = ( { guys, startBuildingCreation, createOneGuy, buildingButtons, characterButtons } ) => {
+const Menu = ( { guys, startBuildingCreation, launchGuyCreation, buildingButtons, characterButtons } ) => {
 	const S = {
 		menu : {
 			position : 'absolute',
@@ -22,7 +22,7 @@ const Menu = ( { guys, startBuildingCreation, createOneGuy, buildingButtons, cha
 						key={ type }
 						type='button'
 						value={ `create a ${ type.toLowerCase() }` }
-						onClick={ () => createOneGuy( type ) }
+						onClick={ () => launchGuyCreation( type ) }
 					/>
 				)	
 			}
@@ -37,13 +37,12 @@ const Menu = ( { guys, startBuildingCreation, createOneGuy, buildingButtons, cha
 				)	
 			}
 		</div>
-
 	);
 }
 
 const mapDispatchToProps = (dispatch) => {
 	return {
-		createOneGuy : (type) => dispatch( createGuy(1, type) ),
+		launchGuyCreation : (type) => dispatch( launchGuyCreation( type ) ),
 		startBuildingCreation : (type) => dispatch( startBuildingCreation(type) ),
 	}
 };
@@ -66,7 +65,7 @@ const mergeProps = (stateProps, dispatchProps, ownProps) => {
 		buildingButtons : getButtonsFromMeshes(characterTypes, 'buildings'),
 		characterButtons : getButtonsFromMeshes(buildingTypes, 'characters'),
 		startBuildingCreation : dispatchProps.startBuildingCreation,
-		createOneGuy : dispatchProps.createOneGuy,		
+		launchGuyCreation : dispatchProps.launchGuyCreation,		
 	};
 }
 

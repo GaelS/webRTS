@@ -18,7 +18,7 @@ function onPointerLeftUpEvent( event, dispatchEvents, rectangleProps, scene ){
 		let mesh = event.pickInfo.pickedMesh;
 		let pos = event.pickInfo.pickedPoint;
 		//store event
-		action = !!mesh && mesh.name !== 'ground' ? select( [ mesh.id ] ) : deselectAll();
+		action = !!mesh && ( mesh.class === 'CHARACTER' || mesh.class === 'BUILDING' )? select( [ mesh.id ] ) : deselectAll();
 	} else {
 		//selection using rectangle selection
 		let lowerLeft = scene.pick(rectangleProps.xmin, rectangleProps.ymin).pickedPoint;
@@ -26,13 +26,13 @@ function onPointerLeftUpEvent( event, dispatchEvents, rectangleProps, scene ){
 		//Get true Lower Left and Upper Right in 3D world
 		let trueUpperRight = [_.max([ lowerLeft.x, upperRight.x ] ),_.max([ lowerLeft.z, upperRight.z ] )]
 		let trueLowerLeft = [_.min([ lowerLeft.x, upperRight.x ] ),_.min( [ lowerLeft.z, upperRight.z ] )]
-		//Get meshes inside 2D rectangle
+		//Get meshes  inside 2D rectangle
 		let meshes = _.filter(scene.meshes, mesh => {
-			return mesh.name !== 'ground' && 
+			return mesh.class === 'CHARACTER' && 
 					mesh.position.x >= trueLowerLeft[0] && 
 						mesh.position.x <= trueUpperRight[0] &&
 							mesh.position.z >= trueLowerLeft[1] && 
-								mesh.position.z <= trueUpperRight[1];  
+							mesh.position.z <= trueUpperRight[1];  
 		} )
 		.map( mesh => mesh.id); 
 		action = meshes.length !== 0 ? select(meshes) : deselectAll();
@@ -43,11 +43,11 @@ function onPointerLeftUpEvent( event, dispatchEvents, rectangleProps, scene ){
 function onPointerRightUpEvent( event, dispatchEvents ){
 	//Get position on mesh clicked
 	let mesh = event.pickInfo.pickedMesh;
-	//Move the selected cube(s) in not null
+	//Move the selected cube(s) if not null
 	return !!mesh ? 
 		dispatchEvents( moveSelection( event.pickInfo.pickedPoint.x,  event.pickInfo.pickedPoint.z ) )
 		:
-		utils.emptyFunc();
+		emptyFunc();
 };
 
 function onPointerDragEvent( e, startPoint, scene ){
@@ -66,8 +66,7 @@ function ghostBuildingManager( scene ){
 				//to display if directly on mouse cursor
 				//and not at origin
 				shadowMesh.visibility = 0.5;
-				
-				//only considering mousemove fro ghost building
+				//only considering mousemove from ghost building
 				let cursorPosition = scene.pick(e.event.clientX, e.event.clientY).pickedPoint;
 				//move to cursor
 				shadowMesh.position = cursorPosition;

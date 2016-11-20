@@ -16,6 +16,23 @@ export const createGuy = ( qty, type ) => {
 		 },
 	};
 };
+
+export const launchGuyCreation = ( type ) => {
+	return {
+		type : 'LAUNCH_GUY_CREATION',
+		value : {
+			type,
+		},
+	};
+};
+export const characterIsCreated = ( buildingId ) => {
+	return {
+		type : 'CHARACTER_CREATED',
+		value : {
+			buildingId,
+		},
+	};
+};
 export const startBuildingCreation = ( type ) => {
 	return {
 		type : 'CLICK_ON_BUILDING_CREATION',

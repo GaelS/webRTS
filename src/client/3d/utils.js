@@ -2,7 +2,6 @@ export const vector3 = (a,b,c) => {
 	return new BABYLON.Vector3(a,b,c);
 }
 export const emptyFunc = () => {
-	console.log('empty func')
 	return function(){return;};
 }
 

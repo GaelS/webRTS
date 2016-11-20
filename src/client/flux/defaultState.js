@@ -4,4 +4,5 @@ export default {
 	selectedMeshes : [],
 	shadowBuildingDisplayed : false,
 	buildingOnCreation : [],
+	charactersOnCreation : {},
 };
