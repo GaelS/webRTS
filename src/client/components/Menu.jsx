@@ -14,8 +14,7 @@ const Menu = ( props ) => {
 			characterBeingCreated,
 			selectedElements,
 		} = props;
-		console.log(props)
-	console.log(characterButtons)
+		
 	const S = {
 		menu : {
 			position : 'absolute',

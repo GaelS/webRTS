@@ -15,9 +15,11 @@ export const CITIZEN = {
         buildings.BARRACK.label,
     ],
     cooldown : 2000,
+    speed : 0.5,
 }; 
 export const SOLDIER = { 
     label :'SOLDIER',
     buildings : [],
     cooldown : 5000,
+    speed : 1,
 }; 

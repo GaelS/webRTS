@@ -1,3 +1,4 @@
+import * as characterTypes from '../types/characters.js';
 function setTargetPosition(meshes, targetPos){
 	return meshes.forEach(e => e.targetPosition = targetPos );
 };
@@ -5,11 +6,12 @@ function setTargetPosition(meshes, targetPos){
 function updatePositions(scene){
 	return scene.meshes.filter(e => !!e.targetPosition)
 					.forEach(e => { 
+						let speed = characterTypes[e.type].speed || 0.5;
 						let dir = e.targetPosition.subtract( e.position );
-						e.targetPosition = dir.length() <1 ? undefined : e.targetPosition;
+						e.targetPosition = dir.length() >1 ? e.targetPosition : undefined;
 						dir.normalize();
-						e.position.x += dir.x *  0.5;
-						e.position.z += dir.z * 0.5;
+						e.position.x += dir.x *  speed;
+						e.position.z += dir.z * speed;
 					} );
 }
 export default {
