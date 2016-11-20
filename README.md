@@ -7,7 +7,7 @@ Full web RTS Game powered by Babylon, React & Redux for fun
 * ~~Selection groupe de cubes & et déplacement vers destination~~
 * Développer une caméra RTS cool (avec ~~keyboard arrows~~ and mouvement sur les bords)
 * ~~Création de batiment~~
-* créer péon depuis un grand cube avec UI et cooldown de création
+* ~~créer péon depuis un grand cube avec UI et cooldown de création~~
 * affichage péons sélectionnés dans l'UI
 * pathfinding de cubes
 * création et exploitation ressources
