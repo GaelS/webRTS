@@ -81,16 +81,17 @@ export default ( ( state = defaultState, action ) => {
 							.value();
 			let meshesID = meshes.map( m => m.id );
 			
+			//update current workers
+			_.chain( Object.keys( newState.busyCharacters ) )
+				.forEach( ( buildingID ) => {
+					//clean reassigned meshes
+					let updatedWorkers = newState.busyCharacters[ buildingID ]
+						.filter( worker => meshesID.indexOf(worker) === -1 );
+						newState.busyCharacters[ buildingID ] = updatedWorkers;		
+				} )
+				.value();
+			
 			if( !!value.buildingId ) {
-				//update current Workers
-				_.chain( Object.keys( newState.busyCharacters ) )
-						.forEach( ( buildingID ) => {
-							//clean reassigned meshes
-							let updatedWorkers = newState.busyCharacters[ buildingID ]
-								.filter( worker => meshesID.indexOf(worker) === -1 );
-							newState.busyCharacters[ buildingID ] = updatedWorkers;			
-						} )
-						.value();
 				let currentWorkers = newState.busyCharacters[ value.buildingId ] || [];
 				newState.busyCharacters[ value.buildingId ] =  _.uniq( [ ...meshesID, ...currentWorkers ] );
 			}
