@@ -102,12 +102,12 @@ export default ( ( state = defaultState, action ) => {
 					if( !!workers &&  workers.length !== 0 ){
 						let building = newState.scene.getMeshByID( id );
 						let currentHeight = building.scaling.y;
-						let tmpHeight = currentHeight + workers.length  * 0.5;
-						let updatedHeight = tmpHeight >= 4 ? 4 : tmpHeight;
+						let tmpHeight = currentHeight + workers.length  * 0.1;
+						let updatedHeight = tmpHeight >= 2 ? 2 : tmpHeight;
 						building.status = updatedHeight/4;
 						//Set new height
 						building.scaling.y = updatedHeight
-						let buildingDone = ( updatedHeight === 4 );
+						let buildingDone = ( updatedHeight === 2 );
 						if( buildingDone ){
 							newState.busyCharacters[ id ] = _.remove( newState.busyCharacters[ id ], workers ) || [];
 							newState.buildingOnCreation = _.remove( newState.buildingOnCreation, id ) || [];
