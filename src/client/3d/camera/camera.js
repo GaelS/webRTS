@@ -11,7 +11,7 @@ let initCameraSettings = (camera) => {
     camera.lowerBetaLimit = degToRad(25);
 	//limit zoom in/out
 	camera.lowerRadiusLimit = 10;
-	camera.upperRadiusLimit = 200;
+	camera.upperRadiusLimit = 500;
 	camera.setTarget(vector3(0,0,0));
 };
 let mouseEvents = (camera) => {
@@ -38,7 +38,7 @@ export default {
 		initCameraSettings(camera);	
 		initCameraEvents(camera, scene);
 		camera.attachControl( canvas, false );
-		camera.setPosition(vector3(0, 50, -30));
+		camera.setPosition(vector3(-30, 500, -30));
 		return camera;
 	},
 };

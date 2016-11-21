@@ -16,6 +16,7 @@ export const startBuildingCreation = ( scene, type ) => {
 	interaction.ghostBuildingManager(scene);
 	let shadowMesh = scene.getMeshByID('shadowBuilding');
 	shadowMesh.type = type;
+	shadowMesh.checkCollisions = true;
 };
 
 export const endBuildingCreation = (scene) => {
@@ -26,6 +27,7 @@ export const endBuildingCreation = (scene) => {
 	//set visibility back to 0
 	shadowMesh.visibility = 0;
 	shadowMesh.type = null;
+	shadowMesh.checkCollisions = false;
 	//removing event for ghost building
 	interaction.endGhostBuildingManager(scene);
 };
@@ -45,15 +47,9 @@ export const createBuilding = ( scene, position, type, shadow ) => {
 	s.visibility = !shadow ? 1 : 0;
 	s.scaling = vector3(1, !shadow ? 0.1 : 1,1);
 	s.underConstruction = true;
-/*	!shadow && [1,2,3,4].map( e => setTimeout(() => {
-			if(e === 4 ){ 
-				s.underConstruction = false;
-				s.material = scene.getMaterialByName('greenMaterial');
-				scene.dispatchEvents( buildingIsDoneAction(s.id) );
-			} else {
-				s.scaling = vector3(1,0.25 * e,1);
-			} 
-		},e * 1000) );*/
+	//Collisions part
+	s.checkCollisions = !shadow ? true : false;
+	s.ellipsoid = new BABYLON.Vector3(20,20,20);
 	return s.id;
 };
 
