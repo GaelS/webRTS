@@ -8,5 +8,5 @@ export const BARRACK = {
     label : 'BARRACK',
     characters : [
         'SOLDIER',
-    ]
+    ],
 };

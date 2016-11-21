@@ -52,7 +52,7 @@ const Menu = ( props ) => {
 					<div
 						key={ i }
 					>
-						{ `${ element.type } // ${ element.life }` }
+						{ `${ element.type } // ${ element.life }${ !!element.status ? ` // ${ element.status }` : '' }` }
 					</div>
 				)
 			}
@@ -89,6 +89,7 @@ const mapStateToProps = (state) => {
 			mesh,
 			type : mesh.type,
 			life : mesh.life || 100,
+			status : mesh.status,
 		};
 	} );
 	return {

@@ -43,9 +43,9 @@ export const createBuilding = ( scene, position, type, shadow ) => {
     s.class = 'BUILDING';
 	s.isPickable = shadow ? false : true;
 	s.visibility = !shadow ? 1 : 0;
-	s.scaling = vector3(1, !shadow ? 0 : 1,1);
+	s.scaling = vector3(1, !shadow ? 0.1 : 1,1);
 	s.underConstruction = true;
-	!shadow && [1,2,3,4].map( e => setTimeout(() => {
+/*	!shadow && [1,2,3,4].map( e => setTimeout(() => {
 			if(e === 4 ){ 
 				s.underConstruction = false;
 				s.material = scene.getMaterialByName('greenMaterial');
@@ -53,7 +53,7 @@ export const createBuilding = ( scene, position, type, shadow ) => {
 			} else {
 				s.scaling = vector3(1,0.25 * e,1);
 			} 
-		},e * 1000) );
+		},e * 1000) );*/
 	return s.id;
 };
 

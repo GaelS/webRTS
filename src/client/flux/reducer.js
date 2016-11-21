@@ -97,7 +97,29 @@ export default ( ( state = defaultState, action ) => {
 			movement.setTargetPosition( meshes, value.target );
 			break;
 			case 'UPDATE_UNDER_CONSTRUCTION_BUILDING':
-				console.log('TODOOOOOOOOOOO');
+				newState.buildingOnCreation.forEach( id => {
+					let workers = newState.busyCharacters[ id ] || [];
+					if( !!workers &&  workers.length !== 0 ){
+						let building = newState.scene.getMeshByID( id );
+						let currentHeight = building.scaling.y;
+						let tmpHeight = currentHeight + workers.length  * 0.5;
+						let updatedHeight = tmpHeight >= 4 ? 4 : tmpHeight;
+						building.status = updatedHeight/4;
+						//Set new height
+						building.scaling.y = updatedHeight
+						let buildingDone = ( updatedHeight === 4 );
+						if( buildingDone ){
+							newState.busyCharacters[ id ] = _.remove( newState.busyCharacters[ id ], workers ) || [];
+							newState.buildingOnCreation = _.remove( newState.buildingOnCreation, id ) || [];
+							//update building
+							//to not be considered as under construction
+							//and having proper properties
+							building.underConstruction = false;
+							building.status = null;
+							building.characterCreationStack = [];
+						}
+					}
+				} );
 				break;
 	}
 	return newState;

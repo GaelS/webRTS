@@ -59,7 +59,6 @@ export const buildingIsDone = ( id ) => {
 	};
 };
 export const updateUnderConstructionBuilding = () => {
-	console.log("ok")
 	return {
 			type : 'UPDATE_UNDER_CONSTRUCTION_BUILDING',
 			value : null,
