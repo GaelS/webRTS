@@ -11,7 +11,7 @@ import { updateUnderConstructionBuilding, deselectAll } from '../../flux/actions
 import { addPhysicsProps } from '../physics.js';
 
 function setScenePhysics( scene ){
-	scene.enablePhysics( null, new BABYLON.CannonJSPlugin() );
+	scene.enablePhysics( vector3( 0, -9.81, 0 ), new BABYLON.CannonJSPlugin() );
 };
 export default ( dispatchEvents ) => {
 	let canvas = document.getElementById( '3dview' );
@@ -29,21 +29,21 @@ export default ( dispatchEvents ) => {
 		let ground = BABYLON.Mesh.CreateGround("ground", 600, 600, 2, scene);
 		ground.material = new BABYLON.StandardMaterial( 'texture1', scene );
 		ground.material.diffuseColor = new BABYLON.Color3(0, 1, 0);
-		addPhysicsProps(ground, BABYLON.PhysicsImpostor.BoxImpostor, 0, 0.5, scene); 
+		addPhysicsProps(ground, BABYLON.PhysicsImpostor.BoxImpostor, 0, 0.3, 0.1, scene); 
 		let camera = cameraLib.createCamera( canvas, scene );
 		interaction.instantiateEvents(canvas, scene, dispatchEvents);
 		scene.dispatchEvents = dispatchEvents;
+		
 		//Shadow building instantiation
 		createBuilding(scene, vector3(0,0,0), '', true);
 		//First guy instantiation
-		createGuy(scene, 1, characterTypes.CITIZEN.label);
-		console.log(scene.meshes[2].class )		
-		scene.meshes[2].moveWithCollisions(vector3(10.5,0,10.5));
+		createGuy(scene, 1, characterTypes.CITIZEN.label);	
+		
 		return scene;	
 	}
 	let scene = createScene(dispatchEvents);
 	scene.registerBeforeRender(() => {
-		//movement.updatePositions(scene);	
+		movement.updatePositions(scene);	
 	} );
 	engine.runRenderLoop( () => {
 		scene.render();
