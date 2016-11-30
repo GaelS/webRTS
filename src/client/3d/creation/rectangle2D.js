@@ -39,10 +39,10 @@ export const createSelectionRectangle = (scene, startPosition, targetPosition ) 
 		borderThickness : 2,
 	} );
 	return {
-		xmin : _.min( [startPosition[0],targetPosition[0] ] ),
-		ymin : _.min( [startPosition[1],targetPosition[1] ] ),
-		xmax : _.max( [startPosition[0],targetPosition[0] ] ),
-		ymax : _.max( [startPosition[1],targetPosition[1] ] ),
+		xmin : _.min( [ startPosition[0], targetPosition[0] ] ),
+		ymin : _.min( [ startPosition[1], targetPosition[1] ] ),
+		xmax : _.max( [ startPosition[0], targetPosition[0] ] ),
+		ymax : _.max( [ startPosition[1], targetPosition[1] ] ),
 	};
 };
 export const deleteSelectionRectangle = (scene) => {

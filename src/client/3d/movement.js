@@ -1,24 +1,32 @@
 import * as characterTypes from '../types/characters.js';
 import { vector3 } from './utils.js';
-function setTargetPosition( meshes, targetPos ){
-		
-	return meshes.forEach(e => { 
-		e.targetPosition = targetPos;	
-		console.log(e.position,e.targetPosition.subtract(e.position));
-	!!e.targetPosition && e.moveWithCollisions( e.targetPosition.subtract(e.position) );
+import { setVelocity, addCallbackOnCollision, changePhysicsOptions } from './physics.js';
+
+function setTargetPosition( meshes, targetPos, targetMeshID, scene ){
+	let targetMesh = scene.getMeshByID( targetMeshID );
+	return meshes.forEach( mesh => { 
+		if( !!targetMesh ) {
+			addCallbackOnCollision( mesh, targetMesh, (main, collided) => {
+				console.log('collision');
+				setVelocity( mesh, vector3( 0,0,0 ), 0 );
+			} );
+		} else {
+			mesh.targetPosition = targetPos;
+		}
+		let speed = characterTypes[ mesh.type ].speed || 0.5;
+		let dir = ( mesh.targetPosition || targetMesh.position ).subtract( mesh.position );
+		dir.normalize();
+		setVelocity( mesh, dir, speed );
 	} );
 };
 
 function updatePositions(scene){
-	return scene.meshes.filter(e => !!e.targetPosition)
-					.forEach(e => { 
-						let speed = characterTypes[e.type].speed || 0.5;
-						let dir = e.targetPosition.subtract( e.position );
-						e.targetPosition = dir.length() >1 ? e.targetPosition : undefined;
-						dir.normalize();
-						//e.position.x += dir.x *  speed;
-						//e.position.z += dir.z * speed;
-						!!e.targetPosition && e.moveWithCollisions( e.targetPosition.subtract(e.position) );
+	return scene.meshes.filter(mesh => !!mesh.targetPosition)
+					.forEach( mesh => { 
+						let remainingPath = mesh.targetPosition.subtract( mesh.position );
+						let isMovementDone = remainingPath.length() < 3;
+						mesh.targetPosition =  !isMovementDone ? mesh.targetPosition : undefined;
+						if(isMovementDone) setVelocity( mesh, vector3( 0,0,0 ), 0 );
 					} );
 }
 export default {

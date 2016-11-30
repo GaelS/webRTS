@@ -10,6 +10,7 @@ import {
 import * as buildingTypes from '../../types/buildings.js';
 import * as characterTypes from '../../types/characters.js';
 import { createGuy } from './character.js';
+import { addPhysicsProps } from '../physics.js';
 
 export const startBuildingCreation = ( scene, type ) => {
 	//instantiating event for ghost building
@@ -37,6 +38,7 @@ export const createBuilding = ( scene, position, type, shadow ) => {
 	if( !!scene.getMeshByID( 'shadowBuilding' )  && shadow ) return; 
 	let id = !shadow ? uuid.v1() : 'shadowBuilding';
 	let s = BABYLON.Mesh.CreateBox( id, 20, scene ); 
+	if(!shadow) addPhysicsProps( s, BABYLON.PhysicsImpostor.BoxImpostor, 0, 0, 0, scene );
 	s.position = position;
 	s.material = scene.getMaterialByName('yellowMaterial');
 	s.onSelect = (evt) => { s.material = scene.getMaterialByName('blackerMaterial') };
@@ -45,11 +47,8 @@ export const createBuilding = ( scene, position, type, shadow ) => {
     s.class = 'BUILDING';
 	s.isPickable = shadow ? false : true;
 	s.visibility = !shadow ? 1 : 0;
-	s.scaling = vector3(1, !shadow ? 0.1 : 1,1);
+	s.scaling = vector3(1, ( !shadow ? 0.1 : 1 ), 1);
 	s.underConstruction = true;
-	//Collisions part
-	s.checkCollisions = !shadow ? true : false;
-	s.ellipsoid = new BABYLON.Vector3(20,20,20);
 	return s.id;
 };
 

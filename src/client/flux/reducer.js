@@ -95,7 +95,8 @@ export default ( ( state = defaultState, action ) => {
 				let currentWorkers = newState.busyCharacters[ value.buildingId ] || [];
 				newState.busyCharacters[ value.buildingId ] =  _.uniq( [ ...meshesID, ...currentWorkers ] );
 			}
-			movement.setTargetPosition( meshes, value.target );
+			console.log(value.buildingId)
+			movement.setTargetPosition( meshes, value.target, value.buildingId, newState.scene );
 			break;
 			case 'UPDATE_UNDER_CONSTRUCTION_BUILDING':
 				newState.buildingOnCreation.forEach( id => {
@@ -103,7 +104,7 @@ export default ( ( state = defaultState, action ) => {
 					if( !!workers &&  workers.length !== 0 ){
 						let building = newState.scene.getMeshByID( id );
 						let currentHeight = building.scaling.y;
-						let tmpHeight = currentHeight + workers.length  * 0.1;
+						let tmpHeight = currentHeight + workers.length  * 1;//0.1;
 						let updatedHeight = tmpHeight >= 2 ? 2 : tmpHeight;
 						building.status = updatedHeight/4;
 						//Set new height
