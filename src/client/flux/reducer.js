@@ -56,6 +56,8 @@ export default ( ( state = defaultState, action ) => {
 			let id = creation.createBuilding( newState.scene, position, type, false );
 			newState.shadowBuildingDisplayed = false;
 			newState.buildingOnCreation = [ ...newState.buildingOnCreation, id ];
+			//add selected characters to busy stack for the new IS
+			newState.busyCharacters[ id ] =  newState.selectedMeshes.map(mesh => mesh.id);
 			break;	 
 		case 'BUILDING_IS_DONE' : 
 			newState.buildingOnCreation = _.without(value.id);
@@ -67,8 +69,10 @@ export default ( ( state = defaultState, action ) => {
 			newState.selectedMeshes = value;
 			break;
 		case 'DESELECT_ALL' :
-			materials.deselectMeshes(newState.scene, newState.selectedMeshes);
-			newState.selectedMeshes = [];
+			if( !newState.shadowBuildingDisplayed ) {
+				materials.deselectMeshes(newState.scene, newState.selectedMeshes);
+				newState.selectedMeshes = [];
+			}
 			break;
 		case 'SET_TARGET_CHARACTER' : 
 			let meshes = _.chain(newState.selectedMeshes)
@@ -95,7 +99,6 @@ export default ( ( state = defaultState, action ) => {
 				let currentWorkers = newState.busyCharacters[ value.buildingId ] || [];
 				newState.busyCharacters[ value.buildingId ] =  _.uniq( [ ...meshesID, ...currentWorkers ] );
 			}
-			console.log(value.buildingId)
 			movement.setTargetPosition( meshes, value.target, value.buildingId, newState.scene );
 			break;
 			case 'UPDATE_UNDER_CONSTRUCTION_BUILDING':
@@ -118,7 +121,6 @@ export default ( ( state = defaultState, action ) => {
 							//and having proper properties
 							building.underConstruction = false;
 							building.status = null;
-							building.characterCreationStack = [];
 						}
 					}
 				} );
