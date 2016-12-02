@@ -46,7 +46,7 @@ export const creatingBuilding = ( position, type ) => {
 		type : 'CREATING_BUILDING',
 		value : {
 			position,
-			type,
+			type, 
 		},
 	};
 };

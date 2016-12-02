@@ -12,19 +12,12 @@ export const addPhysicsProps = ( mesh, impostor, mass, restitution, friction, sc
 export const setVelocity = ( mesh, direction, speed ) => {
     direction.x = direction.x * speed * 10;
     direction.z = direction.z * speed * 10;
-    //Friction to zero to drift on ground
-    changePhysicsOptions( mesh, { friction : 0 } );
-    console.log('debut',mesh.physicsImpostor._options)
     mesh.physicsImpostor.setLinearVelocity( direction );
 };
 
 export const addCallbackOnCollision = ( source, target, callback ) => {
     source.physicsImpostor.registerOnPhysicsCollide( target.physicsImpostor, function(main, collided) {
-        console.log(main, main.object)
         callback( main, collided );
-        //Friction back to 1 to stop movement
-        changePhysicsOptions( source, { friction : 1 } );
-        console.log('fin',source.physicsImpostor);
     } );
 };
 

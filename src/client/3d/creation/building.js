@@ -38,7 +38,7 @@ export const createBuilding = ( scene, position, type, shadow ) => {
 	if( !!scene.getMeshByID( 'shadowBuilding' )  && shadow ) return; 
 	let id = !shadow ? uuid.v1() : 'shadowBuilding';
 	let s = BABYLON.Mesh.CreateBox( id, 20, scene ); 
-	if(!shadow) addPhysicsProps( s, BABYLON.PhysicsImpostor.BoxImpostor, 0, 0, 0, scene );
+	if( !shadow ) addPhysicsProps( s, BABYLON.PhysicsImpostor.BoxImpostor, 0, 0, 0, scene );
 	s.position = position;
 	s.material = scene.getMaterialByName('yellowMaterial');
 	s.onSelect = (evt) => { s.material = scene.getMaterialByName('blackerMaterial') };
@@ -49,6 +49,7 @@ export const createBuilding = ( scene, position, type, shadow ) => {
 	s.visibility = !shadow ? 1 : 0;
 	s.scaling = vector3(1, ( !shadow ? 0.1 : 1 ), 1);
 	s.underConstruction = true;
+	s.characterCreationStack = [];
 	return s.id;
 };
 
