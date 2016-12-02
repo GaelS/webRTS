@@ -1,4 +1,4 @@
-import { vector3, emptyFunc } from './utils.js';
+import { vector3, emptyFunc, checkPointInsidePolygon } from './utils.js';
 import { select, deselectAll, setTarget } from '../flux/actions.js';
 import { 
 	createSelectionRectangle,
@@ -32,7 +32,7 @@ function onPointerLeftUpEvent( event, dispatchEvents, rectangleProps, scene ){
 			//inside selection's rectangle
 			return mesh.class === 'CHARACTER' && checkPointInsidePolygon(A,B,C,D, mesh.position) } )
 			.map( mesh => mesh.id); 
-			
+
 		action = meshes.length !== 0 ? select(meshes) : deselectAll();
 	}	
 		return dispatchEvents( action );
@@ -120,17 +120,6 @@ function instantiateEvents(canvas, scene, dispatchEvents){
 		}
 		return;
 	} );	
-};
-
-function checkPointInsidePolygon( A, B, C, D, point ){
-	const [AB, BC, CD, DA ] = [ B.subtract(A), C.subtract(B), D.subtract(C), A.subtract(D) ];
-	const [AP,BP,CP,DP] = [A,B,C,D].map( rectangleEdge => point.subtract( rectangleEdge ) );
-	//filter if there is a Y vector < 0 which would mean point is outside rectangle
-	return _.zip( [AB, BC, CD, DA ], [AP,BP,CP,DP] )
-			.map( ( [point1, point2] ) => BABYLON.Vector3.Cross(point1, point2).y )
-			.filter(vertical => vertical < 0)
-			.length === 0;
-	
 };
 
 export default {
