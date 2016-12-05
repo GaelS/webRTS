@@ -13,6 +13,8 @@ export const radToDeg = (angle) => {
 }
 
 export const checkPointInsidePolygon = ( A, B, C, D, point ) => {
+	//NEXT LINE
+	//TO BE SET OUTSIDE FUNCTION TO BE CALCULATED ONCE
 	const [AB, BC, CD, DA ] = [ B.subtract(A), C.subtract(B), D.subtract(C), A.subtract(D) ];
 	const [AP,BP,CP,DP] = [A,B,C,D].map( rectangleEdge => point.subtract( rectangleEdge ) );
 	//filter if there is a Y vector < 0 which would mean point is outside rectangle
