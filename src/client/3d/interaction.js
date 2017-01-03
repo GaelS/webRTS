@@ -57,8 +57,10 @@ function onPointerDragEvent( e, startPoint, scene ){
 };
 function ghostBuildingManager( scene ){
 	scene.onPointerObservable.add(e => { 
+						console.log('move',e.event.clientX, e.event.clientY)
 		switch(e.event.type){
-			case('mousemove'):
+			case 'pointermove':
+			case 'mousemove':
 				let shadowMesh = scene.getMeshByID('shadowBuilding'); 
 				//set to visible if not
 				//to display if directly on mouse cursor
@@ -69,7 +71,8 @@ function ghostBuildingManager( scene ){
 				//move to cursor
 				shadowMesh.position = cursorPosition;
 				break;
-			case('mouseup') :
+			case 'pointerup':
+			case 'mouseup':
 				let isLeftClicked = e.event.which === 1;
 				endBuildingCreation(scene);
 				break;
@@ -87,23 +90,27 @@ function instantiateEvents(canvas, scene, dispatchEvents){
 	//Variable to keep props of selection rectangle
 	let startPoint = [0,0];
 	let selectionRectangleProps = null;
-
 	scene.onPointerObservable.add((e) => {
-		let isLeftClicked = e.event.which === 1; 
-		let isRightClicked = e.event.which === 3; 
+		let isLeftClicked = e.event.which === 1 || e.event.buttons === 1; 
+		let isRightClicked = e.event.which === 3 || e.event.buttons === 2;
 		let endDragging = startPoint[0] !== 0 && startPoint[1] !== 0;
 		//For rectangle selection
 		switch(e.event.type){
+			case 'pointerup' :
 			case 'mouseup':
 				(isLeftClicked ? onPointerLeftUpEvent : onPointerRightUpEvent)( e, dispatchEvents, selectionRectangleProps, scene );
 				startPoint = [0,0];
 				selectionRectangleProps = null;
+				deleteSelectionRectangle(scene);
+				deleteScreenSpaceCanvas2D(scene);
 				break;
+			case 'pointerdown' :
 			case 'mousedown' :
 				startPoint =  [ e.event.clientX, e.event.clientY ];
 				createScreenSpaceCanvas2D(scene);
 				onPointerDragEvent( e, startPoint, scene );
 				break;
+			case 'pointermove' :
 			case 'mousemove' :
 				// selection rectangle is 
 				//automatically

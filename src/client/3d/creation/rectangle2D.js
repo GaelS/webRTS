@@ -18,6 +18,9 @@ export const deleteScreenSpaceCanvas2D = (scene) => {
 }
 
 export const createSelectionRectangle = (scene, startPosition, targetPosition ) => {
+	//Return if nothing to draw
+	if( _.isEqual(startPosition, targetPosition) ) return;
+	
 	//HACK : clone to prevent strange behaviour
 	//when point is modified (ref issue...)
 	let point = _.clone(startPosition);
@@ -27,7 +30,7 @@ export const createSelectionRectangle = (scene, startPosition, targetPosition ) 
 	let canvas = document.getElementById('3dview');	
 	let width = ( targetPosition[0] - point[0] ) * window.devicePixelRatio;
 	let height = ( point[1] - targetPosition[1] ) * window.devicePixelRatio;
-	point[1] = (canvas.height/window.devicePixelRatio - point[1]);	
+	point[1] = (canvas.height/window.devicePixelRatio - startPosition[1]);	
 	let rectangle = new BABYLON.Rectangle2D( {
 		id : 'rec',
 		parent : scene.screenSpaceCanvas2D,
