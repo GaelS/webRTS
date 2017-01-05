@@ -18,7 +18,8 @@ function onPointerLeftUpEvent( event, dispatchEvents, rectangleProps, scene ){
 		let mesh = event.pickInfo.pickedMesh;
 		let pos = event.pickInfo.pickedPoint;
 		//store event
-		action = !!mesh && ( mesh.class === 'CHARACTER' || mesh.class === 'BUILDING' )? select( [ mesh.id ] ) : deselectAll();
+		console.log(mesh.type)
+		action = !!mesh && !!mesh.type && !!mesh.type && mesh.type.selectable ? select( [ mesh.id ] ) : deselectAll();
 	} else {
 		//selection using rectangle selection
 		//Rectangle ABCD starting from upper left
@@ -30,7 +31,7 @@ function onPointerLeftUpEvent( event, dispatchEvents, rectangleProps, scene ){
 		let meshes = _.filter(scene.meshes, mesh => {
 			//Filter if mesh is character class and
 			//inside selection's rectangle
-			return mesh.class === 'CHARACTER' && checkPointInsidePolygon(A,B,C,D, mesh.position) } )
+			return !!mesh.type && mesh.type.class === 'CHARACTER' && checkPointInsidePolygon(A,B,C,D, mesh.position) } )
 			.map( mesh => mesh.id); 
 
 		action = meshes.length !== 0 ? select(meshes) : deselectAll();
@@ -43,7 +44,7 @@ function onPointerRightUpEvent( event, dispatchEvents ){
 	let mesh = event.pickInfo.pickedMesh;
 	//Move the selected cube(s) if not null
 	return !!mesh ? 
-		dispatchEvents( setTarget( event.pickInfo.pickedPoint, mesh.class === 'BUILDING' ? mesh.id : null ) )
+		dispatchEvents( setTarget( event.pickInfo.pickedPoint, !!mesh.type && mesh.type.class === 'BUILDING' ? mesh.id : null ) )
 		:
 		emptyFunc();
 };
@@ -57,7 +58,6 @@ function onPointerDragEvent( e, startPoint, scene ){
 };
 function ghostBuildingManager( scene ){
 	scene.onPointerObservable.add(e => { 
-						console.log('move',e.event.clientX, e.event.clientY)
 		switch(e.event.type){
 			case 'pointermove':
 			case 'mousemove':

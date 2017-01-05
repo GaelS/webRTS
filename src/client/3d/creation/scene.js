@@ -23,10 +23,11 @@ export default ( dispatchEvents ) => {
 		materialsLib.initMaterials(scene);
 		scene.clearColor = new BABYLON.Color3(0, 0, 1);
 
-        let light = new BABYLON.HemisphericLight("light1", vector3(0, 1, 0), scene);
+        let light = new BABYLON.HemisphericLight('light1', vector3(0, 1, 0), scene);
         light.intensity = 1;
 
-		let ground = BABYLON.Mesh.CreateGround("ground", 600, 600, 2, scene);
+		let ground = BABYLON.Mesh.CreateGround('ground', 600, 600, 2, scene);
+
 		ground.material = new BABYLON.StandardMaterial( 'texture1', scene );
 		ground.material.diffuseColor = new BABYLON.Color3(0, 1, 0);
 		addPhysicsProps(ground, BABYLON.PhysicsImpostor.BoxImpostor, 0, 0.3, 0.1, scene); 
@@ -37,8 +38,7 @@ export default ( dispatchEvents ) => {
 		//Shadow building instantiation
 		createBuilding(scene, vector3(0,0,0), '', true);
 		//First guy instantiation
-		createGuy(scene, 1, characterTypes.CITIZEN.label);	
-		
+		createGuy(scene, 1, characterTypes.CITIZEN);	
 		return scene;	
 	}
 	let scene = createScene(dispatchEvents);

@@ -1,11 +1,15 @@
-import defaultState from './defaultState.js';
-
-import creation from '../3d/creation/_index.js';
-import interaction from '../3d/interaction.js'
-import movement from '../3d/movement.js';
-import materials from '../3d/materials.js';
 import R from 'ramda';
-import * as characterTypes from '../types/characters.js';
+
+import defaultState from './defaultState';
+
+import creation from '../3d/creation/_index';
+import interaction from '../3d/interaction'
+import movement from '../3d/movement';
+import materials from '../3d/materials';
+
+import * as characterTypes from '../types/characters';
+
+import * as navigation from '../navigation/flowFieldManager';
 
 export default ( ( state = defaultState, action ) => {
 	let newState = R.clone( R.omit('scene',state ) );
@@ -20,6 +24,7 @@ export default ( ( state = defaultState, action ) => {
 				value.dispatchEvents,
 			);
 			newState.scene = scene;
+			newState.flowField = navigation.createFlowField( scene.getMeshByName('ground' ) );
 			break;
 		case 'CREATE_GUY' :
 			newState.guys = [...state.guys,
@@ -37,11 +42,11 @@ export default ( ( state = defaultState, action ) => {
 				newState.charactersOnCreation[ currentBuilding ] = [ 
 					...(newState.charactersOnCreation[currentBuilding] || [] ),
 					{
-						type : typeToCreate.label,
+						type : typeToCreate,
 						duration : delay,
 					}, 
 				];
-				creation.addCharacterToCreate( newState.scene, typeToCreate.label, currentBuilding, delay );
+				creation.addCharacterToCreate( newState.scene, typeToCreate, currentBuilding, delay );
 			}
 			break;
 		case 'CHARACTER_CREATED' :
@@ -58,9 +63,6 @@ export default ( ( state = defaultState, action ) => {
 			newState.buildingOnCreation = [ ...newState.buildingOnCreation, id ];
 			//add selected characters to busy stack for the new IS
 			newState.busyCharacters[ id ] =  newState.selectedMeshes.map(mesh => mesh.id);
-			break;	 
-		case 'BUILDING_IS_DONE' : 
-			newState.buildingOnCreation = _.without(value.id);
 			break;
 		case 'START_SELECTION' :
 			//Reset already selected meshes
@@ -79,7 +81,7 @@ export default ( ( state = defaultState, action ) => {
 							.map(elt => {
 								let mesh = newState.scene.getMeshByID(elt);
 								//move only character class polygon
-								return mesh.class === 'CHARACTER' ? mesh : null; 
+								return mesh.type.class === 'CHARACTER' ? mesh : null; 
 							} )
 							.compact()
 							.value();
@@ -121,6 +123,8 @@ export default ( ( state = defaultState, action ) => {
 							//and having proper properties
 							building.underConstruction = false;
 							building.status = null;
+							//update flowField accordingly
+							navigation.updateFlowField( newState.scene );
 						}
 					}
 				} );

@@ -24,7 +24,7 @@ export const endBuildingCreation = (scene) => {
 	let shadowMesh = scene.getMeshByID('shadowBuilding');
 	let pos = shadowMesh.position;
 	//Redux event
-	scene.dispatchEvents( creatingBuildingAction(pos, buildingTypes[shadowMesh.type].label, false) );
+	scene.dispatchEvents( creatingBuildingAction(pos, buildingTypes[shadowMesh.type], false) );
 	//set visibility back to 0
 	shadowMesh.visibility = 0;
 	shadowMesh.type = null;
@@ -44,7 +44,6 @@ export const createBuilding = ( scene, position, type, shadow ) => {
 	s.onSelect = (evt) => { s.material = scene.getMaterialByName('blackerMaterial') };
 	s.onDeselect = (evt) => { s.material = scene.getMaterialByName('greenMaterial') };
 	s.type = type;
-    s.class = 'BUILDING';
 	s.isPickable = shadow ? false : true;
 	s.visibility = !shadow ? 1 : 0;
 	s.scaling = vector3(1, ( !shadow ? 0.1 : 1 ), 1);

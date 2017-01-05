@@ -27,9 +27,9 @@ const Menu = ( props ) => {
 			style={ S.menu }
 		>
 			{ characterButtons.length !== 0 && 
-				characterButtons.map(type => 
+				characterButtons.map( ( type, i ) => 
 					<input
-						key={ type }
+						key={ i }
 						type='button'
 						value={ `create a ${ type.toLowerCase() }` }
 						onClick={ () => launchGuyCreation( type ) }
@@ -37,9 +37,9 @@ const Menu = ( props ) => {
 				)	
 			}
 			{ buildingButtons.length !== 0 && 
-				buildingButtons.map( type => 
+				buildingButtons.map( ( type, i ) => 
 					<input
-						key={ type }
+						key={ i }
 						type='button'
 						value={ `create a ${ type.toLowerCase() }` }
 						onClick={ () => startBuildingCreation( type ) }
@@ -52,7 +52,7 @@ const Menu = ( props ) => {
 					<div
 						key={ i }
 					>
-						{ `${ element.type } // ${ element.life }${ !!element.status ? ` // ${ element.status }` : '' }` }
+						{ `${ element.type.label } // ${ element.life }${ !!element.status ? ` // ${ element.status }` : '' }` }
 					</div>
 				)
 			}
@@ -98,17 +98,16 @@ const mapStateToProps = (state) => {
 	};
 };
 const mergeProps = (stateProps, dispatchProps, ownProps) => {
-	let getButtonsFromMeshes = (arrayOfTypes, type) => {
+	let getButtonsFromMeshes = bool => {
 		return _.chain(stateProps.selectedElements)
-				.map(m => !!arrayOfTypes[m.mesh.type]?arrayOfTypes[m.mesh.type][type]:null )
+				.map( s => ( bool ? s.type.buildings : s.type.characters ) || [] )
 				.flatten()
 				.uniq()
-				.compact()
 				.value();
 	};
 	return {
-		buildingButtons : getButtonsFromMeshes(characterTypes, 'buildings'),
-		characterButtons : getButtonsFromMeshes(buildingTypes, 'characters'),
+		buildingButtons : getButtonsFromMeshes(true),
+		characterButtons : getButtonsFromMeshes(false),
 		startBuildingCreation : dispatchProps.startBuildingCreation,
 		launchGuyCreation : dispatchProps.launchGuyCreation,
 		characterBeingCreated : stateProps.characterBeingCreated,	

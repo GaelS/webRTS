@@ -14,7 +14,6 @@ export const createGuy = ( scene, qty, type, buildingID ) => {
 		s.onSelect = (evt) => { s.material = scene.getMaterialByName('blackerMaterial') };
 		s.onDeselect = (evt) => { s.material = scene.getMaterialByName('redMaterial') };
 		s.type = type;
-        s.class = 'CHARACTER';
 		return s.id;
 	} );
 };

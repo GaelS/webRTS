@@ -18,6 +18,9 @@ export const CITIZEN = {
     speed : 0.5,
     life : 50,
     attack : 10,
+    class : 'CHARACTER',
+    flowField : false,
+    selectable : true,
 }; 
 export const SOLDIER = { 
     label :'SOLDIER',
@@ -26,4 +29,7 @@ export const SOLDIER = {
     speed : 1,
     life : 200,
     attack : 25,
+    class : 'CHARACTER',
+    flowField : false,
+    selectable : true,
 }; 

@@ -50,14 +50,6 @@ export const creatingBuilding = ( position, type ) => {
 		},
 	};
 };
-export const buildingIsDone = ( id ) => {
-	return {
-		type : 'BUILDING_IS_DONE',
-		value : {
-			id,
-		},
-	};
-};
 export const updateUnderConstructionBuilding = () => {
 	return {
 			type : 'UPDATE_UNDER_CONSTRUCTION_BUILDING',
