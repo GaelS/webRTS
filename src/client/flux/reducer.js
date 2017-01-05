@@ -12,11 +12,13 @@ import * as characterTypes from '../types/characters';
 import * as navigation from '../navigation/flowFieldManager';
 
 export default ( ( state = defaultState, action ) => {
-	let newState = R.clone( R.omit('scene',state ) );
+	//omit because clonig state
+	//convert custom class to plain object
+	let newState = R.clone( R.omit( [ 'scene', 'flowField' ], state ) );
 	//scene cannot be cloned
 	newState.scene = state.scene;
+	newState.flowField = state.flowField;
 	console.log(action.type)
-
 	let value = action.value;
 	switch(action.type){
 		case 'INIT' :
@@ -124,7 +126,7 @@ export default ( ( state = defaultState, action ) => {
 							building.underConstruction = false;
 							building.status = null;
 							//update flowField accordingly
-							navigation.updateFlowField( newState.scene );
+							navigation.updateFlowField( newState.scene, newState.flowField );
 						}
 					}
 				} );

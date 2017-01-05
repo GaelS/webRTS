@@ -18,7 +18,6 @@ function onPointerLeftUpEvent( event, dispatchEvents, rectangleProps, scene ){
 		let mesh = event.pickInfo.pickedMesh;
 		let pos = event.pickInfo.pickedPoint;
 		//store event
-		console.log(mesh.type)
 		action = !!mesh && !!mesh.type && !!mesh.type && mesh.type.selectable ? select( [ mesh.id ] ) : deselectAll();
 	} else {
 		//selection using rectangle selection
@@ -31,7 +30,7 @@ function onPointerLeftUpEvent( event, dispatchEvents, rectangleProps, scene ){
 		let meshes = _.filter(scene.meshes, mesh => {
 			//Filter if mesh is character class and
 			//inside selection's rectangle
-			return !!mesh.type && mesh.type.class === 'CHARACTER' && checkPointInsidePolygon(A,B,C,D, mesh.position) } )
+			return !!mesh.type && mesh.type.selectable && checkPointInsidePolygon(A,B,C,D, mesh.position) } )
 			.map( mesh => mesh.id); 
 
 		action = meshes.length !== 0 ? select(meshes) : deselectAll();
