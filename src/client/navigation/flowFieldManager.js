@@ -33,4 +33,5 @@ export const updateFlowField = ( scene, flowField ) => {
 export const updateTarget = (target, flowField) => {
     console.log(target)
     flowField.updateDistanceValue(target);
+    flowField.updateVectorField(target);
 }

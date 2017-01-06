@@ -7,7 +7,7 @@ export default class FlowField {
         this.Zmin = groundMesh._minZ;
         this.Xmax = groundMesh._maxX;
         this.Zmax = groundMesh._maxZ;
-        this.step = 50; //hardcoded for now
+        this.step = 40; //hardcoded for now
         this.xGrid = _.range(this.Xmin, this.Xmax, this.step);
         this.zGrid = _.range(this.Zmin, this.Zmax, this.step);
         let grid = this.xGrid.map(ptX => {
@@ -17,6 +17,7 @@ export default class FlowField {
                     z: ptZ,
                     distance: -1,
                     updated: false,
+                    vector : [ 0,0 ] //x, z components
                 };
             })];
         });
@@ -56,21 +57,53 @@ export default class FlowField {
 
         //Find tile where target is
         let tilesTarget = _.filter(this.grid, tile => checkPointInsideTile(tile, target, this.step));
+        //set tile target to 0
+        console.time('grid')
         this.grid = updateDistance(this.grid, tilesTarget, 0);
         let tilesToGoThrough = [];
         let distance = 1;
         do {
+            console.time('1')
             tilesTarget.forEach(tile => {
                 let tilesToUpdate = getNeighbours(tile.x, tile.z, this.xMin, this.xMax, this.zMin, this.zMax, this.step);
                 this.grid = updateDistance(this.grid, tilesToUpdate, distance);
-                tilesToGoThrough.push( tilesToUpdate )
-            } );
-
-            tilesTarget = _.chain( tilesToGoThrough ).flatten().uniqWith(_.isEqual).value();
+                tilesToGoThrough.push(tilesToUpdate)
+            });
+            console.timeEnd('1')
+            console.time('2')
+            tilesTarget = _.chain(tilesToGoThrough)
+                .flatten()
+                .uniqWith(_.isEqual)
+                //delete node with distance -2
+                .filter(tile => !!this.grid.filter(cell => {
+                    return (tile.x === cell.x && tile.z === cell.z && cell.distance !== -2)[0]
+                }))
+                .value();
             tilesToGoThrough = [];
             distance = distance + 1;
-        } while ( this.grid.filter( cell => !cell.updated ).length !== 0 /* Still going while not everything updated */);
-        console.log(this.grid)
+            console.timeEnd('2')
+        } while (this.grid.filter(cell => !cell.updated).length !== 0 /* Still going while not everything updated */);
+    }
+    
+    updateVectorField() {
+        let newGrid = this.grid.map( cell => {
+            let { x, y, distance } = cell;
+            let left = _.find( this. grid, { x :cell.x - this.step, z : cell.z} );
+            let right =  _.find( this. grid, { x :cell.x + this.step, z : cell.z} );
+            let top = _.find( this. grid, { x :cell.x, z : cell.z + this.step } );
+            let down =  _.find( this. grid, { x :cell.x, z : cell.z - this.step } );
+            return {
+                x : cell.x,
+                z : cell.z,
+                distance : distance,
+                updated : false,
+                vector : [
+                    ( !!left ? left.distance : distance) - (!!right ? right.distance : distance),
+                    (!!top ? top.distance : distance) - (!!down ? down.distance : distance),
+                 ]
+            }
+        } );
+        this.grid = newGrid;
     }
     getGrid() {
         return this.grid;
@@ -114,5 +147,5 @@ function updateDistance(grid, tilesToUpdate, distance) {
             distance: !!e[0] ? distance : cell.distance,
             updated: !!e[0] || cell.updated,
         }
-    } )
+    })
 }
