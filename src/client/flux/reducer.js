@@ -104,6 +104,7 @@ export default ( ( state = defaultState, action ) => {
 				newState.busyCharacters[ value.buildingId ] =  _.uniq( [ ...meshesID, ...currentWorkers ] );
 			}
 			movement.setTargetPosition( meshes, value.target, value.buildingId, newState.scene );
+			navigation.updateTarget(value.target, newState.flowField );
 			break;
 			case 'UPDATE_UNDER_CONSTRUCTION_BUILDING':
 				newState.buildingOnCreation.forEach( id => {

@@ -29,3 +29,8 @@ export const updateFlowField = ( scene, flowField ) => {
     flowField.updateGrid( bExtends );
 
 };
+
+export const updateTarget = (target, flowField) => {
+    console.log(target)
+    flowField.updateDistanceValue(target);
+}
