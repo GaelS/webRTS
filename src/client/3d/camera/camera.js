@@ -38,7 +38,7 @@ export default {
 		initCameraSettings(camera);	
 		initCameraEvents(camera, scene);
 		camera.attachControl( canvas, false );
-		camera.setPosition(vector3(-30, 100, -30));
+		camera.setPosition(vector3(80, 100, 80));
 		return camera;
 	},
 };

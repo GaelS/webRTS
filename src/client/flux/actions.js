@@ -85,3 +85,10 @@ export const deselectAll = () => {
 		value : null,
 	};
 };
+
+export const updateMeshesPosition = () => {
+	return {
+		type : 'UPDATE_MESHES_POSITION',
+		value : null,
+	}
+}

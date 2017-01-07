@@ -3,45 +3,30 @@ import R from 'ramda';
 
 export default class FlowField {
     constructor(groundMesh) {
-        this.Xmin = groundMesh._minX;
-        this.Zmin = groundMesh._minZ;
-        this.Xmax = groundMesh._maxX;
-        this.Zmax = groundMesh._maxZ;
-        this.step = 40; //hardcoded for now
-        this.xGrid = _.range(this.Xmin, this.Xmax, this.step);
-        this.zGrid = _.range(this.Zmin, this.Zmax, this.step);
-        let grid = this.xGrid.map(ptX => {
-            return [this.zGrid.map(ptZ => {
+        this.step = 50; //hardcoded for now
+        this.Xmax = groundMesh._maxX / this.step;
+        this.Zmax = groundMesh._maxZ / this.step;
+        this.xGrid = _.range(0, this.Xmax);
+        this.zGrid = _.range(0, this.Zmax);
+        this.grid = this.xGrid.map(ptX => {
+            return this.zGrid.map(ptZ => {
                 return {
-                    x: ptX,
-                    z: ptZ,
                     distance: -1,
                     updated: false,
-                    vector : [ 0,0 ] //x, z components
+                    direction : [ 0,0 ] //x, z components
                 };
-            })];
-        });
-        this.grid = _.flattenDeep(grid);
+            } );
+        } );
     }
     /*
     **Update grid when a new building is added
     */
     updateGrid(buildingsExtend) {
-
-        let newGrid = _.map(this.grid, tile => {
-            let tileOccupied = _.chain(buildingsExtend)
-                .filter(extend => {
-                    //check if a building is inside
-                    //current tile
-                    return checkPointInsideTile(tile, extend, this.step);
-                })
-                .compact()
-                .value()
-                .length !== 0;
-            if (tileOccupied) tile['distance'] = -2;
-            return tile;
-        });
-        this.grid = R.clone(newGrid);
+        buildingsExtend.forEach( extend => {
+            let xTile = getTileNumber( extend[0], step );
+            let zTile = getTileNumber( extend[0], step );
+            this.grid[ xTile ][ zTile ].distance = -2;
+         } );
     }
     /*
     ** Update distance values
@@ -50,16 +35,19 @@ export default class FlowField {
     */
     updateDistanceValue(target) {
         //reset grid 
-        this.grid.forEach(cell => {
+        this.grid.forEach( cell => {
             cell.updated = (cell.distance === -2) ? true : false;
             return cell;
-        });
+        } );
 
-        //Find tile where target is
-        let tilesTarget = _.filter(this.grid, tile => checkPointInsideTile(tile, target, this.step));
         //set tile target to 0
+        let targetTileX = getTileNumber( target.x );
+        let targetTileZ = getTileNumber( target.z );
+        
+        this.grid[ targetTileX ][ targetTileZ].distance = 0;
+        //let tilesTarget = _.filter(this.grid, tile => checkPointInsideTile(tile, target, this.step));
         console.time('grid')
-        this.grid = updateDistance(this.grid, tilesTarget, 0);
+        //this.grid = updateDistance(this.grid, tilesTarget, 0);
         let tilesToGoThrough = [];
         let distance = 1;
         do {
@@ -67,8 +55,8 @@ export default class FlowField {
             tilesTarget.forEach(tile => {
                 let tilesToUpdate = getNeighbours(tile.x, tile.z, this.xMin, this.xMax, this.zMin, this.zMax, this.step);
                 this.grid = updateDistance(this.grid, tilesToUpdate, distance);
-                tilesToGoThrough.push(tilesToUpdate)
-            });
+                tilesToGoThrough.push(tilesToUpdate);
+            } );
             console.timeEnd('1')
             console.time('2')
             tilesTarget = _.chain(tilesToGoThrough)
@@ -81,10 +69,11 @@ export default class FlowField {
                 .value();
             tilesToGoThrough = [];
             distance = distance + 1;
+            console.log('distance', distance)
             console.timeEnd('2')
         } while (this.grid.filter(cell => !cell.updated).length !== 0 /* Still going while not everything updated */);
     }
-    
+
     updateVectorField() {
         let newGrid = this.grid.map( cell => {
             let { x, y, distance } = cell;
@@ -97,9 +86,9 @@ export default class FlowField {
                 z : cell.z,
                 distance : distance,
                 updated : false,
-                vector : [
+                direction : [
                     ( !!left ? left.distance : distance) - (!!right ? right.distance : distance),
-                    (!!top ? top.distance : distance) - (!!down ? down.distance : distance),
+                    -(!!top ? top.distance : distance) + (!!down ? down.distance : distance),
                  ]
             }
         } );
@@ -107,6 +96,10 @@ export default class FlowField {
     }
     getGrid() {
         return this.grid;
+    }
+
+    getTile( position ) {
+        return _.filter(this.grid, tile => checkPointInsideTile(tile, position, this.step))[0];
     }
 }
 
@@ -117,27 +110,32 @@ function checkPointInsideTile(tile, point, step) {
 }
 
 function getNeighbours(x, z, xMin, xMax, zMin, zMax, step) {
-    const tooBigZ = z + step >= zMax;
-    const tooSmallZ = z - step <= zMin;
-    const tooBigX = x + step >= xMax;
-    const tooSmallX = x - step <= xMin;
+    const tooBigZ = z + 1 > zMax;
+    const tooSmallZ = z - 1 < 0;
+    const tooBigX = x + 1 > xMax;
+    const tooSmallX = x - 1 < 0;
     return _.compact([
         //bottom line
-        !tooSmallZ ? { x: x - step, z: z - step } : null,
-        !tooSmallZ ? { x, z: z - step } : null,
-        !tooBigX ? { x: x + step, z: z - step } : null,
+        !tooSmallZ ? [ x - 1, z - 1 ] : null,
+        !tooSmallZ ? [ x, z - 1 ] : null,
+        !tooBigX ? [ x + 1, z - 1 ] : null,
         //middle line
-        !tooSmallX ? { x: x - step, z } : null,
-        !tooBigX ? { x: x + step, z } : null,
+        !tooSmallX ? [ x - 1, z ] : null,
+        !tooBigX ? [ x + 1, z ] : null,
         //top line 
-        !tooSmallX && !tooBigZ ? { x: x - step, z: z + step } : null,
-        !tooBigZ ? { x, z: z + step } : null,
-        !tooBigX && !tooBigZ ? { x: x + step, z: z + step } : null,
+        !tooSmallX && !tooBigZ ? [ x - 1, z + 1 ] : null,
+        !tooBigZ ? [ x, z + 1 ] : null,
+        !tooBigX && !tooBigZ ? [ x + 1, z + 1 ] : null,
     ]);
 }
 
 function updateDistance(grid, tilesToUpdate, distance) {
-    return grid.map(cell => {
+    let newGrid = R.clone( grid );
+    tilesToUpdate.forEach( tile => {
+        let tileToUpdate = newGrid[ tile[0] ][ tile[1] ];
+        if( !tilesToUpdate.updated ) tile
+    } );
+    /*return grid.map(cell => {
         let e = tilesToUpdate.filter(tileToUpdate => {
             return (tileToUpdate.x === cell.x && tileToUpdate.z === cell.z && !cell.updated)
         } );
@@ -147,5 +145,9 @@ function updateDistance(grid, tilesToUpdate, distance) {
             distance: !!e[0] ? distance : cell.distance,
             updated: !!e[0] || cell.updated,
         }
-    })
+    })*/
+}
+
+function getTileNumber( point, step ){
+    return Math.floor( point/this.step );
 }

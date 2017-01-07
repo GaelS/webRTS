@@ -19,19 +19,21 @@ export const updateFlowField = ( scene, flowField ) => {
         let zMin = minMax.min.z;
         let zMax = minMax.max.z;
         
-    return { x : (xMin + xMax) /2, z : (zMin + zMax) /2 };
-            /*[ xMin, zMin ],
+        return [
+            [ xMin, zMin ],
             [ xMin, zMax ],
             [ xMax, zMin ],
             [ xMax, zMax ],
-        ]; */
+        ];
     } );
-    flowField.updateGrid( bExtends );
-
+    flowField.updateGrid( _.flatten( bExtends ) );
 };
 
 export const updateTarget = (target, flowField) => {
-    console.log(target)
     flowField.updateDistanceValue(target);
     flowField.updateVectorField(target);
+}
+
+export const getDirection = (position, flowField ) => {
+    return flowField.getTile( position ).direction || [ -999, -999 ];
 }

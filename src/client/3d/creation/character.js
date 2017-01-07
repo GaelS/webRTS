@@ -3,7 +3,7 @@ import { vector3 } from '../utils.js';
 import { addPhysicsProps } from '../physics.js';
 
 export const createGuy = ( scene, qty, type, buildingID ) => {
-	let buildingPosition = !!buildingID ? scene.getMeshByID(buildingID).position.add(vector3(30,30,30)) : vector3( scene.meshes.length+ 30,scene.meshes.length+ 30,scene.meshes.length+ 30 );
+	let buildingPosition = !!buildingID ? scene.getMeshByID(buildingID).position.add(vector3(30,30,30)) : vector3( 100, 2, 100);
 	
 	return [...Array(qty).keys()].map( i => {
 		

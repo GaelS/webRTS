@@ -7,7 +7,7 @@ import cameraLib from '../camera/camera.js';
 import * as characterTypes from '../../types/characters.js';
 import { createBuilding } from './building.js';
 import { createGuy } from './character.js';
-import { updateUnderConstructionBuilding, deselectAll } from '../../flux/actions.js';
+import { updateUnderConstructionBuilding, deselectAll, updateMeshesPosition } from '../../flux/actions.js';
 import { addPhysicsProps } from '../physics.js';
 
 function setScenePhysics( scene ){
@@ -27,7 +27,9 @@ export default ( dispatchEvents ) => {
         light.intensity = 1;
 
 		let ground = BABYLON.Mesh.CreateGround('ground', 600, 600, 2, scene);
-
+		//Hard coded translation to have
+		//ground started in (0, 0, 0)
+		ground.position = vector3( 300, 0, 300);
 		ground.material = new BABYLON.StandardMaterial( 'texture1', scene );
 		ground.material.diffuseColor = new BABYLON.Color3(0, 1, 0);
 		addPhysicsProps(ground, BABYLON.PhysicsImpostor.BoxImpostor, 0, 0.3, 0.1, scene); 

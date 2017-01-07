@@ -7,6 +7,9 @@ import interaction from '../3d/interaction'
 import movement from '../3d/movement';
 import materials from '../3d/materials';
 
+import { setVelocity } from '../3d/physics.js';
+import { vector3 } from '../3d/utils';
+
 import * as characterTypes from '../types/characters';
 
 import * as navigation from '../navigation/flowFieldManager';
@@ -132,6 +135,23 @@ export default ( ( state = defaultState, action ) => {
 					}
 				} );
 				break;
-	}
+				case 'UPDATE_MESHES_POSITION' : 
+					//update velocity moving meshes
+					newState.scene.meshes.filter(mesh => !!mesh.targetPosition)
+						.forEach( mesh => { 
+							let position = mesh.position;
+							let direction = navigation.getDirection( mesh.position, newState.flowField )
+							let remainingPath = mesh.targetPosition.subtract( mesh.position );
+							let isMovementDone = remainingPath.length() < 3;
+							mesh.targetPosition =  !isMovementDone ? mesh.targetPosition : undefined;
+							console.log(isMovementDone ? vector3( 0,0,0 ) : vector3( direction[0],0,direction[1] ))
+							setVelocity( 
+								mesh,
+								isMovementDone ? vector3( 0,0,0 ) : vector3( direction[0],0,direction[1] ),
+								isMovementDone ? 0 : mesh.type.speed 
+							);
+						} );
+					break;
+	}	
 	return newState;
 } );
