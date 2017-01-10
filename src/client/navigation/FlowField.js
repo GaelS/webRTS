@@ -3,7 +3,7 @@ import R from 'ramda';
 
 export default class FlowField {
     constructor(groundMesh) {
-        this.step = 30; //hardcoded for now
+        this.step = 20; //hardcoded for now
         this.xMax = groundMesh._maxX * 2 / this.step;
         this.zMax = groundMesh._maxZ * 2 / this.step;
         this.xGrid = _.range(0, this.xMax );
@@ -22,9 +22,11 @@ export default class FlowField {
     **Update grid when a new building is added
     */
     updateGrid(buildingsExtend) {
+        console.log(_.chain(buildingsExtend).map( e => e.join(',').uniq().map(e=>e.split(',').value())))
         buildingsExtend.forEach( extend => {
             let xTile = getTileNumber( extend[0], this.step );
             let zTile = getTileNumber( extend[1], this.step );
+            console.log(extend, xTile, zTile)
             this.grid[ xTile ][ zTile ].distance = 9999;
             this.grid[ xTile ][ zTile ].updated = true;
          } );
@@ -86,15 +88,15 @@ export default class FlowField {
                 if( cell.distance === 9999 ) return cell;
 
                 let left = ( i - 1 ) < 0 ? 9999 : this.grid[ i - 1][ j ].distance - distance;
-                let downLeft = ( i - 1 ) < 0 || ( j - 1 ) < 0 ? 9999 : this.grid[ i - 1][ j - 1 ].distance - distance;
+                //let downLeft = ( i - 1 ) < 0 || ( j - 1 ) < 0 ? 9999 : this.grid[ i - 1][ j - 1 ].distance - distance;
                 let right = ( i + 1 ) >= this.xMax ? 9999 : this.grid[ i + 1][ j ].distance - distance;
                 let down = ( j - 1 ) < 0 ? 9999 : this.grid[ i ][ j - 1 ].distance - distance;
-                let downRight = ( i + 1 ) >= this.xMax || ( j - 1 ) < 0 ? 9999 : this.grid[ i + 1][ j - 1 ].distance - distance;
+                //let downRight = ( i + 1 ) >= this.xMax || ( j - 1 ) < 0 ? 9999 : this.grid[ i + 1][ j - 1 ].distance - distance;
                 let top = ( j + 1 ) >= this.zMax ? 9999 : this.grid[ i ][ j + 1 ].distance - distance;
-                let topLeft = ( i - 1 ) < 0 || ( j + 1 ) >= this.zMax ? 9999 : this.grid[ i - 1][ j + 1 ].distance - distance;
-                let topRight = ( i + 1 ) >= this.xMax || ( j + 1 ) >= this.zMax ? 9999 : this.grid[ i + 1][ j + 1 ].distance - distance;
+                //let topLeft = ( i - 1 ) < 0 || ( j + 1 ) >= this.zMax ? 9999 : this.grid[ i - 1][ j + 1 ].distance - distance;
+                //let topRight = ( i + 1 ) >= this.xMax || ( j + 1 ) >= this.zMax ? 9999 : this.grid[ i + 1][ j + 1 ].distance - distance;
                               
-                let minDistance = Math.min( left, right, top, down, topLeft, topRight, downLeft, downRight );
+                let minDistance = Math.min( left, right, top, down)//, topLeft, topRight, downLeft, downRight );
                 
                 let direction = null;
                 switch( minDistance ){
@@ -102,14 +104,12 @@ export default class FlowField {
                     case right : direction = [ 1, 0 ]; break;
                     case top : direction = [ 0, 1 ]; break;
                     case down : direction = [ 0, -1 ]; break;
-                    case topLeft : direction = [ -1, 1 ]; break;
+                    /*case topLeft : direction = [ -1, 1 ]; break;
                     case topRight : direction = [ 1, 1 ]; break;
                     case downLeft : direction = [ -1, -1 ]; break;
-                    case downRight : direction = [ 1, -1 ]; break;
+                    case downRight : direction = [ 1, -1 ]; break;*/
                 }
-                if( direction[0] === 1 && direction[1] === 1){
-                    console.log(topRight, right)
-                }
+                //console.log('min', minDistance, left, right, top, down)//, downLeft,downRight, topLeft,topRight)
                 cell.direction = distance === 0 ? [ 0, 0 ] : direction
                 return cell;
             } );    
