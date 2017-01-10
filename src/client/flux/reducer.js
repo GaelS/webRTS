@@ -21,7 +21,7 @@ export default ( ( state = defaultState, action ) => {
 	//scene cannot be cloned
 	newState.scene = state.scene;
 	newState.flowField = state.flowField;
-	console.log(action.type)
+	//console.log(action.type)
 	let value = action.value;
 	switch(action.type){
 		case 'INIT' :
@@ -140,14 +140,13 @@ export default ( ( state = defaultState, action ) => {
 					newState.scene.meshes.filter(mesh => !!mesh.targetPosition)
 						.forEach( mesh => { 
 							let position = mesh.position;
-							let direction = navigation.getDirection( mesh.position, newState.flowField )
+							let tile = navigation.getTile( mesh.position, newState.flowField )
 							let remainingPath = mesh.targetPosition.subtract( mesh.position );
-							let isMovementDone = remainingPath.length() < 3;
+							let isMovementDone = remainingPath.length() < 3 || tile.distance === 0;
 							mesh.targetPosition =  !isMovementDone ? mesh.targetPosition : undefined;
-							console.log(isMovementDone ? vector3( 0,0,0 ) : vector3( direction[0],0,direction[1] ))
 							setVelocity( 
 								mesh,
-								isMovementDone ? vector3( 0,0,0 ) : vector3( direction[0],0,direction[1] ),
+								isMovementDone ? vector3( 0,0,0 ) : vector3( tile.direction[0],0, tile.direction[1] ),
 								isMovementDone ? 0 : mesh.type.speed 
 							);
 						} );

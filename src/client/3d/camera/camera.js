@@ -12,7 +12,7 @@ let initCameraSettings = (camera) => {
 	//limit zoom in/out
 	camera.lowerRadiusLimit = 10;
 	camera.upperRadiusLimit = 500;
-	camera.setTarget(vector3(0,0,0));
+	camera.setTarget(vector3(30,30,30));
 };
 let mouseEvents = (camera) => {
 	return (eventData,eventState) => {

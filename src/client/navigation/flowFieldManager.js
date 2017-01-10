@@ -37,3 +37,11 @@ export const updateTarget = (target, flowField) => {
 export const getDirection = (position, flowField ) => {
     return flowField.getTile( position ).direction || [ -999, -999 ];
 }
+
+export const getDistance = (position, flowField ) => {
+    return flowField.getTile( position ).distance || 999;
+}
+
+export const getTile = (position, flowField ) => {
+    return flowField.getTile( position );
+}
