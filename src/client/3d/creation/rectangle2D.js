@@ -30,6 +30,7 @@ export const createSelectionRectangle = (scene, startPosition, targetPosition ) 
 	let canvas = document.getElementById('3dview');	
 	let width = ( targetPosition[0] - point[0] ) * window.devicePixelRatio;
 	let height = ( point[1] - targetPosition[1] ) * window.devicePixelRatio;
+	console.log(window.devicePixelRatio)
 	point[1] = (canvas.height/window.devicePixelRatio - startPosition[1]);	
 	let rectangle = new BABYLON.Rectangle2D( {
 		id : 'rec',

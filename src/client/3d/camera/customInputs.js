@@ -2,10 +2,10 @@ import { vector3 } from '../utils.js';
 export default class CustomInputs {
         
 		constructor(camera){
-			this.keysUp = [38];
-			this.keysDown = [40];
-			this.keysLeft = [37];
-			this.keysRight = [39];
+			this.keysUp = [38, 90];
+			this.keysDown = [40, 83];
+			this.keysLeft = [37, 81];
+			this.keysRight = [39, 68];
 
 			this.camera = camera;
 			this._onKeyDown = null;

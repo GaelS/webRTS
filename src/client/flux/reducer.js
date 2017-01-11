@@ -142,7 +142,7 @@ export default ( ( state = defaultState, action ) => {
 							let position = mesh.position;
 							let tile = navigation.getTile( mesh.position, newState.flowField )
 							let remainingPath = mesh.targetPosition.subtract( mesh.position );
-							let isMovementDone = remainingPath.length() < 3 || tile.distance === 0;
+							let isMovementDone = !tile || remainingPath.length() < 3 || tile.distance === 0;
 							mesh.targetPosition =  !isMovementDone ? mesh.targetPosition : undefined;
 							setVelocity( 
 								mesh,

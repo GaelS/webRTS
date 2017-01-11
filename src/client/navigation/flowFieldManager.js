@@ -18,7 +18,6 @@ export const updateFlowField = ( scene, flowField ) => {
         let xMax = minMax.max.x;
         let zMin = minMax.min.z;
         let zMax = minMax.max.z;
-        
         return [
             [ xMin, zMin ],
             [ xMin, zMax ],
