@@ -14,6 +14,8 @@ Full web RTS Game powered by Babylon, React & Redux for fun
 * ~~discrimination types de personnage (vitesse, dégâts, etc.)~~
 * permettre attaque PNJ et/ou ennemis
 * ~~durée construction batiment dépendante nombre ouvrier travaillant dessus~~
+* Clean UP // remove unused module (ramda & lodash in same files for example)
+* simplify code
 
 ## TO START
 npm run server & go to http://localhost:8080/webpack-dev-server/index.html

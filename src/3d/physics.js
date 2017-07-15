@@ -1,6 +1,4 @@
 import BABYLON from 'babylonjs';
-import { vector3 } from './utils.js';
-
 export const addPhysicsProps = ( mesh, impostor, mass, restitution, friction, scene ) => {
 	let options = { 
             mass,
@@ -26,8 +24,8 @@ export const changePhysicsOptions = (mesh, options) => {
     let { mass, restitution, friction } = options;
     let currentOptions = mesh.physicsImpostor._options;
     mesh.physicsImpostor._options = {
-        mass : ( !!parseInt(mass) || mass === 0 ) ? mass : currentOptions.mass,
-        restitution : ( !!parseInt(restitution) || restitution === 0 ) ? restitution : currentOptions.restitution,
-        friction : ( !!parseInt(friction) || friction === 0 ) ? friction : currentOptions.friction,
+        mass : ( !!parseInt(mass, 10) || mass === 0 ) ? mass : currentOptions.mass,
+        restitution : ( !!parseInt(restitution, 10) || restitution === 0 ) ? restitution : currentOptions.restitution,
+        friction : ( !!parseInt(friction, 10) || friction === 0 ) ? friction : currentOptions.friction,
     };
 }

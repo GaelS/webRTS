@@ -3,8 +3,6 @@ import _ from 'lodash'
 import defaultState from './defaultState';
 
 import creation from '../3d/creation/_index';
-import interaction from '../3d/interaction'
-import movement from '../3d/movement';
 import materials from '../3d/materials';
 
 import { setVelocity } from '../3d/physics.js';
@@ -17,7 +15,7 @@ import * as navigation from '../navigation/flowFieldManager';
 export default ( ( state = defaultState, action ) => {
 	//omit because clonig state
 	//convert custom class to plain object
-	let newState = R.clone( R.omit( [ 'scene', 'flowField' ], state ) );
+	let newState = _.cloneDeep( _.omit( state, [ 'scene', 'flowField' ] ) );
 	//scene cannot be cloned
 	newState.scene = state.scene;
 	newState.flowField = state.flowField;
@@ -66,7 +64,6 @@ export default ( ( state = defaultState, action ) => {
 			//if shadow building is positionned
 			//in O,O => error building spot 
 			//doing nothing
-			[ newState.currentPosition ].filter( position => position.available ).forEach
 			if( !newState.currentPosition.available ) return newState;
 			
 			let id = creation.createBuilding( newState.scene, position, type, false );
@@ -157,7 +154,7 @@ export default ( ( state = defaultState, action ) => {
 							let position = mesh.position;
 							let targetPosition = mesh.targetPosition;
 							let tile = navigation.getTile( mesh.position, targetPosition, newState.flowField );
-							let remainingPath = mesh.targetPosition.subtract( mesh.position );
+							let remainingPath = mesh.targetPosition.subtract( position );
 							let isMovementDone = !tile || remainingPath.length() < 3 || tile.distance === 0;
 							mesh.targetPosition =  !isMovementDone ? targetPosition : undefined;
 							setVelocity( 
@@ -178,8 +175,10 @@ export default ( ( state = defaultState, action ) => {
 					let gridPosition = navigation.getGridPosition( newState.flowField, action.value );
 					newState.currentPosition = gridPosition;
 					let SB = newState.scene.getMeshByID( 'shadowBuilding');
-					SB.position = vector3( gridPosition.meanX, 0, gridPosition.meanZ );
+					SB.position = vector3( gridPosition.meanX, action.value.y, gridPosition.meanZ );
 					SB.material = gridPosition.available ? SB.standardMaterial : newState.scene.getMaterialByName( 'redMaterial' );
+					break;
+				default:
 					break;
 	}	
 	return newState;

@@ -51,5 +51,8 @@ export const cleanGrids = ( flowField, targetToDelete ) => {
 }
 
 export const getGridPosition = ( flowField, position ) => {
+    if(!position) {
+        return;
+    }
     return flowField.getTileCenter( position );
 }

@@ -1,5 +1,5 @@
 import { vector3 } from './utils.js';
-import { setVelocity, addCallbackOnCollision, changePhysicsOptions } from './physics.js';
+import { setVelocity, addCallbackOnCollision } from './physics.js';
 import { updateMeshesPosition } from '../flux/actions.js';
 
 function setTargetPosition( meshes, targetPos, targetMeshID, scene ){

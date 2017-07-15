@@ -5,11 +5,9 @@ import { vector3 } from '../utils.js';
 import _ from 'lodash';
 import { 
 		creatingBuilding as creatingBuildingAction,
-		buildingIsDone as buildingIsDoneAction, 
 		characterIsCreated as characterIsCreatedAction,
  	} from '../../flux/actions.js';
 import * as buildingTypes from '../../types/buildings.js';
-import * as characterTypes from '../../types/characters.js';
 import { createGuy } from './character.js';
 import { addPhysicsProps } from '../physics.js';
 

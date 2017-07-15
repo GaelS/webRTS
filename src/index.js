@@ -13,16 +13,18 @@ import { Provider } from 'react-redux';
 
 import App from './components/App';
 
-//Dev ONLY 
-window.store = store;
-window.BABYLON = BABYLON;
-window.CANNON = CANNON;
 
 const sagaMiddleware = createSagaMiddleWare();
 let store = createStore(
 	reducer,
+	window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__(),
 	applyMiddleware(sagaMiddleware),
 );
+
+//Dev ONLY 
+window.store = store;
+window.BABYLON = BABYLON;
+window.CANNON = CANNON;
 
 sagaMiddleware.run(mySaga);
 

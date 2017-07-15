@@ -1,13 +1,9 @@
 import React from 'react';
-import { initScene, updateUnderConstructionBuilding } from '../flux/actions.js';
+import { initScene } from '../flux/actions.js';
 import { connect } from 'react-redux';
 import Menu from './Menu.js';
 
 class App extends React.Component {
-    
-    constructor(props){
-	    super(props);
-    }
 
     componentDidMount(){
         this.props.initScene(

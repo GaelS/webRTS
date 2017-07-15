@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { vector3, emptyFunc, checkPointInsidePolygon } from './utils.js';
+import { emptyFunc, checkPointInsidePolygon } from './utils.js';
 import { select, deselectAll, setTarget, moveGhostBuilding } from '../flux/actions.js';
 import { 
 	createSelectionRectangle,
@@ -11,16 +11,13 @@ import {
 	endBuildingCreation,
 	resetShadowBuilding,
 } from './creation/building.js';
-import BABYLON from 'babylonjs';
-import uuid from 'uuid';
 
 function onPointerLeftUpEvent( scene, event, dispatchEvents, rectangleProps ){
 	//action to dispatch to redux
 	let action;
-	if( !rectangleProps || rectangleProps.xmin === rectangleProps.xmax && rectangleProps.ymin === rectangleProps.ymax ){
+	if( !rectangleProps || (rectangleProps.xmin === rectangleProps.xmax && rectangleProps.ymin === rectangleProps.ymax )){
 		//Empty rectangle => classic selection
 		let mesh = event.pickInfo.pickedMesh;
-		let pos = event.pickInfo.pickedPoint;
 		//store event
 		action = !!mesh && !!mesh.type && !!mesh.type && mesh.type.selectable ? select( [ mesh.id ] ) : deselectAll();
 	} else {
@@ -54,12 +51,11 @@ function onPointerRightUpEvent( scene, event, dispatchEvents ){
 		emptyFunc();
 };
 
-function onPointerDragEvent( e, startPoint, scene ){
-	let save = startPoint;
+function onPointerDragEvent( event, startPoint, scene ){
 	//Delete previous rectangle
 	deleteSelectionRectangle( scene );
 	//Create new Rectangle
-	return createSelectionRectangle( scene, startPoint, [ e.event.clientX, e.event.clientY ] );	
+	return createSelectionRectangle( scene, startPoint, [ event.event.clientX, event.event.clientY ] );	
 };
 function ghostBuildingManager( scene ){
 	scene.onPointerObservable.add(e => { 
@@ -81,7 +77,8 @@ function ghostBuildingManager( scene ){
 				!!shadowMesh.type && isLeftClicked && endBuildingCreation(scene);
 				!!shadowMesh.type && isRightClicked && resetShadowBuilding(scene);
 				break;
-
+			default:
+				break;
 		} 	
 	} );
 };
@@ -97,8 +94,6 @@ function instantiateEvents(canvas, scene, dispatchEvents){
 	let selectionRectangleProps = null;
 	scene.onPointerObservable.add((e) => {
 		let isLeftClicked = e.event.which === 1 || e.event.buttons === 1; 
-		let isRightClicked = e.event.which === 3 || e.event.buttons === 2;
-		let endDragging = startPoint[0] !== 0 && startPoint[1] !== 0;
 		//For rectangle selection
 		switch(e.event.type){
 			case 'pointerup' :
@@ -128,6 +123,8 @@ function instantiateEvents(canvas, scene, dispatchEvents){
 				} else {
 					selectionRectangleProps = onPointerDragEvent( e, startPoint, scene );
 				}
+				break;
+			default:
 				break;
 		}
 		return;

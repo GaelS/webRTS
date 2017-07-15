@@ -1,18 +1,16 @@
-import {put, delay} from 'redux-saga';
+import {put} from 'redux-saga/effects';
+import {delay} from 'redux-saga';
 
 import {updateUnderConstructionBuilding} from "./actions"
-// setInterval( () => dispatchEvents( 
-//   updateUnderConstructionBuilding() ), 1000 );
 
-
+//manage buildings under construction
 function* updateConstructionBuilding() {
-  // while(true) {
-  //   console.log('ici')
-  //   yield put(updateUnderConstructionBuilding());
-  //   yield delay(1000);
-  // }
+  while(true) {
+    yield put(updateUnderConstructionBuilding());
+    yield delay(1000);
+  }
 }
 
 export default function* mySaga(){
-  console.log('ici')
+  yield updateConstructionBuilding();
 }

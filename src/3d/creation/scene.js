@@ -1,14 +1,12 @@
 import BABYLON from 'babylonjs';
-import uuid from 'uuid';
 import interaction from '../interaction.js';
 import movement from '../movement.js';
 import { vector3 } from '../utils.js';
 import materialsLib from '../materials.js';
-import cameraLib from '../camera/camera.js';
+import createCamera from '../camera/camera.js';
 import * as characterTypes from '../../types/characters.js';
 import { createBuilding } from './building.js';
 import { createGuy } from './character.js';
-import { updateUnderConstructionBuilding, deselectAll, updateMeshesPosition } from '../../flux/actions.js';
 import { addPhysicsProps } from '../physics.js';
 
 function setScenePhysics( scene ){
@@ -34,10 +32,9 @@ export default ( dispatchEvents ) => {
 			addPhysicsProps(ground, BABYLON.PhysicsImpostor.HeightmapImpostor, 0, 0.3, 0.1, scene); 
 			ground.material = groundMaterial;	
 			ground.position = vector3( 300, 0, 300);
-			console.log('g', ground)
 		} );
 
-		let camera = cameraLib.createCamera( canvas, scene );
+		createCamera( canvas, scene );
 		interaction.instantiateEvents(canvas, scene, dispatchEvents);
 		scene.dispatchEvents = dispatchEvents;
 		
@@ -54,8 +51,6 @@ export default ( dispatchEvents ) => {
 	engine.runRenderLoop( () => {
 		scene.render();
 	} );
-	//update size of building in redux if buildings are under construction
-	setInterval( () => dispatchEvents( updateUnderConstructionBuilding() ), 1000 );
 	// Watch for browser/canvas resize events
     window.addEventListener("resize", function () {
 		//dispose and redraw canvas2D for rectangle selection

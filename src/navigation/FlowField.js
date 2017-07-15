@@ -1,5 +1,4 @@
 import _ from 'lodash';
-import R from 'ramda';
 
 export default class FlowField {
     constructor(groundMesh) {
@@ -86,7 +85,7 @@ export default class FlowField {
                 //remove duplicates
                 .uniq()
                 //get tuple of int back
-                .map( tile => tile.split(',').map(e => parseInt(e)) )
+                .map( tile => tile.split(',').map(e => parseInt(e, 10)) )
                 .value();
 
             tilesToGoThrough = [];
@@ -140,10 +139,10 @@ export default class FlowField {
 }
 
 //utils
-function checkPointInsideTile(tile, point, step) {
-    return point.x < (tile.x + step) && point.x > tile.x &&
-        point.z < (tile.z + step) && point.z > tile.z;
-}
+// function checkPointInsideTile(tile, point, step) {
+//     return point.x < (tile.x + step) && point.x > tile.x &&
+//         point.z < (tile.z + step) && point.z > tile.z;
+// }
 
 function getNeighbours(x, z, xMax, zMax, step) {
     // neighbours order
@@ -207,7 +206,7 @@ function updateDistance(grid, tilesToUpdate, distance) {
     //update every selected cells 
     //with new distance value
     tilesToUpdate.forEach( tile => {
-        let tileToUpdate = R.clone( grid[ tile[0] ][ tile[1] ] );
+        let tileToUpdate = _.clone( grid[ tile[0] ][ tile[1] ] );
         grid[ tile[0] ][ tile[1] ].distance = !tileToUpdate.updated ? distance : tileToUpdate.distance;
         grid[ tile[0] ][ tile[1] ].updated = true;
     } );

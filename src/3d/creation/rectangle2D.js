@@ -31,7 +31,9 @@ export const createSelectionRectangle = (scene, startPosition, targetPosition ) 
 	let canvas = document.getElementById('3dview');	
 	let width = targetX - sourceX;
 	let height = sourceY - targetY;
-	let rectangle = new BABYLON.Rectangle2D( {
+	
+	//Create rectangle
+	new BABYLON.Rectangle2D( {
 		id : 'rec',
 		parent : scene.screenSpaceCanvas2D,
 		x : sourceX,

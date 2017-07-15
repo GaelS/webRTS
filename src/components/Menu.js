@@ -1,9 +1,7 @@
 import React from 'react';
-import { createGuy, launchGuyCreation, startBuildingCreation } from '../flux/actions.js';
-import * as characterTypes from '../types/characters.js';
+import { launchGuyCreation, startBuildingCreation } from '../flux/actions.js';
 import * as buildingTypes from '../types/buildings.js';
 import { connect } from 'react-redux';
-import R from 'ramda';
 import _ from 'lodash';
 const Menu = ( props ) => {
 	let { 
@@ -78,8 +76,7 @@ const mapDispatchToProps = (dispatch) => {
 };
 
 const mapStateToProps = (state) => {
-	let firstID = state.selectedMeshes[0]; 
-	let firstMesh = !!state.scene && !!firstID ? state.scene.getMeshByID( firstID  ) : {};
+	let firstMesh = state.scene && state.selectedMeshes[0] ? state.scene.getMeshByID( state.selectedMeshes[0]  ) : {};
 	let IsAbuildingSelected = !!firstMesh.type && firstMesh.type.class === 'BUILDING';
 	//GET CHARACTERS BEING CREATED IF ANY
 	let characterBeingCreated = !IsAbuildingSelected ? [] : ( _.map( firstMesh.characterOnCreation, type => type.label ) || [] ); 
