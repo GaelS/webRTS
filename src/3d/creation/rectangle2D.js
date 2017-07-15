@@ -29,14 +29,14 @@ export const createSelectionRectangle = (scene, startPosition, targetPosition ) 
 	//move from top left origin to bottom left origin
 	//and remove device pixel ratio between DOM and canvas
 	let canvas = document.getElementById('3dview');	
-	let width = ( targetPosition[0] - point[0] ) * window.devicePixelRatio;
-	let height = ( point[1] - targetPosition[1] ) * window.devicePixelRatio;
+	let width = ( targetPosition[0] - point[0] );
+	let height = ( point[1] - targetPosition[1] );
 	point[1] = (canvas.height/window.devicePixelRatio - startPosition[1]);	
 	let rectangle = new BABYLON.Rectangle2D( {
 		id : 'rec',
 		parent : scene.screenSpaceCanvas2D,
-		x : point[0] * window.devicePixelRatio,
-		y : point[1] * window.devicePixelRatio,
+		x : point[0],
+		y : point[1],
 		height,
 		width,
 		border : BABYLON.Canvas2D.GetSolidColorBrushFromHex('#FFFFFFFF'),
