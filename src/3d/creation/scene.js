@@ -30,10 +30,11 @@ export default ( dispatchEvents ) => {
     	let groundMaterial = new BABYLON.StandardMaterial("ground", scene);
 		groundMaterial.diffuseColor = new BABYLON.Color3(0, 1, 0)
 	
-		let ground = BABYLON.Mesh.CreateGroundFromHeightMap("ground", 'http://localhost:3000/terrain.jpg', 600, 600, 250, 0, 50, scene, false, () => {
+		let ground = BABYLON.Mesh.CreateGroundFromHeightMap("ground", 'http://localhost:3001/terrain.jpg', 600, 600, 250, 0, 50, scene, false, () => {
 			addPhysicsProps(ground, BABYLON.PhysicsImpostor.HeightmapImpostor, 0, 0.3, 0.1, scene); 
 			ground.material = groundMaterial;	
 			ground.position = vector3( 300, 0, 300);
+			console.log('g', ground)
 		} );
 
 		let camera = cameraLib.createCamera( canvas, scene );

@@ -11,6 +11,8 @@ import {
 	endBuildingCreation,
 	resetShadowBuilding,
 } from './creation/building.js';
+import BABYLON from 'babylonjs';
+import uuid from 'uuid';
 
 function onPointerLeftUpEvent( scene, event, dispatchEvents, rectangleProps ){
 	//action to dispatch to redux

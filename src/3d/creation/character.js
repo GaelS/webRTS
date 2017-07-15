@@ -5,7 +5,6 @@ import { addPhysicsProps } from '../physics.js';
 
 export const createGuy = ( scene, qty, type, buildingID ) => {
 	let buildingPosition = !!buildingID ? scene.getMeshByID(buildingID).position.add(vector3(30,30,30)) : vector3( 30, 100, 30);
-	
 	return [...Array(qty).keys()].map( i => {
 		
 		let s = BABYLON.Mesh.CreateBox( uuid.v1(), 2, scene ); 
