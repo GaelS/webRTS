@@ -3,6 +3,12 @@
 Full web RTS Game powered by Babylon, React & Redux for fun
 
 ##TODO
+* améliorer flowfield
+* création et exploitation ressources (zones mines, forêt, etc.)
+* créer des batiments ou des péons doit avoir un coût en ressource
+* permettre attaque PNJ et/ou ennemis
+* mettre de l'eau limite carte
+* NICE TO HAVE avec son, petit animation sur les bâtiments
 * ~~Selection Cube et déplacement vers destination~~
 * ~~Selection groupe de cubes & et déplacement vers destination~~
 * Développer une caméra RTS cool (avec ~~keyboard arrows~~ and mouvement sur les bords)
@@ -10,12 +16,8 @@ Full web RTS Game powered by Babylon, React & Redux for fun
 * ~~créer péon depuis un grand cube avec UI/ cooldown de création / file de personnages à créer~~
 * ~~affichage péons sélectionnés dans l'UI~~
 * ~~pathfinding de cubes~~
-* création et exploitation ressources
 * ~~discrimination types de personnage (vitesse, dégâts, etc.)~~
-* permettre attaque PNJ et/ou ennemis
 * ~~durée construction batiment dépendante nombre ouvrier travaillant dessus~~
-* Clean UP // remove unused module (ramda & lodash in same files for example)
-* simplify code
 
 ## TO START
-npm run server & go to http://localhost:8080/webpack-dev-server/index.html
+yarn run dev
