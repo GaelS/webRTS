@@ -21,8 +21,8 @@ function addPhysicsProps({
 }
 
 function setVelocity({ mesh, direction, speed }) {
-  const { x, y, ...others } = direction;
-  const updatedDirection = { x: x * speed * 10, y: y * speed * 10, ...others };
+  const { x, z, ...others } = direction;
+  const updatedDirection = { x: x * speed * 10, z: z * speed * 10, ...others };
   mesh.physicsImpostor.setLinearVelocity(updatedDirection);
 }
 
