@@ -5,6 +5,7 @@ export const HOUSE = {
   flowField: true,
   selectable: true,
   material: 'greenMaterial',
+  targetable: true,
 };
 export const BARRACK = {
   label: 'BARRACK',
@@ -13,4 +14,5 @@ export const BARRACK = {
   flowField: true,
   selectable: true,
   material: 'yellowMaterial',
+  targetable: true,
 };

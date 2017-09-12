@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { emptyFunc, checkPointInsidePolygon } from './utils.js';
+import { checkPointInsidePolygon } from './utils.js';
 import {
   select,
   deselectAll,
@@ -60,16 +60,16 @@ function onPointerRightUpEvent({ scene, event, dispatchEvents }) {
   //Return if right click when ghostBuilding displayed
   if (!!scene.getMeshByID('shadowBuilding').type) return;
   //Get position on mesh clicked
-  let mesh = event.pickInfo.pickedMesh;
+  let {pickedMesh: mesh, pickedPoint} = event.pickInfo;
   //Move the selected cube(s) if not null
   return !!mesh
     ? dispatchEvents(
         setTarget(
-          event.pickInfo.pickedPoint,
-          !!mesh.type && mesh.type.class === 'BUILDING' ? mesh.id : null
+          pickedPoint,
+          !!mesh.type && mesh.type.targetable ? mesh.id : null
         )
       )
-    : emptyFunc();
+    : _.noop();
 }
 
 function onPointerDragEvent(event, startPoint, scene) {

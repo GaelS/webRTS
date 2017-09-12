@@ -1,7 +1,13 @@
 import _ from 'lodash';
 
+import BABYLON from 'babylonjs';
+import uuid from 'uuid';
+import {vector3, degToRad} from '../3d/utils';
+
+let a = []
 export default class FlowField {
-  constructor(groundMesh) {
+  constructor(groundMesh, scene) {
+    this.scene = scene;
     this.step = 25; //hardcoded for now
     this.xMax = groundMesh._maxX * 2 / this.step;
     this.zMax = groundMesh._maxZ * 2 / this.step;
@@ -31,7 +37,6 @@ export default class FlowField {
       this.initialGrid[xTile][zTile].distance = 9999;
       this.initialGrid[xTile][zTile].updated = true;
     });
-    //console.table( this.initialGrid.map(r => r.map(c => c.distance)) )
   }
   /*
     ** Update distance values
@@ -69,22 +74,19 @@ export default class FlowField {
       //loop through all current tiles selected
       //start with target tile clicked
       tilesTarget.forEach(tile => {
-        _.chain([this.grids[idGrid][tile[0]][tile[1]]])
+        _([this.grids[idGrid][tile[0]][tile[1]]])
           .filter(cell => cell.distance !== 9999)
           .forEach(currentTile => {
             //only update neighbours' cell
             //for cell without buildings on it
-            let tilesToUpdate = _.compact(
-              getNeighbours(tile[0], tile[1], this.xMax, this.zMax, this.step)
-            );
+            let tilesToUpdate = getNeighbours(tile[0], tile[1], this.xMax, this.zMax, this.step);
             updateDistance(this.grids[idGrid], tilesToUpdate, distance);
             tilesToGoThrough.push(tilesToUpdate);
-          })
-          .value();
-      });
-      //Get all neightbours from current tile that needs
-      //to get distance value updated
-      tilesTarget = _.chain(tilesToGoThrough)
+          });
+        });
+        //Get all neightbours from current tile that needs
+        //to get distance value updated
+        tilesTarget = _(tilesToGoThrough)
         //tilesToGoThrough array of array
         //=> needs to be flattened
         .flatten()
@@ -93,10 +95,9 @@ export default class FlowField {
         //remove duplicates
         .uniq()
         //get tuple of int back
-        .map(tile => tile.split(',').map(e => parseInt(e, 10)))
-        .value();
-
-      tilesToGoThrough = [];
+        .map(tile => tile.split(',').map(e => parseInt(e, 10))) ;
+        
+        tilesToGoThrough = [];
       distance = distance + 1;
       //console.timeEnd('2')
     } while (
@@ -114,6 +115,9 @@ export default class FlowField {
       this.step
     );
     const idGrid = `${targetTileX}${targetTileZ}`;
+    //tmp
+    a.forEach(id => this.scene.getMeshByID(id).dispose())
+    a = [];
     let newGrid = this.grids[idGrid].map((row, i) => {
       return row.map((cell, j) => {
         let distance = cell.distance === 9999 ? -9999 : cell.distance;
@@ -188,7 +192,7 @@ function getNeighbours(x, z, xMax, zMax, step) {
   const tooSmallZ = z - 1 < 0;
   const tooBigX = x + 1 >= xMax;
   const tooSmallX = x - 1 < 0;
-  return [
+  return _.compact([
     !tooSmallX && !tooBigZ ? [x - 1, z + 1] : null,
     !tooSmallX ? [x - 1, z] : null,
     !tooSmallX && !tooSmallZ ? [x - 1, z - 1] : null,
@@ -197,7 +201,7 @@ function getNeighbours(x, z, xMax, zMax, step) {
     !tooBigX ? [x + 1, z] : null,
     !tooBigX && !tooBigZ ? [x + 1, z + 1] : null,
     !tooBigZ ? [x, z + 1] : null,
-  ];
+  ]);
 }
 
 function getGridNeighbours(x, z, xMax, zMax, grid) {
@@ -209,11 +213,11 @@ function getMinimumNeighbour(x, z, currentDistance, xMax, zMax, step, grid) {
   let neighbours = getGridNeighbours(x, z, xMax, zMax, grid);
   //Get neightboor with largest difference
   // => going toward target fastest
-  return _.chain(neighbours)
-    .map((cell, i) => [i + 1, !!cell ? cell.distance : -1])
+  
+  return _(neighbours)
+    .map((cell, i) => [i, !!cell ? cell.distance : -1])
     .compact()
-    .minBy(cell => cell[1])
-    .value()[0];
+    .minBy(cell => cell[1])[0];
 }
 //Return vector direction for a cell
 function getDirectionFromIndex(index) {
@@ -221,18 +225,16 @@ function getDirectionFromIndex(index) {
   // 1 8 7
   // 2   6
   // 3 4 5
-  return (
-    {
-      '1': [-1, 1],
-      '2': [-1, 0],
-      '3': [-1, -1],
-      '4': [0, -1],
-      '5': [1, -1],
-      '6': [1, 0],
-      '7': [1, 1],
-      '8': [0, 1],
-    }[index] || [0, 0]
-  );
+  return [
+      [-1, 1],
+      [-1, 0],
+      [-1, -1],
+      [0, -1],
+      [1, -1],
+      [1, 0],
+      [1, 1],
+      [0, 1], 
+    ][index] || [0, 0]
 }
 
 function getDirection(x, z, distance, xMax, zMax, step, grid) {
@@ -246,13 +248,12 @@ function getDirection(x, z, distance, xMax, zMax, step, grid) {
 function updateDistance(grid, tilesToUpdate, distance) {
   //update every selected cells
   //with new distance value
-  tilesToUpdate.forEach(tile => {
-    let tileToUpdate = _.clone(grid[tile[0]][tile[1]]);
-    grid[tile[0]][tile[1]].distance = !tileToUpdate.updated
-      ? distance
-      : tileToUpdate.distance;
-    grid[tile[0]][tile[1]].updated = true;
-  });
+  tilesToUpdate
+    //filter already updated tile
+    .filter(([x,z]) => !grid[x][z].updated)
+    .forEach(([x,z]) => {
+      grid[x][z] = { ...grid[x][z], distance, updated: true}
+    });
 }
 
 function getTileNumber(point, step) {

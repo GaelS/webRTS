@@ -1,13 +1,14 @@
 import BABYLON from 'babylonjs';
-import interaction from '../interaction.js';
-import movement from '../movement.js';
-import { vector3 } from '../utils.js';
-import materialsLib from '../materials.js';
-import createCamera from '../camera/camera.js';
-import * as characterTypes from '../../types/characters.js';
-import { createBuilding } from './building.js';
-import { createGuy } from './character.js';
-import { addPhysicsProps } from '../physics.js';
+import interaction from '../interaction';
+import movement from '../movement';
+import { vector3 } from '../utils';
+import materialsLib from '../materials';
+import createCamera from '../camera/camera';
+import * as characterTypes from '../../types/characters';
+import { createBuilding } from './building';
+import { createGuy } from './character';
+import initResources from './resources';
+import { addPhysicsProps } from '../physics';
 
 function enablePhysics(scene) {
   scene.enablePhysics(vector3(0, -9.81, 0), new BABYLON.CannonJSPlugin());
@@ -48,7 +49,7 @@ function createScene({ dispatchEvents, engine, canvas }) {
       ground.position = vector3(300, 0, 300);
     }
   );
-
+  initResources(scene, 600);
   createCamera(canvas, scene);
   interaction.instantiateEvents(canvas, scene, dispatchEvents);
   scene.dispatchEvents = dispatchEvents;

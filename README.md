@@ -3,6 +3,7 @@
 Full web RTS Game powered by Babylon, React & Redux for fun
 
 ##TODO
+* empêcher création batiment si arbre/eau/pente.
 * création et exploitation ressources (zones mines, forêt, etc.)
 * créer des batiments ou des péons doit avoir un coût en ressource
 * permettre attaque PNJ et/ou ennemis

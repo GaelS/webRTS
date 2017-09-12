@@ -9,7 +9,7 @@ function createGuy({ scene, quantity, type, buildingID }) {
     ? scene.getMeshByID(buildingID).position.add(vector3(30, 30, 30))
     : vector3(30, 100, 30);
   return _.range(quantity).map(i => {
-    let mesh = BABYLON.Mesh.CreateBox(uuid.v1(), 2, scene);
+    let mesh = BABYLON.Mesh.CreateSphere(uuid.v1(), 2, 1, scene);
     mesh.position = buildingPosition;
     addPhysicsProps({
       mesh,

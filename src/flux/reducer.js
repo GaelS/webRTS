@@ -28,7 +28,7 @@ export default (state = defaultState, action) => {
       let scene = creation.initScene(value.dispatchEvents);
       newState.scene = scene;
       newState.flowField = navigation.createFlowField(
-        scene.getMeshByName('ground')
+        scene.getMeshByName('ground'), scene
       );
       break;
     case 'CREATE_GUY':
@@ -224,7 +224,6 @@ export default (state = defaultState, action) => {
               : vector3(tile.direction[0], 0, tile.direction[1]),
             speed: isMovementDone ? 0 : mesh.type.speed,
           });
-
           //Clean grids in flowField if movement is done
           // => do not need vectorField anymore
           const meshesWithSameTarget =

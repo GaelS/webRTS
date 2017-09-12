@@ -1,7 +1,8 @@
-import initScene from './scene.js';
-import * as building from './building.js';
-import * as character from './character.js';
-import * as rectangle2D from './rectangle2D.js';
+import initScene from './scene';
+import initResources from './resources';
+import * as building from './building';
+import * as character from './character';
+import * as rectangle2D from './rectangle2D';
 
 export default {
   initScene,

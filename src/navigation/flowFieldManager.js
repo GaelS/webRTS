@@ -2,8 +2,8 @@ import FlowField from './FlowField';
 import _ from 'lodash';
 import BABYLON from 'babylonjs';
 
-export const createFlowField = groundMesh => {
-  return new FlowField(groundMesh);
+export const createFlowField = (groundMesh, scene) => {
+  return new FlowField(groundMesh,scene);
 };
 /**
  * Update flow field by
