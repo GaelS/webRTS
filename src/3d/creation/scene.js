@@ -19,13 +19,15 @@ function createScene({ dispatchEvents, engine, canvas }) {
   enablePhysics(scene);
   materialsLib.initMaterials(scene);
   scene.clearColor = new BABYLON.Color3(0, 0, 1);
-
-  const light = new BABYLON.HemisphericLight('light1', vector3(0, 1, 0), scene);
-  light.intensity = 1;
+ 
+  const light = new BABYLON.DirectionalLight("dir", new BABYLON.Vector3(1, -1, -2), scene);
+  light.position = new BABYLON.Vector3(-300,300,600);
+  const shadowGenerator = new BABYLON.ShadowGenerator(2048, light);
+  scene.shadowGenerator = shadowGenerator;
 
   const groundMaterial = new BABYLON.StandardMaterial('ground', scene);
   groundMaterial.diffuseColor = new BABYLON.Color3(0, 1, 0);
-
+  
   const ground = BABYLON.Mesh.CreateGroundFromHeightMap(
     'ground',
     'http://localhost:3001/terrain.jpg',
@@ -49,10 +51,11 @@ function createScene({ dispatchEvents, engine, canvas }) {
       ground.position = vector3(300, 0, 300);
     }
   );
-  initResources(scene, 600);
+  ground.receiveShadows = true;
   createCamera(canvas, scene);
   interaction.instantiateEvents(canvas, scene, dispatchEvents);
   scene.dispatchEvents = dispatchEvents;
+  initResources(scene, 600);
 
   //Shadow building instantiation
   createBuilding({ scene, position: vector3(0, 0, 0), type: '', shadow: true });

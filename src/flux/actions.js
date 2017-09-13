@@ -67,12 +67,12 @@ export const select = idsMesh => {
   };
 };
 
-export const setTarget = (target, buildingId) => {
+export const setTarget = (target, mesh) => {
   return {
     type: 'SET_TARGET_CHARACTER',
     value: {
       target,
-      buildingId,
+      mesh,
     },
   };
 };

@@ -137,20 +137,28 @@ export default (state = defaultState, action) => {
         newState.busyCharacters,
         newState.selectedMeshes
       );
-
-      //if target is a building
-      if (value.buildingId) {
-        addWorkersToBuildingUnderConstruction(
-          newState.busyCharacters,
-          value.buildingId,
-          newState.selectedMeshes
-        );
+      if(value.mesh) {
+        const {id: meshID, type: meshType} = value.mesh
+        switch(meshType.label){
+          case 'WOOD':
+          //Add tree being damaged
+          break;
+          case 'BUILDING':
+            addWorkersToBuildingUnderConstruction(
+              newState.busyCharacters,
+              meshID,
+              newState.selectedMeshes
+            );
+            break;
+            default:
+              break;
+        }
       }
-      const targetPosition = value.buildingId
-        ? newState.scene.getMeshByID(value.buildingId).position
-        : value.target;
+        const targetPosition = value.mesh
+          ? newState.scene.getMeshByID(value.mesh.id).position
+          : value.target;
 
-      //update target position for selected meshes
+        //update target position for selected meshes
       updateSelectedMeshesTarget(
         newState.selectedMeshes,
         targetPosition,

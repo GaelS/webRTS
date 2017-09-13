@@ -1,7 +1,7 @@
 export const wood = {
   label: 'WOOD',
   material: 'whiteMaterial',
-  targetable: true, 
+  targetable: true,
 };
 export const gold = {
   label: 'GOLD',

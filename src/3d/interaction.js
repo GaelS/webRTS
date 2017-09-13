@@ -62,11 +62,11 @@ function onPointerRightUpEvent({ scene, event, dispatchEvents }) {
   //Get position on mesh clicked
   let {pickedMesh: mesh, pickedPoint} = event.pickInfo;
   //Move the selected cube(s) if not null
-  return !!mesh
+  return !!mesh 
     ? dispatchEvents(
         setTarget(
           pickedPoint,
-          !!mesh.type && mesh.type.targetable ? mesh.id : null
+          !!mesh.type && mesh.type.targetable ? mesh : null
         )
       )
     : _.noop();
