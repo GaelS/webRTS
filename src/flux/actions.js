@@ -1,3 +1,6 @@
+export const LAUNCH_GUY_CREATION = 'LAUNCH_GUY_CREATION';
+export const CREATE_GUY = 'CREATE_GUY';
+
 export const initScene = dispatchEvents => {
   return {
     type: 'INIT',
@@ -19,7 +22,7 @@ export const createGuy = (quantity, type) => {
 
 export const launchGuyCreation = type => {
   return {
-    type: 'LAUNCH_GUY_CREATION',
+    type: LAUNCH_GUY_CREATION,
     value: {
       type,
     },

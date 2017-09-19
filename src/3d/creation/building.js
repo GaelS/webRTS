@@ -73,7 +73,7 @@ function createBuilding({ scene, position, type, shadow = false }) {
   mesh.scaling = vector3(1, !shadow ? 0.1 : 1, 1);
   mesh.underConstruction = true;
   mesh.characterCreationStack = [];
-  mesh.characterOnCreation = [];
+  mesh.charactersOnCreation = 0;
   return mesh.id;
 }
 
@@ -107,7 +107,6 @@ function addCharacterToCreate({ scene, type, buildingID, delay }) {
 export {
   createBuilding,
   startBuildingCreation,
-  addCharacterToCreate,
   resetShadowBuilding,
   endBuildingCreation,
 };

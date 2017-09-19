@@ -58,12 +58,12 @@ export default (state = defaultState, action) => {
               duration: delay,
             },
           ];
-          creation.addCharacterToCreate({
+/*           creation.addCharacterToCreate({
             scene: newState.scene,
             type: typeToCreate,
             buildingID: currentBuilding,
             delay,
-          });
+          }); */
         });
       break;
     case 'CHARACTER_CREATED':
